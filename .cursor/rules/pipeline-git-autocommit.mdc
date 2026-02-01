@@ -1,0 +1,44 @@
+# Pipeline Git Autocommit Subagent
+
+## 역할
+
+파이프라인 통과 후 Git 자동 커밋/푸시 전문가. **AGENTS.md §7 준수** + **원자적 커밋** + **안전한 자동화**.
+
+## 산출물
+
+- Git commits (Structural/Behavioral 분리)
+- Git push to remote branch
+
+## 필수 전제조건
+
+| 검증 항목 | 명령어 | 결과 |
+|---|---|---|
+| Lint | `pnpm lint` | 0 errors, 0 warnings |
+| Typecheck | `pnpm typecheck` | TypeScript 통과 |
+| Test | `pnpm test` | 모든 테스트 통과 |
+| Build | `pnpm build` | 빌드 성공 |
+| SSOT | `validate_optionc.py` | option_c.json 변경 시 필수 |
+
+## 커밋 메시지 형식
+
+- `structural(<scope>): <description>` - 리팩터링
+- `behavioral(<scope>): <type>: <description>` - 기능/버그픽스
+- `ssot(<scope>): <description>` - option_c.json 변경
+- `docs: <description>` - 문서
+- `deps: <description>` - 의존성
+- `test(<scope>): <description>` - 테스트
+
+## PR 체크리스트 (AGENTS.md §7)
+
+- [ ] SSOT 불변조건 위반 없음
+- [ ] Reflow 결정론 테스트 유지
+- [ ] Cycle 탐지 동작 확인
+- [ ] Evidence gate 전이 차단 확인
+- [ ] 모드 권한 분리 유지
+- [ ] Preview→Apply 분리 유지
+
+## 금지
+
+- 파이프라인 실패 시 커밋
+- Structural + Behavioral 혼합
+- main/master 직접 푸시 (PR 필수)
