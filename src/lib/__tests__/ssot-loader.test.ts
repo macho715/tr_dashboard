@@ -131,7 +131,7 @@ describe('SSOT Loader', () => {
       const activities = getActivitiesForTrip(ssot, 'TRIP_2026_02A');
       
       expect(activities.length).toBeGreaterThan(0);
-      for (const activity of getActivitiesArray(ssot)) {
+      for (const activity of activities) {
         expect(activity.trip_id).toBe('TRIP_2026_02A');
       }
     });
