@@ -1,0 +1,31 @@
+{
+  "update": {
+    "autoUpdate": true,
+    "channel": "default",
+    "checkInterval": 86400,
+    "downloadUrl": "https://downloader.cursor.sh/windows/x64",
+    "verifyChecksum": false
+  },
+  "rollbackPrevention": {
+    "enabled": true,
+    "protectFolders": true,
+    "protectRegistry": true,
+    "excludeFromSystemRestore": false
+  },
+  "cache": {
+    "autoClean": false,
+    "preserveSettings": true,
+    "preserveExtensions": true,
+    "cleanOnUpdate": true
+  },
+  "installation": {
+    "silentMode": true,
+    "preserveUserData": true,
+    "backupBeforeUpdate": false
+  },
+  "notifications": {
+    "showUpdateAvailable": true,
+    "showUpdateComplete": true,
+    "showErrors": true
+  }
+}

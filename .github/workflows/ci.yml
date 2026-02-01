@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node (LTS)
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Detect PM + scripts
+        id: detect
+        run: |
+          node tools/detect_pm_and_scripts.mjs > env.json
+          cat env.json
+
+      - name: Install deps (lockfile-based)
+        run: |
+          PM=$(node -p "require('./env.json').packageManager")
+          if [ "$PM" = "pnpm" ]; then
+            corepack enable
+            pnpm install
+          elif [ "$PM" = "yarn" ]; then
+            corepack enable
+            yarn install --frozen-lockfile || yarn install
+          else
+            if [ -f package-lock.json ]; then npm ci; else npm install; fi
+          fi
+
+      - name: Run gates if scripts exist (no guessing)
+        run: |
+          PM=$(node -p "require('./env.json').packageManager")
+          node - <<'NODE'
+          const fs = require('fs');
+          const env = JSON.parse(fs.readFileSync('env.json','utf8'));
+          const pm = env.packageManager;
+          const scripts = env.scripts || {};
+          const run = (k) => {
+            const cmd = pm === 'npm' ? `npm run ${k}` : `${pm} run ${k}`;
+            console.log(`$ ${cmd}`);
+            require('child_process').execSync(cmd, { stdio: 'inherit' });
+          };
+          const keys = ['lint','typecheck','tsc','check','test','build'];
+          for (const k of keys) {
+            if (Object.prototype.hasOwnProperty.call(scripts, k)) run(k);
+            else console.log(`- skip: script '${k}' NOT_FOUND`);
+          }
+          NODE
