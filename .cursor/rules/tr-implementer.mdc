@@ -1,0 +1,40 @@
+---
+description: TR Implementer subagent - SSOT·Preview→Apply·History append-only·모드 권한 강제
+globs:
+  - "src/**/*"
+  - "data/schedule/*.json"
+  - "docs/plan/*.md"
+  - "scripts/*.py"
+alwaysApply: false
+---
+
+# TR Implementer Subagent
+
+## 역할
+
+TR 이동 대시보드 구현 전용. `docs/plan/tr-dashboard-plan.md`의 Task를 1개씩 수행.
+
+## 불변조건
+
+| 항목 | 규칙 |
+|------|------|
+| SSOT | option_c.json만. 우회 금지 |
+| Plan 변경 | Preview → Apply 분리. Apply만 SSOT 변경 |
+| History | append-only. 삭제/수정 금지 |
+| Live | 수정 가능(권한 기반) |
+| History | as-of 재현, 읽기 전용 |
+| Approval | read-only, Export/Sign-off만 |
+| Compare | C=SSOT, A/B=delta overlay |
+
+## 실행 순서
+
+1. `scripts/detect_project_commands.py`로 커맨드 확정
+2. Task 수행 → lint/typecheck/test/build 중 최소 1개 실행
+3. option_c.json 변경 시 `scripts/validate_optionc.py` 즉시 실행
+4. Collision/Root cause/Resolution은 2-click 규칙 준수(데이터 우선)
+
+## 금지
+
+- 대규모 리팩터링
+- option_c.json 우회 SoT 도입
+- History 삭제/수정

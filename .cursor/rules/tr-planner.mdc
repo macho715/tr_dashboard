@@ -1,0 +1,39 @@
+---
+description: TR Planner subagent - AGENTS.md/runbook → plan 문서 + 스키마 계약 + DoD
+globs:
+  - "docs/plan/*.md"
+  - "AGENTS.md"
+  - ".cursor/skills/tr-dashboard-autopilot/references/*.md"
+alwaysApply: false
+---
+
+# TR Planner Subagent
+
+## 역할
+
+TR 이동 대시보드 계획 전문가. **사용자 개입 없이** 실행 가능한 plan 문서 생성.
+
+## 산출물
+
+- `docs/plan/tr-dashboard-plan.md`
+
+## 필수 포함
+
+| 항목 | 내용 |
+|------|------|
+| UX | Where → When/What → Evidence (레이아웃/UX 고정) |
+| View Modes | Live/History/Approval/Compare + 권한/커밋 규칙 |
+| SSOT | option_c.json 단일 진실원, Trip/TR 참조 |
+| Runbook | 상태머신/전이/게이트/Freeze, Reflow, Collision → 구현 계약 |
+| 커맨드 | detect_project_commands.py 기반 탐지 (추정 금지) |
+| SSOT Guard | validate_optionc.py 단계별 포함 |
+
+## 템플릿
+
+`.cursor/skills/tr-dashboard-autopilot/references/plan-template.md`
+
+## 참조 문서
+
+- ssot-api-contract.md
+- collision-taxonomy.md
+- runbook-state-reflow-collision.md

@@ -3,14 +3,11 @@
 import type { Ref } from "react"
 import { GanttChart, type GanttChartHandle } from "@/components/dashboard/gantt-chart"
 import type { HighlightFlags, TimelineView } from "@/components/dashboard/timeline-controls"
-import type { DateChange, ScheduleActivity, ScheduleConflict } from "@/lib/ssot/schedule"
+import type { ScheduleActivity, ScheduleConflict } from "@/lib/ssot/schedule"
 
 type GanttSectionProps = {
   ganttRef: Ref<GanttChartHandle>
   activities: ScheduleActivity[]
-  conflicts: ScheduleConflict[]
-  resourceFilter: string
-  onResourceFilterChange: (resource: string) => void
   view: TimelineView
   onViewChange: (view: TimelineView) => void
   highlightFlags: HighlightFlags
@@ -19,16 +16,14 @@ type GanttSectionProps = {
   onJumpDateChange: (value: string) => void
   jumpTrigger: number
   onJumpRequest: () => void
-  changeImpactItems: Array<DateChange & { appliedAt: string }>
-  onUndoChangeImpact: () => void
+  onActivityClick?: (activityId: string, start: string) => void
+  conflicts?: ScheduleConflict[]
+  onCollisionClick?: (conflict: ScheduleConflict) => void
 }
 
 export function GanttSection({
   ganttRef,
   activities,
-  conflicts,
-  resourceFilter,
-  onResourceFilterChange,
   view,
   onViewChange,
   highlightFlags,
@@ -37,17 +32,15 @@ export function GanttSection({
   onJumpDateChange,
   jumpTrigger,
   onJumpRequest,
-  changeImpactItems,
-  onUndoChangeImpact,
+  onActivityClick,
+  conflicts,
+  onCollisionClick,
 }: GanttSectionProps) {
   return (
     <section id="gantt" aria-label="Gantt Chart">
       <GanttChart
         ref={ganttRef}
         activities={activities}
-        conflicts={conflicts}
-        resourceFilter={resourceFilter}
-        onResourceFilterChange={onResourceFilterChange}
         view={view}
         onViewChange={onViewChange}
         highlightFlags={highlightFlags}
@@ -56,8 +49,9 @@ export function GanttSection({
         onJumpDateChange={onJumpDateChange}
         jumpTrigger={jumpTrigger}
         onJumpRequest={onJumpRequest}
-        changeImpactItems={changeImpactItems}
-        onUndoChangeImpact={onUndoChangeImpact}
+        onActivityClick={onActivityClick}
+        conflicts={conflicts}
+        onCollisionClick={onCollisionClick}
       />
     </section>
   )

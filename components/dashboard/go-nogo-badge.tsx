@@ -47,7 +47,7 @@ export function GoNoGoBadge() {
         )}
         {goNoGoUpdatedAt && (
           <div className="text-[10px] opacity-75 mt-1">
-            Updated: {new Date(goNoGoUpdatedAt).toLocaleDateString()}
+            Updated: {new Date(goNoGoUpdatedAt).toISOString().split("T")[0]}
           </div>
         )}
       </div>

@@ -5,29 +5,46 @@ import { voyages } from "@/lib/dashboard-data"
 import { getTideForVoyage } from "@/lib/data/tide-data"
 import { useDate } from "@/lib/contexts/date-context"
 import { TideTable } from "@/components/dashboard/tide-table"
+import {
+  getMapStatusColor,
+  type MapSegmentStatus,
+} from "@/lib/ssot/map-status-colors"
+
+type Voyage = (typeof voyages)[number]
 
 interface VoyageCardsProps {
-  onSelectVoyage?: (voyage: (typeof voyages)[number]) => void
+  onSelectVoyage?: (voyage: Voyage) => void
+  selectedVoyage?: Voyage | null
 }
 
-export function VoyageCards({ onSelectVoyage }: VoyageCardsProps) {
+function parseVoyageDate(dateStr: string): Date {
+  const monthMap: Record<string, number> = {
+    Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+    Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
+  }
+  const parts = dateStr.trim().split(" ")
+  const month = monthMap[parts[0]]
+  const day = parseInt(parts[1], 10)
+  return new Date(Date.UTC(2026, month, day))
+}
+
+export function VoyageCards({ onSelectVoyage, selectedVoyage }: VoyageCardsProps) {
   const { selectedDate } = useDate()
 
   const filteredVoyages = voyages.filter((v) => {
-    const loadOutDate = parseDateString(v.loadOut)
-    const jackDownDate = parseDateString(v.jackDown)
+    const loadOutDate = parseVoyageDate(v.loadOut)
+    const jackDownDate = parseVoyageDate(v.jackDown)
     return selectedDate >= loadOutDate && selectedDate <= jackDownDate
   })
 
-  function parseDateString(dateStr: string): Date {
-    const monthMap: Record<string, number> = {
-      Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
-      Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
-    }
-    const parts = dateStr.trim().split(" ")
-    const month = monthMap[parts[0]]
-    const day = parseInt(parts[1], 10)
-    return new Date(2026, month, day)
+  const displayVoyages = filteredVoyages.length > 0 ? filteredVoyages : voyages
+
+  function getVoyageStatus(v: Voyage): MapSegmentStatus {
+    const loadOut = parseVoyageDate(v.loadOut)
+    const jackDown = parseVoyageDate(v.jackDown)
+    if (selectedDate < loadOut) return "planned"
+    if (selectedDate > jackDown) return "completed"
+    return "in_progress"
   }
 
   return (
@@ -35,20 +52,26 @@ export function VoyageCards({ onSelectVoyage }: VoyageCardsProps) {
       <h2 className="text-foreground text-base font-bold mb-5 flex items-center gap-2 tracking-tight">
         <Ship className="w-5 h-5 text-cyan-400" />
         7 Voyages Overview
-        {filteredVoyages.length < voyages.length && (
+        {displayVoyages.length < voyages.length && (
           <span className="text-slate-500 text-xs font-normal">
-            ({filteredVoyages.length} of {voyages.length} visible)
+            ({displayVoyages.length} of {voyages.length} visible)
           </span>
         )}
         <span className="flex-1 h-px bg-gradient-to-r from-accent/40 to-transparent ml-3" />
       </h2>
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3">
-        {filteredVoyages.map((v) => (
+        {displayVoyages.map((v) => (
           <button
             key={v.voyage}
             type="button"
             onClick={() => onSelectVoyage?.(v)}
-            className="bg-gradient-to-b from-slate-800 to-slate-900 rounded-xl p-4 border border-accent/15 text-center transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:border-cyan-500 hover:shadow-voyage"
+            className={`rounded-xl p-4 border text-center transition-all duration-300 hover:-translate-y-1 hover:scale-[1.02] hover:border-cyan-500 hover:shadow-voyage ${getMapStatusColor(
+              getVoyageStatus(v)
+            )} ${
+              selectedVoyage?.voyage === v.voyage
+                ? " ring-2 ring-cyan-400/60"
+                : ""
+            }`}
           >
             <div className="font-mono text-amber-400 text-[10px] font-bold tracking-widest uppercase mb-2">
               Voyage {v.voyage}

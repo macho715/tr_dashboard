@@ -15,21 +15,23 @@ import {
   activityTypeNames,
 } from "@/lib/dashboard-data"
 import { scheduleActivitiesToGanttRows } from "@/lib/data/schedule-data"
-import type {
-  DateChange,
-  ScheduleActivity,
-  ScheduleConflict,
-} from "@/lib/ssot/schedule"
-import { ResourceConflictsPanel } from "@/components/gantt/ResourceConflictsPanel"
+import type { ScheduleActivity } from "@/lib/ssot/schedule"
 import {
   TimelineControls,
   type HighlightFlags,
   type TimelineView,
 } from "@/components/dashboard/timeline-controls"
 import { DependencyHeatmap } from "@/components/dashboard/dependency-heatmap"
-import { ChangeImpactStack } from "@/components/dashboard/change-impact-stack"
 import { cn } from "@/lib/utils"
 import { useDate } from "@/lib/contexts/date-context"
+import {
+  getConstraintBadges,
+  getCollisionBadges,
+  getConflictsForActivity,
+  CONSTRAINT_BADGES,
+  COLLISION_BADGES,
+} from "@/lib/ssot/timeline-badges"
+import type { ScheduleConflict } from "@/lib/ssot/schedule"
 
 const MS_PER_DAY = 1000 * 60 * 60 * 24
 const DAYS_PER_WEEK = 7
@@ -114,9 +116,6 @@ export interface GanttChartHandle {
 
 interface GanttChartProps {
   activities: ScheduleActivity[]
-  conflicts?: ScheduleConflict[]
-  resourceFilter?: string
-  onResourceFilterChange?: (resource: string) => void
   view: TimelineView
   onViewChange: (view: TimelineView) => void
   highlightFlags: HighlightFlags
@@ -125,16 +124,14 @@ interface GanttChartProps {
   onJumpDateChange: (value: string) => void
   jumpTrigger?: number
   onJumpRequest?: () => void
-  changeImpactItems?: Array<DateChange & { appliedAt: string }>
-  onUndoChangeImpact?: () => void
+  onActivityClick?: (activityId: string, start: string) => void
+  conflicts?: ScheduleConflict[]
+  onCollisionClick?: (conflict: ScheduleConflict) => void
 }
 
 export const GanttChart = forwardRef<GanttChartHandle, GanttChartProps>(function GanttChart(
   {
     activities,
-    conflicts = [],
-    resourceFilter,
-    onResourceFilterChange,
     view,
     onViewChange,
     highlightFlags,
@@ -143,12 +140,18 @@ export const GanttChart = forwardRef<GanttChartHandle, GanttChartProps>(function
     onJumpDateChange,
     jumpTrigger = 0,
     onJumpRequest,
-    changeImpactItems = [],
-    onUndoChangeImpact,
+    onActivityClick,
+    conflicts = [],
+    onCollisionClick,
   },
   ref
 ) {
   const { selectedDate, setSelectedDate } = useDate()
+  const [collisionPopover, setCollisionPopover] = useState<{
+    x: number
+    y: number
+    conflicts: ScheduleConflict[]
+  } | null>(null)
   const [tooltip, setTooltip] = useState<TooltipState>({
     visible: false,
     x: 0,
@@ -306,6 +309,18 @@ export const GanttChart = forwardRef<GanttChartHandle, GanttChartProps>(function
             {item.label}
           </div>
         ))}
+        <span className="text-slate-500">|</span>
+        <div className="flex flex-wrap gap-2 text-[10px] font-medium text-slate-500">
+          <span title="Weather">[W]</span>
+          <span title="Permit">[PTW]</span>
+          <span title="Certificate">[CERT]</span>
+          <span title="Linkspan">[LNK]</span>
+          <span title="Barge">[BRG]</span>
+          <span title="Resource">[RES]</span>
+          <span className="text-red-400" title="Collision">[COL]</span>
+          <span className="text-red-400">[COL-LOC]</span>
+          <span className="text-red-400">[COL-DEP]</span>
+        </div>
       </div>
 
       {/* Gantt Container */}
@@ -356,28 +371,100 @@ export const GanttChart = forwardRef<GanttChartHandle, GanttChartProps>(function
                   const refKey = activity.label.split(":")[0].trim()
                   const meta = activityMeta.get(refKey)
                   const highlightClass = getHighlightClass(meta, activity.end)
+
+                  // Plan/Actual rendering (patch.md §5.1)
+                  const hasActual = meta?.actual_start && meta?.actual_finish
+                  const actualPos = hasActual
+                    ? calcPosition(meta.actual_start!, meta.actual_finish!, view, totalUnits)
+                    : null
+
                   return (
-                    <div
-                      key={actIndex}
-                      ref={(node) => {
-                        if (node && activity.label) {
-                          activityRefs.current.set(refKey, node)
+                    <React.Fragment key={actIndex}>
+                      {/* Plan bar (main or semi-transparent if Actual exists) */}
+                      <div
+                        ref={(node) => {
+                          if (node && activity.label) {
+                            activityRefs.current.set(refKey, node)
+                          }
+                        }}
+                        className={cn(
+                          "absolute h-6.5 top-[3px] rounded font-mono text-[9px] flex items-center justify-center gap-0.5 text-slate-900 font-bold cursor-pointer transition-transform hover:scale-y-110 hover:scale-x-[1.02] hover:z-10 shadow-md",
+                          activityColors[activity.type],
+                          highlightClass,
+                          hasActual && "opacity-40"
+                        )}
+                        style={{
+                          left: `${pos.left}%`,
+                          width: `${pos.width}%`,
+                        }}
+                        onMouseEnter={(e) => handleMouseEnter(e, activity)}
+                        onMouseLeave={handleMouseLeave}
+                        onClick={() =>
+                          onActivityClick?.(refKey, activity.start)
                         }
-                      }}
-                      className={cn(
-                        "absolute h-6.5 top-[3px] rounded font-mono text-[9px] flex items-center justify-center text-slate-900 font-bold cursor-pointer transition-transform hover:scale-y-110 hover:scale-x-[1.02] hover:z-10 shadow-md",
-                        activityColors[activity.type],
-                        highlightClass
+                      >
+                        <span className="truncate px-1">{activity.label}</span>
+                        {getConstraintBadges(meta).map((k) => (
+                          <span
+                            key={k}
+                            className="shrink-0 rounded bg-slate-900/40 px-0.5 text-[8px]"
+                            title={
+                              k === "W"
+                                ? "Weather"
+                                : k === "RES"
+                                  ? "Resource"
+                                  : k
+                            }
+                          >
+                            {CONSTRAINT_BADGES[k]}
+                          </span>
+                        ))}
+                        {getCollisionBadges(meta, conflicts).map((k) => {
+                          const actConflicts = getConflictsForActivity(
+                            refKey,
+                            conflicts
+                          )
+                          return (
+                            <span
+                              key={k}
+                              className="shrink-0 cursor-pointer rounded bg-red-900/50 px-0.5 text-[8px] text-red-200 hover:bg-red-800/60"
+                              title="Click for summary, then Why for details"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                if (actConflicts.length > 0) {
+                                  const rect = (e.target as HTMLElement).getBoundingClientRect()
+                                  setCollisionPopover({
+                                    x: rect.left + rect.width / 2,
+                                    y: rect.top - 4,
+                                    conflicts: actConflicts,
+                                  })
+                                }
+                              }}
+                            >
+                              {COLLISION_BADGES[k]}
+                            </span>
+                          )
+                        })}
+                      </div>
+
+                      {/* Actual bar (solid overlay if exists) */}
+                      {hasActual && actualPos && (
+                        <div
+                          className={cn(
+                            "absolute h-6.5 top-[3px] rounded font-mono text-[9px] flex items-center justify-center gap-0.5 text-slate-900 font-bold shadow-lg border-2 border-white/30",
+                            activityColors[activity.type]
+                          )}
+                          style={{
+                            left: `${actualPos.left}%`,
+                            width: `${actualPos.width}%`,
+                            zIndex: 5,
+                          }}
+                          title={`Actual: ${meta?.actual_start} → ${meta?.actual_finish}`}
+                        >
+                          <span className="text-[8px] bg-slate-900/70 px-1 rounded">ACTUAL</span>
+                        </div>
                       )}
-                      style={{
-                        left: `${pos.left}%`,
-                        width: `${pos.width}%`,
-                      }}
-                      onMouseEnter={(e) => handleMouseEnter(e, activity)}
-                      onMouseLeave={handleMouseLeave}
-                    >
-                      <span className="truncate px-1">{activity.label}</span>
-                    </div>
+                    </React.Fragment>
                   )
                 })}
               </div>
@@ -402,6 +489,44 @@ export const GanttChart = forwardRef<GanttChartHandle, GanttChartProps>(function
         ))}
       </div>
 
+      {/* Collision popover (1-click: summary, 2-click: Why → Detail) */}
+      {collisionPopover && collisionPopover.conflicts.length > 0 && (
+        <div
+          className="fixed z-50 w-64 rounded-lg border border-red-500/40 bg-slate-800 px-3 py-2 shadow-xl"
+          style={{
+            left: collisionPopover.x,
+            top: collisionPopover.y,
+            transform: "translate(-50%, -100%)",
+          }}
+        >
+          <div className="text-xs font-bold text-red-300 mb-1">
+            Collision summary
+          </div>
+          <p className="text-[11px] text-slate-300 mb-2">
+            {collisionPopover.conflicts[0].message}
+          </p>
+          <div className="flex gap-1">
+            <button
+              type="button"
+              className="flex-1 rounded bg-red-900/50 px-2 py-1 text-[10px] font-medium text-red-200 hover:bg-red-800/60"
+              onClick={() => {
+                onCollisionClick?.(collisionPopover.conflicts[0])
+                setCollisionPopover(null)
+              }}
+            >
+              Why
+            </button>
+            <button
+              type="button"
+              className="rounded px-2 py-1 text-[10px] text-slate-400 hover:text-foreground"
+              onClick={() => setCollisionPopover(null)}
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Tooltip */}
       {tooltip.visible && tooltip.activity && (
         <div
@@ -424,20 +549,7 @@ export const GanttChart = forwardRef<GanttChartHandle, GanttChartProps>(function
         </div>
       )}
 
-      {conflicts.length > 0 && (
-        <ResourceConflictsPanel
-          conflicts={conflicts}
-          onSelectActivity={scrollToActivity}
-          resourceFilter={resourceFilter}
-          onResourceFilterChange={onResourceFilterChange}
-        />
-      )}
-
       <DependencyHeatmap onSelectActivity={scrollToActivity} />
-      <ChangeImpactStack
-        changes={changeImpactItems}
-        onUndo={onUndoChangeImpact}
-      />
     </section>
   )
 })

@@ -1,14 +1,10 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { AlertTriangle, CalendarClock, Gauge, ShieldAlert } from "lucide-react"
+import { AlertTriangle, CalendarClock, Gauge } from "lucide-react"
 import { scheduleActivities } from "@/lib/data/schedule-data"
 import { voyages } from "@/lib/dashboard-data"
 import { useDate } from "@/lib/contexts/date-context"
-
-interface OperationOverviewRibbonProps {
-  conflictCount: number
-}
 
 function parseDateString(dateStr: string): Date {
   const monthMap: Record<string, number> = {
@@ -21,7 +17,7 @@ function parseDateString(dateStr: string): Date {
   return new Date(2026, month, day)
 }
 
-export function OperationOverviewRibbon({ conflictCount }: OperationOverviewRibbonProps) {
+export function OperationOverviewRibbon() {
   const { selectedDate } = useDate()
   const [isCompact, setIsCompact] = useState(false)
 
@@ -68,10 +64,6 @@ export function OperationOverviewRibbon({ conflictCount }: OperationOverviewRibb
           <div className="flex items-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/10 px-3 py-1">
             <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />
             {delayedVoyages} delayed voyages
-          </div>
-          <div className="flex items-center gap-2 rounded-full border border-rose-500/40 bg-rose-500/10 px-3 py-1">
-            <ShieldAlert className="h-3.5 w-3.5 text-rose-400" />
-            {conflictCount} active conflicts
           </div>
           <div className="flex items-center gap-2 rounded-full border border-cyan-500/40 bg-cyan-500/10 px-3 py-1">
             <CalendarClock className="h-3.5 w-3.5 text-cyan-300" />

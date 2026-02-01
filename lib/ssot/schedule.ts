@@ -54,6 +54,10 @@ export interface ScheduleActivity {
   milestone_id?: string
   status?: ActivityStatus
 
+  // Actual (patch.md §5.1)
+  actual_start?: string
+  actual_finish?: string
+
   // Derived flag for runtime use only.
   _is_summary?: boolean
 }

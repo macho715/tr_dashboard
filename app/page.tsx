@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, useRef } from "react"
 import { DateProvider } from "@/lib/contexts/date-context"
 import { DashboardHeader } from "@/components/dashboard/header"
+import { StoryHeader } from "@/components/dashboard/StoryHeader"
 import { type GanttChartHandle } from "@/components/dashboard/gantt-chart"
 import type {
   HighlightFlags,
@@ -12,14 +13,15 @@ import { Footer } from "@/components/dashboard/footer"
 import { BackToTop } from "@/components/dashboard/back-to-top"
 import { VoyageFocusDrawer } from "@/components/dashboard/voyage-focus-drawer"
 import { SectionNav } from "@/components/dashboard/section-nav"
-import { DashboardShell } from "@/components/dashboard/layouts/dashboard-shell"
+import { TrThreeColumnLayout } from "@/components/dashboard/layouts/tr-three-column-layout"
+import { NotesDecisions } from "@/components/dashboard/notes-decisions"
+import { WhyPanel } from "@/components/dashboard/WhyPanel"
 import { OverviewSection } from "@/components/dashboard/sections/overview-section"
 import { KPISection } from "@/components/dashboard/sections/kpi-section"
 import { AlertsSection } from "@/components/dashboard/sections/alerts-section"
 import { VoyagesSection } from "@/components/dashboard/sections/voyages-section"
 import { ScheduleSection } from "@/components/dashboard/sections/schedule-section"
 import { GanttSection } from "@/components/dashboard/sections/gantt-section"
-import { detectResourceConflicts } from "@/lib/utils/detect-resource-conflicts"
 import { scheduleActivities } from "@/lib/data/schedule-data"
 import { voyages } from "@/lib/dashboard-data"
 import {
@@ -27,6 +29,7 @@ import {
   createDefaultOpsState,
 } from "@/lib/ops/agi-schedule/pipeline-runner"
 import { runPipelineCheck } from "@/lib/ops/agi-schedule/pipeline-check"
+import { detectResourceConflicts } from "@/lib/utils/detect-resource-conflicts"
 import type { ImpactReport, ScheduleActivity, ScheduleConflict } from "@/lib/ssot/schedule"
 
 type SectionItem = {
@@ -36,19 +39,48 @@ type SectionItem = {
 }
 
 const PROJECT_END_DATE = "2026-03-24"
-const MAX_CHANGE_STACK = 6
 
-type ChangeBatch = {
-  appliedAt: string
-  changes: ImpactReport["changes"]
-  previousActivities: ScheduleActivity[]
+function parseVoyageDate(dateStr: string): Date {
+  const monthMap: Record<string, number> = {
+    Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
+    Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
+  }
+  const parts = dateStr.trim().split(" ")
+  const month = monthMap[parts[0]]
+  const day = parseInt(parts[1], 10)
+  return new Date(Date.UTC(2026, month, day))
+}
+
+function findVoyageByActivityDate(
+  activityStart: string,
+  voyageList: typeof voyages
+): (typeof voyages)[number] | null {
+  const actDate = new Date(activityStart)
+  for (const v of voyageList) {
+    const loadOut = parseVoyageDate(v.loadOut)
+    const jackDown = parseVoyageDate(v.jackDown)
+    if (actDate >= loadOut && actDate <= jackDown) return v
+  }
+  return null
+}
+
+function findFirstActivityInVoyageRange(
+  acts: ScheduleActivity[],
+  voyage: (typeof voyages)[number]
+): string | null {
+  const loadOut = parseVoyageDate(voyage.loadOut)
+  const jackDown = parseVoyageDate(voyage.jackDown)
+  for (const a of acts) {
+    if (!a.activity_id) continue
+    const d = new Date(a.planned_start)
+    if (d >= loadOut && d <= jackDown) return a.activity_id
+  }
+  return null
 }
 
 export default function Page() {
   const [activities, setActivities] = useState(scheduleActivities)
-  const [conflicts, setConflicts] = useState<ScheduleConflict[]>([])
   const [activeSection, setActiveSection] = useState("overview")
-  const [resourceFilter, setResourceFilter] = useState<string>("ALL")
   const [timelineView, setTimelineView] = useState<TimelineView>("Week")
   const [highlightFlags, setHighlightFlags] = useState<HighlightFlags>({
     delay: true,
@@ -58,54 +90,18 @@ export default function Page() {
   const [jumpDate, setJumpDate] = useState<string>("")
   const [jumpTrigger, setJumpTrigger] = useState(0)
   const [selectedVoyage, setSelectedVoyage] = useState<(typeof voyages)[number] | null>(null)
-  const [changeBatches, setChangeBatches] = useState<ChangeBatch[]>([])
+  const [selectedCollision, setSelectedCollision] = useState<ScheduleConflict | null>(null)
+  const conflicts = useMemo(() => detectResourceConflicts(activities), [activities])
   const [ops, setOps] = useState(() =>
     createDefaultOpsState({ activities: scheduleActivities, projectEndDate: PROJECT_END_DATE })
   )
   const ganttRef = useRef<GanttChartHandle>(null)
 
-  useEffect(() => {
-    setConflicts(detectResourceConflicts(activities))
-  }, [activities])
-
-  const changeImpactItems = useMemo(() => {
-    const flattened = changeBatches.flatMap((batch) =>
-      batch.changes.map((change) => ({
-        ...change,
-        appliedAt: batch.appliedAt,
-      }))
-    )
-    return flattened.slice(-MAX_CHANGE_STACK).reverse()
-  }, [changeBatches])
-
   const handleApplyPreview = (
     nextActivities: ScheduleActivity[],
-    impactReport: ImpactReport | null
+    _impactReport: ImpactReport | null
   ) => {
-    setActivities((prevActivities) => {
-      if (impactReport?.changes?.length) {
-        setChangeBatches((prev) => {
-          const nextBatch: ChangeBatch = {
-            appliedAt: new Date().toISOString(),
-            changes: impactReport.changes,
-            previousActivities: prevActivities,
-          }
-          const updated = [...prev, nextBatch]
-          return updated.slice(-MAX_CHANGE_STACK)
-        })
-      }
-      return nextActivities
-    })
-  }
-
-  const handleUndoChangeImpact = () => {
-    setChangeBatches((prev) => {
-      if (prev.length === 0) return prev
-      const nextBatches = prev.slice(0, -1)
-      const lastBatch = prev[prev.length - 1]
-      setActivities(lastBatch.previousActivities)
-      return nextBatches
-    })
+    setActivities(nextActivities)
   }
 
   useEffect(() => {
@@ -119,6 +115,12 @@ export default function Page() {
       }),
     }))
   }, [activities])
+
+  useEffect(() => {
+    if (!selectedVoyage || !ganttRef.current) return
+    const activityId = findFirstActivityInVoyageRange(activities, selectedVoyage)
+    if (activityId) ganttRef.current.scrollToActivity(activityId)
+  }, [selectedVoyage, activities])
 
   useEffect(() => {
     const ids = ["overview", "kpi", "alerts", "voyages", "schedule", "gantt"]
@@ -138,17 +140,27 @@ export default function Page() {
     return () => window.removeEventListener("scroll", handler)
   }, [])
 
-  const sections = useMemo<SectionItem[]>(
-    () => [
-      { id: "overview", label: "Overview" },
-      { id: "kpi", label: "KPI", count: 6 },
-      { id: "alerts", label: "Alerts", count: 2 },
-      { id: "voyages", label: "Voyages", count: voyages.length },
-      { id: "schedule", label: "Schedule", count: scheduleActivities.length },
-      { id: "gantt", label: "Gantt", count: conflicts.length },
-    ],
-    [conflicts.length]
-  )
+  const sections: SectionItem[] = [
+    { id: "overview", label: "Overview" },
+    { id: "kpi", label: "KPI", count: 6 },
+    { id: "alerts", label: "Alerts", count: 2 },
+    { id: "voyages", label: "Voyages", count: voyages.length },
+    { id: "schedule", label: "Schedule", count: scheduleActivities.length },
+    { id: "gantt", label: "Gantt" },
+  ]
+
+  const handleActivityClick = (activityId: string, start: string) => {
+    const v = findVoyageByActivityDate(start, voyages)
+    if (v) setSelectedVoyage(v)
+  }
+
+  const nextActivityName = useMemo(() => {
+    if (!selectedVoyage) return "—"
+    const activityId = findFirstActivityInVoyageRange(activities, selectedVoyage)
+    if (!activityId) return "—"
+    const activity = activities.find((a) => a.activity_id === activityId)
+    return activity?.activity_name ?? "—"
+  }, [selectedVoyage, activities])
 
   const handleOpsCommand = (cmd: Parameters<typeof runAgiOpsPipeline>[0]["command"]) => {
     const { nextActivities, nextOps } = runAgiOpsPipeline({
@@ -172,8 +184,25 @@ export default function Page() {
         </a>
 
         <DashboardHeader />
+        <StoryHeader
+          trId={selectedVoyage ? String(selectedVoyage.voyage) : null}
+          where={
+            selectedVoyage
+              ? `Now @ Load-out ${selectedVoyage.loadOut} | ETA Sail ${selectedVoyage.sailDate}`
+              : undefined
+          }
+          whenWhat={
+            selectedVoyage
+              ? `Next: ${nextActivityName} | Blockers: —`
+              : undefined
+          }
+          evidence={
+            selectedVoyage
+              ? `Last: — | Missing: 0 | PTW: —`
+              : undefined
+          }
+        />
         <OverviewSection
-          conflictCount={conflicts.length}
           activities={activities}
           onApplyActivities={handleApplyPreview}
           onSetActivities={setActivities}
@@ -181,32 +210,47 @@ export default function Page() {
         />
         <SectionNav activeSection={activeSection} sections={sections} />
 
-        <DashboardShell
-          selectedResource={resourceFilter === "ALL" ? null : resourceFilter}
-          onSelectResource={(resource) => setResourceFilter(resource ?? "ALL")}
-        >
+        <div className="space-y-6">
           <KPISection />
           <AlertsSection />
-          <VoyagesSection onSelectVoyage={setSelectedVoyage} />
-          <ScheduleSection />
-          <GanttSection
-            ganttRef={ganttRef}
-            activities={activities}
-            conflicts={conflicts}
-            resourceFilter={resourceFilter}
-            onResourceFilterChange={setResourceFilter}
-            view={timelineView}
-            onViewChange={setTimelineView}
-            highlightFlags={highlightFlags}
-            onHighlightFlagsChange={setHighlightFlags}
-            jumpDate={jumpDate}
-            onJumpDateChange={setJumpDate}
-            jumpTrigger={jumpTrigger}
-            onJumpRequest={() => setJumpTrigger((n) => n + 1)}
-            changeImpactItems={changeImpactItems}
-            onUndoChangeImpact={handleUndoChangeImpact}
+          <TrThreeColumnLayout
+            mapSlot={
+              <VoyagesSection
+                onSelectVoyage={setSelectedVoyage}
+                selectedVoyage={selectedVoyage}
+              />
+            }
+            timelineSlot={
+              <>
+                <ScheduleSection />
+                <GanttSection
+                  ganttRef={ganttRef}
+                  activities={activities}
+                  view={timelineView}
+                  onViewChange={setTimelineView}
+                  highlightFlags={highlightFlags}
+                  onHighlightFlagsChange={setHighlightFlags}
+                  jumpDate={jumpDate}
+                  onJumpDateChange={setJumpDate}
+                  jumpTrigger={jumpTrigger}
+                  onJumpRequest={() => setJumpTrigger((n) => n + 1)}
+                  onActivityClick={handleActivityClick}
+                  conflicts={conflicts}
+                  onCollisionClick={setSelectedCollision}
+                />
+              </>
+            }
+            detailSlot={
+              <div className="space-y-3">
+                <WhyPanel
+                  collision={selectedCollision}
+                  onClose={() => setSelectedCollision(null)}
+                />
+                <NotesDecisions />
+              </div>
+            }
           />
-        </DashboardShell>
+        </div>
 
         <Footer />
         <BackToTop />
@@ -214,7 +258,6 @@ export default function Page() {
           <VoyageFocusDrawer
             voyage={selectedVoyage}
             onClose={() => setSelectedVoyage(null)}
-            conflicts={conflicts}
           />
         )}
       </div>
