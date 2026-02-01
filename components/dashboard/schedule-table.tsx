@@ -3,29 +3,23 @@
 import { BarChart3 } from "lucide-react"
 import { voyages } from "@/lib/dashboard-data"
 import { useDate } from "@/lib/contexts/date-context"
+import { getDateStatus, getStatusClasses, parseShortDate } from "@/lib/utils/date-highlights"
 
+/**
+ * 상세 일정 테이블을 렌더링한다. Renders the detailed voyage schedule table.
+ */
 export function ScheduleTable() {
   const { selectedDate } = useDate()
 
-  function parseDateString(dateStr: string): Date {
-    const monthMap: Record<string, number> = {
-      Jan: 0, Feb: 1, Mar: 2, Apr: 3, May: 4, Jun: 5,
-      Jul: 6, Aug: 7, Sep: 8, Oct: 9, Nov: 10, Dec: 11,
-    }
-    const parts = dateStr.trim().split(' ')
-    const month = monthMap[parts[0]]
-    const day = parseInt(parts[1], 10)
-    return new Date(2026, month, day)
-  }
-
   const filteredVoyages = voyages.filter((v) => {
-    const loadOutDate = parseDateString(v.loadOut)
-    const jackDownDate = parseDateString(v.jackDown)
+    const loadOutDate = parseShortDate(v.loadOut, selectedDate.getUTCFullYear())
+    const jackDownDate = parseShortDate(v.jackDown, selectedDate.getUTCFullYear())
+    if (!loadOutDate || !jackDownDate) return true
     return selectedDate >= loadOutDate && selectedDate <= jackDownDate
   })
 
   return (
-    <section className="bg-card/85 backdrop-blur-lg rounded-2xl p-6 border border-accent/15 mb-6">
+    <section className="bg-card/85 backdrop-blur-lg rounded-2xl p-7 border border-accent/15 mb-6">
       <h2 className="text-foreground text-base font-bold mb-5 flex items-center gap-2 tracking-tight">
         <BarChart3 className="w-5 h-5 text-cyan-400" />
         Detailed Voyage Schedule
@@ -53,7 +47,7 @@ export function ScheduleTable() {
               ].map((header) => (
                 <th
                   key={header}
-                  className="bg-gradient-to-b from-cyan-500/10 to-cyan-500/5 text-cyan-400 font-mono font-semibold text-[10px] uppercase tracking-wider p-3.5 text-center first:rounded-tl-lg last:rounded-tr-lg"
+                  className="bg-gradient-to-b from-cyan-500/10 to-cyan-500/5 text-cyan-400 font-mono font-semibold text-[10px] uppercase tracking-wider p-4 text-center first:rounded-tl-lg last:rounded-tr-lg"
                 >
                   {header}
                 </th>
@@ -61,43 +55,109 @@ export function ScheduleTable() {
             </tr>
           </thead>
           <tbody>
-            {filteredVoyages.map((v, index) => (
-              <tr
-                key={v.voyage}
-                className="border-b border-accent/10 transition-colors hover:bg-accent/5"
-              >
-                <td className="p-3.5 text-center text-xs font-medium text-foreground">
-                  V{v.voyage} — {v.trUnit}
-                </td>
-                <td className="p-3.5 text-center text-xs text-slate-400 font-mono">
-                  {v.arrivalMZP}
-                </td>
-                <td className="p-3.5 text-center text-xs text-slate-400 font-mono">
-                  {v.loadOut}
-                </td>
-                <td className="p-3.5 text-center text-xs text-slate-400 font-mono">
-                  {v.sailAway}
-                </td>
-                <td className="p-3.5 text-center text-xs text-slate-400 font-mono">
-                  {v.agiArrival}
-                </td>
-                <td className="p-3.5 text-center text-xs text-slate-400 font-mono">
-                  {v.loadIn}
-                </td>
-                <td className="p-3.5 text-center text-xs text-slate-400 font-mono">
-                  {v.turning}
-                </td>
-                <td className="p-3.5 text-center text-xs text-slate-400 font-mono">
-                  {v.jackDown}
-                  {index === filteredVoyages.length - 1 && filteredVoyages.length === voyages.length && (
-                    <span className="text-teal-400"> ✓</span>
-                  )}
-                </td>
-                <td className="p-3.5 text-center text-xs text-cyan-400 font-semibold">
-                  {v.bay}
-                </td>
-              </tr>
-            ))}
+            {filteredVoyages.map((v, index) => {
+              const arrivalStatus = getDateStatus(
+                parseShortDate(v.arrivalMZP, selectedDate.getUTCFullYear()),
+                selectedDate
+              )
+              const loadOutStatus = getDateStatus(
+                parseShortDate(v.loadOut, selectedDate.getUTCFullYear()),
+                selectedDate
+              )
+              const sailStatus = getDateStatus(
+                parseShortDate(v.sailAway, selectedDate.getUTCFullYear()),
+                selectedDate
+              )
+              const arrivalAgiStatus = getDateStatus(
+                parseShortDate(v.agiArrival, selectedDate.getUTCFullYear()),
+                selectedDate
+              )
+              const loadInStatus = getDateStatus(
+                parseShortDate(v.loadIn, selectedDate.getUTCFullYear()),
+                selectedDate
+              )
+              const turningStatus = getDateStatus(
+                parseShortDate(v.turning, selectedDate.getUTCFullYear()),
+                selectedDate
+              )
+              const jackDownStatus = getDateStatus(
+                parseShortDate(v.jackDown, selectedDate.getUTCFullYear()),
+                selectedDate
+              )
+              return (
+                <tr
+                  key={v.voyage}
+                  className="border-b border-accent/10 transition-colors hover:bg-accent/5"
+                >
+                  <td className="p-4 text-center text-xs font-medium text-foreground">
+                    V{v.voyage} — {v.trUnit}
+                  </td>
+                  <td
+                    className={
+                      "p-4 text-center text-xs font-mono text-slate-300 " +
+                      getStatusClasses(arrivalStatus)
+                    }
+                  >
+                    {v.arrivalMZP}
+                  </td>
+                  <td
+                    className={
+                      "p-4 text-center text-xs font-mono text-slate-300 " +
+                      getStatusClasses(loadOutStatus)
+                    }
+                  >
+                    {v.loadOut}
+                  </td>
+                  <td
+                    className={
+                      "p-4 text-center text-xs font-mono text-slate-300 " +
+                      getStatusClasses(sailStatus)
+                    }
+                  >
+                    {v.sailAway}
+                  </td>
+                  <td
+                    className={
+                      "p-4 text-center text-xs font-mono text-slate-300 " +
+                      getStatusClasses(arrivalAgiStatus)
+                    }
+                  >
+                    {v.agiArrival}
+                  </td>
+                  <td
+                    className={
+                      "p-4 text-center text-xs font-mono text-slate-300 " +
+                      getStatusClasses(loadInStatus)
+                    }
+                  >
+                    {v.loadIn}
+                  </td>
+                  <td
+                    className={
+                      "p-4 text-center text-xs font-mono text-slate-300 " +
+                      getStatusClasses(turningStatus)
+                    }
+                  >
+                    {v.turning}
+                  </td>
+                  <td
+                    className={
+                      "p-4 text-center text-xs font-mono text-slate-300 " +
+                      getStatusClasses(jackDownStatus)
+                    }
+                  >
+                    {v.jackDown}
+                    {index === filteredVoyages.length - 1 &&
+                      filteredVoyages.length === voyages.length && (
+                        <span className="text-teal-400"> ✓</span>
+                      )}
+                  </td>
+                  <td className="p-4 text-center text-xs text-cyan-300 font-semibold">
+                    {v.bay}
+                  </td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>

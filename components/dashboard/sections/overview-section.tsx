@@ -14,6 +14,9 @@ type OverviewSectionProps = {
   onFocusActivity?: (activityId: string) => void
 }
 
+/**
+ * 운영 요약 섹션을 렌더링한다. Renders the operations overview section.
+ */
 export function OverviewSection({
   conflictCount,
   activities,

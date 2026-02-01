@@ -275,11 +275,15 @@ export const GanttChart = forwardRef<GanttChartHandle, GanttChartProps>(function
     setTooltip({ visible: false, x: 0, y: 0, activity: null })
   }
 
+  const ganttRange = `${PROJECT_START.toISOString().slice(0, 10)} ~ ${PROJECT_END
+    .toISOString()
+    .slice(0, 10)}`
+
   return (
     <section className="bg-card/85 backdrop-blur-lg rounded-2xl p-6 border border-accent/15">
       <h2 className="text-foreground text-base font-bold mb-5 flex items-center gap-2 tracking-tight">
         <Calendar className="w-5 h-5 text-cyan-400" />
-        Gantt Chart (Jan 26 - Mar 22, 2026)
+        Gantt ({ganttRange})
         <span className="flex-1 h-px bg-gradient-to-r from-accent/40 to-transparent ml-3" />
       </h2>
 

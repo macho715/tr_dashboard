@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, useRef } from "react"
 import { DateProvider } from "@/lib/contexts/date-context"
 import { DashboardHeader } from "@/components/dashboard/header"
+import { SummaryBar } from "@/components/dashboard/summary-bar"
 import { type GanttChartHandle } from "@/components/dashboard/gantt-chart"
 import type {
   HighlightFlags,
@@ -11,23 +12,26 @@ import type {
 import { Footer } from "@/components/dashboard/footer"
 import { BackToTop } from "@/components/dashboard/back-to-top"
 import { VoyageFocusDrawer } from "@/components/dashboard/voyage-focus-drawer"
-import { SectionNav } from "@/components/dashboard/section-nav"
 import { DashboardShell } from "@/components/dashboard/layouts/dashboard-shell"
 import { OverviewSection } from "@/components/dashboard/sections/overview-section"
 import { KPISection } from "@/components/dashboard/sections/kpi-section"
-import { AlertsSection } from "@/components/dashboard/sections/alerts-section"
-import { VoyagesSection } from "@/components/dashboard/sections/voyages-section"
-import { ScheduleSection } from "@/components/dashboard/sections/schedule-section"
 import { GanttSection } from "@/components/dashboard/sections/gantt-section"
+import { NoticeSection } from "@/components/dashboard/sections/notice-section"
+import { WeatherSection } from "@/components/dashboard/sections/weather-section"
+import { LogsSection } from "@/components/dashboard/sections/logs-section"
+import { VoyageCards } from "@/components/dashboard/voyage-cards"
+import { ScheduleTable } from "@/components/dashboard/schedule-table"
 import { detectResourceConflicts } from "@/lib/utils/detect-resource-conflicts"
 import { scheduleActivities } from "@/lib/data/schedule-data"
 import { voyages } from "@/lib/dashboard-data"
-import {
-  runAgiOpsPipeline,
-  createDefaultOpsState,
-} from "@/lib/ops/agi-schedule/pipeline-runner"
+import { createDefaultOpsState } from "@/lib/ops/agi-schedule/pipeline-runner"
 import { runPipelineCheck } from "@/lib/ops/agi-schedule/pipeline-check"
-import type { ImpactReport, ScheduleActivity, ScheduleConflict } from "@/lib/ssot/schedule"
+import type {
+  ImpactReport,
+  ScheduleActivity,
+  ScheduleConflict,
+} from "@/lib/ssot/schedule"
+import type { OpsAuditEntry } from "@/lib/ops/agi-schedule/types"
 
 type SectionItem = {
   id: string
@@ -47,9 +51,12 @@ type ChangeBatch = {
 export default function Page() {
   const [activities, setActivities] = useState(scheduleActivities)
   const [conflicts, setConflicts] = useState<ScheduleConflict[]>([])
-  const [activeSection, setActiveSection] = useState("overview")
+  const [activeSection, setActiveSection] = useState("timeline")
   const [resourceFilter, setResourceFilter] = useState<string>("ALL")
   const [timelineView, setTimelineView] = useState<TimelineView>("Week")
+  const [viewMode, setViewMode] = useState<"standard" | "compact" | "fullscreen">(
+    "standard"
+  )
   const [highlightFlags, setHighlightFlags] = useState<HighlightFlags>({
     delay: true,
     lock: false,
@@ -57,16 +64,39 @@ export default function Page() {
   })
   const [jumpDate, setJumpDate] = useState<string>("")
   const [jumpTrigger, setJumpTrigger] = useState(0)
-  const [selectedVoyage, setSelectedVoyage] = useState<(typeof voyages)[number] | null>(null)
+  const [selectedVoyage, setSelectedVoyage] = useState<(typeof voyages)[number] | null>(
+    null
+  )
   const [changeBatches, setChangeBatches] = useState<ChangeBatch[]>([])
+  const [riskFilter, setRiskFilter] = useState<"ALL" | "LOW" | "MEDIUM" | "HIGH">(
+    "ALL"
+  )
+  const [auditEntries, setAuditEntries] = useState<OpsAuditEntry[]>([])
   const [ops, setOps] = useState(() =>
-    createDefaultOpsState({ activities: scheduleActivities, projectEndDate: PROJECT_END_DATE })
+    createDefaultOpsState({
+      activities: scheduleActivities,
+      projectEndDate: PROJECT_END_DATE,
+    })
   )
   const ganttRef = useRef<GanttChartHandle>(null)
 
   useEffect(() => {
     setConflicts(detectResourceConflicts(activities))
   }, [activities])
+
+  useEffect(() => {
+    setAuditEntries((prev) =>
+      prev.length > 0
+        ? prev
+        : [
+            {
+              ts: new Date().toISOString(),
+              command: "SYSTEM",
+              summary: "Session initialized for pipeline monitoring.",
+            },
+          ]
+    )
+  }, [])
 
   const changeImpactItems = useMemo(() => {
     const flattened = changeBatches.flatMap((batch) =>
@@ -121,7 +151,7 @@ export default function Page() {
   }, [activities])
 
   useEffect(() => {
-    const ids = ["overview", "kpi", "alerts", "voyages", "schedule", "gantt"]
+    const ids = ["timeline", "voyages", "weather", "kpi", "notice", "logs"]
     const handler = () => {
       const scrollPosition = window.scrollY + 120
       let current = ids[0]
@@ -140,30 +170,24 @@ export default function Page() {
 
   const sections = useMemo<SectionItem[]>(
     () => [
-      { id: "overview", label: "Overview" },
-      { id: "kpi", label: "KPI", count: 6 },
-      { id: "alerts", label: "Alerts", count: 2 },
+      { id: "timeline", label: "Timeline" },
       { id: "voyages", label: "Voyages", count: voyages.length },
-      { id: "schedule", label: "Schedule", count: scheduleActivities.length },
-      { id: "gantt", label: "Gantt", count: conflicts.length },
+      { id: "weather", label: "Weather" },
+      { id: "kpi", label: "KPI", count: 6 },
+      { id: "notice", label: "Notice" },
+      { id: "logs", label: "Logs", count: conflicts.length },
     ],
     [conflicts.length]
   )
 
-  const handleOpsCommand = (cmd: Parameters<typeof runAgiOpsPipeline>[0]["command"]) => {
-    const { nextActivities, nextOps } = runAgiOpsPipeline({
-      activities,
-      ops,
-      command: cmd,
-      projectEndDate: PROJECT_END_DATE,
-    })
-    setActivities(nextActivities)
-    setOps(nextOps)
-  }
-
   return (
     <DateProvider>
-      <div className="relative z-10 max-w-[1800px] mx-auto px-4 sm:px-6 py-6">
+      <div
+        className={
+          "relative z-10 mx-auto px-4 sm:px-6 py-6 " +
+          (viewMode === "fullscreen" ? "max-w-none" : "max-w-[1800px]")
+        }
+      >
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 bg-card/95 border border-accent/20 rounded-lg px-3 py-2 text-sm font-medium text-foreground shadow-glow"
@@ -171,41 +195,73 @@ export default function Page() {
           Skip to content
         </a>
 
-        <DashboardHeader />
-        <OverviewSection
-          conflictCount={conflicts.length}
-          activities={activities}
-          onApplyActivities={handleApplyPreview}
-          onSetActivities={setActivities}
-          onFocusActivity={(id) => ganttRef.current?.scrollToActivity(id)}
+        <SummaryBar
+          ops={ops}
+          viewMode={viewMode}
+          onViewModeChange={setViewMode}
         />
-        <SectionNav activeSection={activeSection} sections={sections} />
+        <DashboardHeader />
 
         <DashboardShell
           selectedResource={resourceFilter === "ALL" ? null : resourceFilter}
           onSelectResource={(resource) => setResourceFilter(resource ?? "ALL")}
+          activeSection={activeSection}
+          sections={sections}
+          viewMode={viewMode}
         >
-          <KPISection />
-          <AlertsSection />
-          <VoyagesSection onSelectVoyage={setSelectedVoyage} />
-          <ScheduleSection />
-          <GanttSection
-            ganttRef={ganttRef}
-            activities={activities}
-            conflicts={conflicts}
-            resourceFilter={resourceFilter}
-            onResourceFilterChange={setResourceFilter}
-            view={timelineView}
-            onViewChange={setTimelineView}
-            highlightFlags={highlightFlags}
-            onHighlightFlagsChange={setHighlightFlags}
-            jumpDate={jumpDate}
-            onJumpDateChange={setJumpDate}
-            jumpTrigger={jumpTrigger}
-            onJumpRequest={() => setJumpTrigger((n) => n + 1)}
-            changeImpactItems={changeImpactItems}
-            onUndoChangeImpact={handleUndoChangeImpact}
+          <section
+            id="timeline"
+            aria-label="Timeline / Gantt"
+            className="space-y-4"
+          >
+            <GanttSection
+              sectionId="timeline"
+              title="Timeline / Gantt"
+              ganttRef={ganttRef}
+              activities={activities}
+              conflicts={conflicts}
+              resourceFilter={resourceFilter}
+              onResourceFilterChange={setResourceFilter}
+              view={timelineView}
+              onViewChange={setTimelineView}
+              highlightFlags={highlightFlags}
+              onHighlightFlagsChange={setHighlightFlags}
+              jumpDate={jumpDate}
+              onJumpDateChange={setJumpDate}
+              jumpTrigger={jumpTrigger}
+              onJumpRequest={() => setJumpTrigger((n) => n + 1)}
+              changeImpactItems={changeImpactItems}
+              onUndoChangeImpact={handleUndoChangeImpact}
+            />
+          </section>
+
+          <section
+            id="voyages"
+            aria-label="Voyage Cards & Schedule"
+            className="space-y-4"
+          >
+            <div className="grid gap-4">
+              <VoyageCards onSelectVoyage={setSelectedVoyage} />
+              <ScheduleTable />
+            </div>
+          </section>
+
+          <WeatherSection
+            ops={ops}
+            riskFilter={riskFilter}
+            onRiskFilterChange={setRiskFilter}
           />
+
+          <KPISection />
+          <NoticeSection />
+          <OverviewSection
+            conflictCount={conflicts.length}
+            activities={activities}
+            onApplyActivities={handleApplyPreview}
+            onSetActivities={setActivities}
+            onFocusActivity={(id) => ganttRef.current?.scrollToActivity(id)}
+          />
+          <LogsSection ops={ops} auditEntries={auditEntries} />
         </DashboardShell>
 
         <Footer />

@@ -21,12 +21,19 @@ const iconMap: Record<string, LucideIcon> = {
   target: Target,
 }
 
+/**
+ * KPI 카드 그리드를 렌더링한다. Renders the KPI card grid.
+ */
 export function KPICards() {
   const { dayNumber, formattedDate } = useDate()
   const displayKpiData = [
     ...kpiData.slice(0, 4),
-    { icon: "calendar", value: dayNumber.toString(), label: "Day Number" },
-    { icon: "flag", value: formattedDate.split(" ").slice(0, 2).join(" "), label: "Selected Date" },
+    { icon: "calendar", value: dayNumber.toFixed(2), label: "Day Number" },
+    {
+      icon: "flag",
+      value: formattedDate.split(" ").slice(0, 2).join(" "),
+      label: "Selected Date",
+    },
   ]
 
   return (

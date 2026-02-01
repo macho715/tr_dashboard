@@ -3,6 +3,9 @@
 import { Megaphone, AlertTriangle } from "lucide-react"
 import { useDate } from "@/lib/contexts/date-context"
 
+/**
+ * 공지 카드 블록을 렌더링한다. Renders the operational notice block.
+ */
 export function OperationalNotice() {
   const { formattedDate, dayNumber } = useDate()
 
@@ -19,7 +22,7 @@ export function OperationalNotice() {
           <p>• SPMT: 2 Sets maintained | MOB: 26 Jan (No change)</p>
           <p className="italic">• Remaining schedule to be confirmed</p>
           <p className="text-cyan-400 font-semibold mt-2">
-            Selected Date: {formattedDate} (Day {dayNumber})
+            Selected Date: {formattedDate} (Day {dayNumber.toFixed(2)})
           </p>
         </div>
       </div>
@@ -27,6 +30,9 @@ export function OperationalNotice() {
   )
 }
 
+/**
+ * 날씨 경보 블록을 렌더링한다. Renders the weather alert block.
+ */
 export function WeatherAlert() {
   return (
     <div className="bg-gradient-to-r from-amber-500/10 to-amber-400/5 border border-amber-500/35 rounded-xl px-6 py-5 flex items-start gap-4">
@@ -55,6 +61,9 @@ export function WeatherAlert() {
   )
 }
 
+/**
+ * 알림 트리아지 섹션을 렌더링한다. Renders the alerts triage section.
+ */
 export function AlertsTriage() {
   return (
     <section className="rounded-2xl border border-accent/15 bg-card/80 p-6 backdrop-blur-lg">

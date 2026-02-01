@@ -6,6 +6,8 @@ import type { HighlightFlags, TimelineView } from "@/components/dashboard/timeli
 import type { DateChange, ScheduleActivity, ScheduleConflict } from "@/lib/ssot/schedule"
 
 type GanttSectionProps = {
+  sectionId?: string
+  title?: string
   ganttRef: Ref<GanttChartHandle>
   activities: ScheduleActivity[]
   conflicts: ScheduleConflict[]
@@ -23,7 +25,12 @@ type GanttSectionProps = {
   onUndoChangeImpact: () => void
 }
 
+/**
+ * 간트 섹션을 렌더링한다. Renders the Gantt section wrapper.
+ */
 export function GanttSection({
+  sectionId = "gantt",
+  title = "Gantt Chart",
   ganttRef,
   activities,
   conflicts,
@@ -41,7 +48,7 @@ export function GanttSection({
   onUndoChangeImpact,
 }: GanttSectionProps) {
   return (
-    <section id="gantt" aria-label="Gantt Chart">
+    <section id={sectionId} aria-label={title}>
       <GanttChart
         ref={ganttRef}
         activities={activities}
