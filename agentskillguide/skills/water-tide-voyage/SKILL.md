@@ -83,3 +83,11 @@ TIME    HEIGHT
 ## 통합
 
 - **agi-schedule-pipeline-check**: 점검 목록 **N) 물때 테이블** — **항상** `tide_to_voyage_overview.py` 실행. 일정 시프트 후 대시보드(7 Voyages Overview) 일관성 유지를 위해 파이프라인 3단계에서 조건 없이 수행.
+
+## 대시보드 출력 형식 (필수)
+
+**결과값은 `agentskillguide/DASHBOARD_OUTPUT_SCHEMA.md`와 동일하게 대시보드에 출력되어야 함.**
+
+- Tide-table 3행: `<tr><td>HH:00</td><td>X.XXm</td></tr>` (6~17시 상위 3시간대)
+- voyage-card `data-start`~`data-end` 구간 내 일자만 사용
+- 7 Voyages Overview tide-table과 일치

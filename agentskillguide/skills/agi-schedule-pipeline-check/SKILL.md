@@ -149,3 +149,13 @@ description: 통합 파이프라인 3단계. 모든 AGI Schedule 파이프라인
 
 - **통합 파이프라인**: 에이전트는 **항상** 1) agi-schedule-shift → 2) agi-schedule-daily-update → **3) agi-schedule-pipeline-check** → 4) weather-go-nogo 순으로 4개 스킬을 적용한다. 본 스킬은 3단계로 **항상** 호출된다.
 - Subagent `/agi-schedule-updater`: 모든 요청에 대해 위 파이프라인을 수행한 뒤, 본 스킬로 **전체 파이프라인 작업(A~N)** 점검·수정 및 4단계(weather-go-nogo) 연계 안내를 한다.
+
+## 대시보드 출력 형식 (필수)
+
+**점검·수정 결과는 `agentskillguide/DASHBOARD_OUTPUT_SCHEMA.md`와 동일하게 대시보드에 출력되어야 함.**
+
+- KPI Grid: Total Days 재계산, **SPMT Set = 1** (F)
+- Voyage Cards: data-start/end, Load-out/Sail/Load-in/Jack-down (G)
+- ganttData·Schedule 테이블: start/end JSON과 일치 (H)
+- Tide-table(N): water-tide-voyage 형식 3행
+- 검증 체크리스트: DASHBOARD_OUTPUT_SCHEMA §8 참조

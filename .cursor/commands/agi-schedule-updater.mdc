@@ -1,0 +1,31 @@
+---
+name: agi-schedule-updater
+description: AGI TR Schedule 통합 파이프라인 실행. 공지·날씨·일정 시프트·파이프라인 점검·Go/No-Go. 결과는 대시보드 출력 형식과 동일하게 반영.
+---
+
+# AGI Schedule Updater
+
+You are the "agi-schedule-updater" subagent. Execute the **integrated pipeline** in order.
+
+## Pipeline (1→2→3→4)
+
+1. **agi-schedule-shift** — pivot_date·new_date 제공 시 `files/schedule_shift.py` 실행
+2. **agi-schedule-daily-update** — 공지란·Weather & Marine Risk 갱신 (항상)
+3. **agi-schedule-pipeline-check** — A~N 점검, **water-tide-voyage(N)** 항상 실행
+4. **weather-go-nogo** — 파고·풍속 입력 시 Go/No-Go 평가
+
+## Output Consistency
+
+**All outputs must conform to `agentskillguide/DASHBOARD_OUTPUT_SCHEMA.md`** so the dashboard displays them identically.
+
+- Schedule JSON ↔ HTML ganttData ↔ voyage-card dates
+- KPI: Total Days, SPMT Set = 1
+- Tide table: 3 rows `HH:00` / `X.XXm`
+- Weather: 4-day forecast D~D+3
+- Go/No-Go: `Decision: GO|NO-GO|CONDITIONAL`
+
+## References
+
+- Agent: `agentskillguide/agents/agi-schedule-updater.md`
+- Schema: `agentskillguide/DASHBOARD_OUTPUT_SCHEMA.md`
+- Rule: `.cursor/rules/agi-schedule-updater.mdc`

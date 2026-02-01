@@ -1,0 +1,66 @@
+---
+description: AGI Schedule Updater subagent - 통합 파이프라인(4개 스킬) 적용, 대시보드 출력 일관성 강제
+globs:
+  - "files/**/*.html"
+  - "files/**/*.json"
+  - "files/**/*.py"
+  - "data/schedule/*.json"
+  - "agentskillguide/**/*.md"
+alwaysApply: false
+---
+
+# AGI Schedule Updater Subagent
+
+## 역할
+
+"AGI TR Schedule 업데이트" 전용 서브에이전트. **모든 작업은 `files/` 폴더 안에서만 수행.**
+
+## 통합 파이프라인 (4개 스킬 순서)
+
+1. **agi-schedule-shift** — 일정 시프트(pivot_date·new_date 제공 시)
+2. **agi-schedule-daily-update** — 공지란·Weather & Marine Risk 갱신 (항상)
+3. **agi-schedule-pipeline-check** — 전체 A~N 점검, **water-tide-voyage(N)** 포함 (항상)
+4. **weather-go-nogo** — Go/No-Go 평가 (입력 있으면)
+
+## 대시보드 출력 일관성 (필수)
+
+**모든 스킬의 결과값은 `agentskillguide/DASHBOARD_OUTPUT_SCHEMA.md` 형식과 동일하게 대시보드에 출력되어야 함.**
+
+| 영역 | SSOT 형식 | 검증 |
+|------|-----------|------|
+| Schedule JSON | `planned_start`/`planned_finish` = YYYY-MM-DD | JSON·HTML·ganttData 일치 |
+| Voyage Cards | `data-start`/`data-end`, Load-out/Sail/Load-in/Jack-down | 7 Voyages Overview |
+| Tide Table | 3행 `HH:00` / `X.XXm` | water-tide-voyage |
+| KPI Grid | Total Days, **SPMT Set = 1** | pipeline-check(F) |
+| Weather | 4일치 D~D+3, Last Updated | agi-schedule-daily-update |
+| Go/No-Go | `Decision: GO|NO-GO|CONDITIONAL` | weather-go-nogo |
+
+## 스킬 참조
+
+- `agentskillguide/skills/agi-schedule-shift/SKILL.md`
+- `agentskillguide/skills/agi-schedule-daily-update/SKILL.md`
+- `agentskillguide/skills/water-tide-voyage/SKILL.md`
+- `agentskillguide/skills/weather-go-nogo/SKILL.md`
+- `agentskillguide/skills/agi-schedule-pipeline-check/SKILL.md`
+
+## 동기화 (대시보드 소비)
+
+파이프라인 완료 후 `files/agi tr final schedule.json` → `data/schedule/option_c.json` 복사 시 대시보드가 최신 일정 반영.
+
+## 대시보드 레이아웃 준수
+
+스킬 출력 형식은 `docs/LAYOUT.md`의 섹션 구조와 일치해야 함. `docs/AGENT_DASHBOARD_INTEGRATION.md` 참조.
+
+| 스킬 출력 | LAYOUT 섹션 |
+|----------|-------------|
+| Schedule JSON | GanttSection, ScheduleSection |
+| Voyage Cards | VoyagesSection |
+| KPI Grid | KPISection |
+| Tide Table | VoyagesSection (tide-table 3행) |
+| Weather | OverviewSection 또는 AlertsSection |
+| Go/No-Go | AlertsSection |
+
+## 금지
+
+- `files/` 밖의 HTML·JSON 읽기/쓰기
+- DASHBOARD_OUTPUT_SCHEMA 형식과 다른 출력 생성

@@ -81,3 +81,11 @@ description: 통합 파이프라인 4단계. SEA TRANSIT(해상 운행) 전용 G
 
 - 전체 규칙·로직 테이블·출처 링크: [reference.md](reference.md)
 - 원문: `AGI TR 1-6 Transportation Master Gantt Chart/weathergonnologic.md`
+
+## 대시보드 출력 형식 (필수)
+
+**결과값은 `agentskillguide/DASHBOARD_OUTPUT_SCHEMA.md`와 동일하게 대시보드에 출력되어야 함.**
+
+- 출력: `Decision: GO | NO-GO | CONDITIONAL`
+- ReasonCodes: `[WX_WAVE, WX_WIND, WX_SQUALL_BUFFER, WX_PEAK_WAVE, WX_WINDOW_GAP]`
+- 대시보드 Alerts/Go-No-Go 표시용으로 일관된 형식 유지

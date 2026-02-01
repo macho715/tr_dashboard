@@ -106,3 +106,11 @@ description: 통합 파이프라인 2단계. AGI TR Schedule HTML(files 폴더)�
 ## 통합
 
 - Subagent `/agi-schedule-updater`: 이 스킬을 사용해 공지·날씨 블록 갱신 수행. 모든 작업은 `files/` 안에서만 수행.
+
+## 대시보드 출력 형식 (필수)
+
+**결과값은 `agentskillguide/DASHBOARD_OUTPUT_SCHEMA.md`와 동일하게 대시보드에 출력되어야 함.**
+
+- 공지란: 날짜 YYYY-MM-DD, 본문(또는 비움)
+- Weather & Marine Risk: Last Updated DD Mon YYYY, 4일치(D~D+3) 예보, Mina Zayed·해상 문단
+- 히트맵: `files/out/weather_4day_heatmap.png` → HTML src(파일 또는 Base64)

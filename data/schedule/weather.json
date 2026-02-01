@@ -1,0 +1,10 @@
+{
+  "lastUpdated": "01 Feb 2026",
+  "forecast": [
+    { "date": "01 Feb", "summary": "Conditions generally ease, improving the working window." },
+    { "date": "02 Feb", "summary": "MZP Arrival may peak around 20.00 kt; Deck Prep mostly ≤12.00 kt." },
+    { "date": "03 Feb", "summary": "Load-out (29–30 Jan) mostly ≤12.00 kt; sea state moderate." },
+    { "date": "04 Feb", "summary": "Working window favorable; monitor NW winds." }
+  ],
+  "heatmapUrl": ""
+}

@@ -1,6 +1,8 @@
 "use client"
 
-import { Megaphone, AlertTriangle } from "lucide-react"
+import { Megaphone } from "lucide-react"
+import { WeatherBlock } from "@/components/dashboard/weather-block"
+import { GoNoGoBadge } from "@/components/dashboard/go-nogo-badge"
 import { useDate } from "@/lib/contexts/date-context"
 
 export function OperationalNotice() {
@@ -27,33 +29,6 @@ export function OperationalNotice() {
   )
 }
 
-export function WeatherAlert() {
-  return (
-    <div className="bg-gradient-to-r from-amber-500/10 to-amber-400/5 border border-amber-500/35 rounded-xl px-6 py-5 flex items-start gap-4">
-      <AlertTriangle className="w-7 h-7 text-amber-400 flex-shrink-0 mt-0.5" />
-      <div>
-        <h4 className="text-amber-400 text-sm font-bold mb-2 tracking-tight">
-          Weather & Marine Risk Update (Mina Zayed Port)
-        </h4>
-        <p className="text-slate-500 text-[10px] mb-2">
-          Last Updated: 21 Jan 2026 | Update Frequency: Weekly
-        </p>
-        <div className="text-slate-400 text-xs leading-relaxed space-y-2">
-          <p>
-            <strong className="text-amber-300">21–22 Jan:</strong> High operational risk
-            due to NW winds and potential dust (reduced visibility); sea state may reach
-            rough to very rough.
-          </p>
-          <p>
-            <strong className="text-amber-300">23–30 Jan:</strong> Conditions generally
-            ease, improving the working window—MZP Arrival (26 Jan) may peak around 20.00
-            kt, while Deck Prep (27–28 Jan) and Load-out (29–30 Jan) are mostly ≤12.00 kt.
-          </p>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 export function AlertsTriage() {
   return (
@@ -71,18 +46,26 @@ export function AlertsTriage() {
           ))}
         </div>
       </div>
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="space-y-4">
         <div>
-          <div className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-rose-300">
-            Immediate Action
+          <div className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-cyan-300">
+            Sea Transit Go/No-Go
           </div>
-          <OperationalNotice />
+          <GoNoGoBadge />
         </div>
-        <div>
-          <div className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-amber-300">
-            Monitoring
+        <div className="grid gap-4 lg:grid-cols-2">
+          <div>
+            <div className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-rose-300">
+              Immediate Action
+            </div>
+            <OperationalNotice />
           </div>
-          <WeatherAlert />
+          <div>
+            <div className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-amber-300">
+              Monitoring
+            </div>
+            <WeatherBlock />
+          </div>
         </div>
       </div>
     </section>

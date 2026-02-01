@@ -2,7 +2,9 @@
 
 import { Ship, Sailboat } from "lucide-react"
 import { voyages } from "@/lib/dashboard-data"
+import { getTideForVoyage } from "@/lib/data/tide-data"
 import { useDate } from "@/lib/contexts/date-context"
+import { TideTable } from "@/components/dashboard/tide-table"
 
 interface VoyageCardsProps {
   onSelectVoyage?: (voyage: (typeof voyages)[number]) => void
@@ -69,6 +71,11 @@ export function VoyageCards({ onSelectVoyage }: VoyageCardsProps) {
               <Sailboat className="w-3 h-3" />
               {v.sailDate}
             </div>
+            <TideTable
+              voyageNum={v.voyage}
+              rows={getTideForVoyage(v.voyage)}
+              className="mt-3 rounded-md border border-accent/10 overflow-hidden"
+            />
           </button>
         ))}
       </div>

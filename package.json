@@ -6,7 +6,10 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "eslint . -c config/eslintrc.json",
-    "start": "next start"
+    "start": "next start",
+    "sync:schedule": "python scripts/sync_schedule_to_dashboard.py",
+    "sync:tide": "python scripts/sync_tide_to_dashboard.py",
+    "sync:agent": "python scripts/sync_agent_to_dashboard.py"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

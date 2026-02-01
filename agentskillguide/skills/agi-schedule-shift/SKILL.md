@@ -87,3 +87,11 @@ description: 통합 파이프라인 1단계. AGI TR 일정(JSON/HTML)에서 pivo
 ## 통합
 
 - Subagent `/agi-schedule-updater`와 별개. 일정 시프트는 이 스킬만으로 수행 가능. 시프트 시에도 작업 범위는 `files/` 로 한정.
+
+## 대시보드 출력 형식 (필수)
+
+**결과값은 `agentskillguide/DASHBOARD_OUTPUT_SCHEMA.md`와 동일하게 대시보드에 출력되어야 함.**
+
+- JSON `activities[].planned_start/finish` = HTML `ganttData` = voyage-card `data-start/end` (YYYY-MM-DD)
+- Voyage Cards: Load-out/Sail/Load-in/Jack-down 표기 (Mon DD)
+- Gantt Chart: projectStart/projectEnd, 차트 제목 날짜 범위

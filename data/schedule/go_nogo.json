@@ -1,0 +1,5 @@
+{
+  "decision": "GO",
+  "reasonCodes": ["WX_WAVE", "WX_WIND"],
+  "updatedAt": "2026-02-01T00:00:00.000Z"
+}

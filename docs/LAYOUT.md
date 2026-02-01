@@ -68,7 +68,10 @@ graph TB
     
     KPISection --> KPICards[KPICards Component]
     AlertsSection --> AlertsTriage[AlertsTriage Component]
+    AlertsTriage --> GoNoGoBadge[GoNoGoBadge Component]
+    AlertsTriage --> WeatherBlock[WeatherBlock Component]
     VoyagesSection --> VoyageCards[VoyageCards Component]
+    VoyageCards --> TideTable[TideTable Component]
     ScheduleSection --> ScheduleTable[ScheduleTable Component]
     GanttSection --> GanttChart[GanttChart Component]
     GanttSection --> TimelineControls[TimelineControls]
@@ -465,8 +468,12 @@ body {
 
 **구성 요소**:
 - **AlertsTriage**: 알림 트리지 시스템
-  - 우선순위별 분류
-  - 알림 카운트 표시
+  - **GoNoGoBadge**: Sea Transit Go/No-Go 결정 (GO|NO-GO|CONDITIONAL)
+    - 데이터: `data/schedule/go_nogo.json`
+  - **WeatherBlock**: Weather & Marine Risk (4일치 D~D+3, Last Updated)
+    - 데이터: `data/schedule/weather.json`
+  - **OperationalNotice**: 운영 공지
+  - 우선순위별 분류, 알림 카운트 표시
 
 ### 4. Voyages Section (`id="voyages"`)
 
@@ -476,6 +483,9 @@ body {
 - **VoyageCards**: 7개 항차 카드
   - 각 항차별 정보 표시
   - 클릭 시 VoyageFocusDrawer 열림
+- **TideTable**: 각 VoyageCard 하단에 물때 상위 3시간대 표시
+  - 데이터: `data/schedule/tide.json` (WATER TIDE.csv 파싱 결과)
+  - 형식: 3행 `HH:00` / `X.XXm` (DASHBOARD_OUTPUT_SCHEMA)
 
 **상호작용**:
 - 항차 카드 클릭 → `setSelectedVoyage(voyage)`
@@ -580,6 +590,9 @@ components/
     ├── kpi-cards.tsx             # KPICards
     ├── alerts.tsx                # AlertsTriage
     ├── voyage-cards.tsx          # VoyageCards
+    ├── tide-table.tsx            # TideTable (Voyage Overview 물때 3행)
+    ├── weather-block.tsx         # WeatherBlock (4일치 D~D+3)
+    ├── go-nogo-badge.tsx         # GoNoGoBadge (GO|NO-GO|CONDITIONAL)
     ├── schedule-table.tsx        # ScheduleTable
     ├── gantt-chart.tsx           # GanttChart
     ├── timeline-controls.tsx     # TimelineControls
@@ -589,7 +602,10 @@ lib/
 ├── contexts/
 │   └── date-context.tsx          # DateProvider
 ├── data/
-│   └── schedule-data.ts           # scheduleActivities
+│   ├── schedule-data.ts           # scheduleActivities
+│   ├── tide-data.ts               # getTideForVoyage (tide.json)
+│   ├── weather-data.ts            # weatherForecast (weather.json)
+│   └── go-nogo-data.ts            # goNoGoDecision (go_nogo.json)
 ├── dashboard-data.ts             # voyages
 ├── ssot/
 │   └── schedule.ts                # 타입 정의
@@ -686,6 +702,12 @@ lib/
    - 컴포넌트 단위 테스트
    - 통합 테스트
    - E2E 테스트
+
+---
+
+## 에이전트 스킬 통합
+
+에이전트 `agi-schedule-updater`와 4개 스킬의 출력이 본 레이아웃에 반영되도록 하려면 `docs/AGENT_DASHBOARD_INTEGRATION.md`를 참조한다. DASHBOARD_OUTPUT_SCHEMA → LAYOUT 섹션 매핑 및 동기화 경로가 정의되어 있다.
 
 ---
 
