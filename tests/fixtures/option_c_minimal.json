@@ -1,0 +1,106 @@
+{
+  "contract": {
+    "name": "tr-move-ssot",
+    "version": "0.8.0",
+    "timezone": "Asia/Dubai",
+    "generated_at": "2026-02-01T12:00:00+04:00",
+    "ssot": {
+      "activity_is_source_of_truth": true,
+      "derived_fields_read_only": true
+    }
+  },
+  
+  "constraint_rules": {},
+  "activity_types": {},
+  
+  "entities": {
+    "locations": {
+      "LOC_TEST": {"location_id": "LOC_TEST", "name": "Test Location", "lat": 25.0, "lon": 55.0}
+    },
+    "resource_pools": {},
+    "resources": {},
+    "trs": {
+      "TR_TEST": {
+        "tr_id": "TR_TEST",
+        "name": "Test Transformer",
+        "spec": {"weight_t": 100.0, "cog_mm": {"x": 0, "y": 0, "z": 1000}},
+        "calc": {"current_activity_id": null, "current_location_id": "LOC_TEST", "risk_score": 0.0}
+      }
+    },
+    "trips": {
+      "TRIP_TEST": {
+        "trip_id": "TRIP_TEST",
+        "name": "Test Trip",
+        "tr_ids": ["TR_TEST"],
+        "activity_ids": ["ACT_TEST"],
+        "calc": {"collision_ids": [], "risk_score": 0.0}
+      }
+    },
+    "evidence_items": {},
+    "activities": {
+      "ACT_TEST": {
+        "activity_id": "ACT_TEST",
+        "type_id": "test_type",
+        "trip_id": "TRIP_TEST",
+        "tr_ids": ["TR_TEST"],
+        "title": "Test Activity",
+        "state": "draft",
+        "lock_level": "none",
+        "blocker_code": null,
+        "blocker_detail": {},
+        "evidence_required": [],
+        "evidence_ids": [],
+        "reflow_pins": [],
+        "plan": {
+          "start_ts": null,
+          "end_ts": null,
+          "duration_min": 60,
+          "duration_mode": "elapsed",
+          "location": {
+            "from_location_id": "LOC_TEST",
+            "to_location_id": "LOC_TEST",
+            "route_id": null,
+            "geo_fence_ids": []
+          },
+          "dependencies": [],
+          "resources": [],
+          "constraints": [],
+          "notes": ""
+        },
+        "actual": {
+          "start_ts": null,
+          "end_ts": null,
+          "progress_pct": 0,
+          "location_override": null,
+          "resource_assignments": [],
+          "notes": ""
+        },
+        "calc": {
+          "es_ts": null,
+          "ef_ts": null,
+          "ls_ts": null,
+          "lf_ts": null,
+          "slack_min": null,
+          "critical_path": false,
+          "collision_ids": [],
+          "collision_severity_max": null,
+          "risk_score": 0.0,
+          "predicted_end_ts": null,
+          "reflow": {"last_preview_run_id": null, "last_apply_run_id": null}
+        }
+      }
+    }
+  },
+  
+  "collisions": {},
+  "reflow_runs": [],
+  "baselines": {
+    "current_baseline_id": null,
+    "items": {}
+  },
+  "history_events": [],
+  "ui_defaults": {
+    "view_mode": "live",
+    "risk_overlay": "none"
+  }
+}
