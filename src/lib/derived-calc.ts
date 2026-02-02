@@ -20,7 +20,7 @@ import type {
   TR,
   CollisionSeverity
 } from '../types/ssot';
-import { getActivitiesArray, getActivitiesForTrip, getActivitiesForTR } from './ssot-loader';
+import { getActivitiesArray, getActivitiesForTrip, getActivitiesForTR } from './ssot-queries';
 
 // ============================================================================
 // TR Derived Calculations

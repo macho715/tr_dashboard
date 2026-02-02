@@ -250,7 +250,7 @@ Single-view TR movement dashboard where **Where → When/What → Evidence** ans
 **Goal**: Single-view layout with mode switching
 
 #### Tasks
-- [ ] **T4.1** Layout structure (`src/components/layout/DashboardLayout.tsx`)
+- [x] **T4.1** Layout structure (`components/layout/DashboardLayout.tsx`)
   ```tsx
   <DashboardLayout>
     <GlobalControlBar />
@@ -266,7 +266,7 @@ Single-view TR movement dashboard where **Where → When/What → Evidence** ans
   </DashboardLayout>
   ```
 
-- [ ] **T4.2** Global Control Bar (`src/components/control-bar/GlobalControlBar.tsx`)
+- [x] **T4.2** Global Control Bar (`components/control-bar/GlobalControlBar.tsx`)
   - Trip/TR selector dropdowns
   - Date Cursor with timezone display
   - View Mode switcher: Live/History/Approval/Compare
@@ -274,7 +274,7 @@ Single-view TR movement dashboard where **Where → When/What → Evidence** ans
   - Filters: State, Collision, Resource, Route Segment
   - Search input
 
-- [ ] **T4.3** View Mode state management (`src/lib/stores/view-mode-store.ts`)
+- [x] **T4.3** View Mode state management (`src/lib/stores/view-mode-store.tsx`)
   ```typescript
   interface ViewModeState {
     mode: 'live' | 'history' | 'approval' | 'compare';
@@ -291,13 +291,13 @@ Single-view TR movement dashboard where **Where → When/What → Evidence** ans
   }
   ```
 
-- [ ] **T4.4** Mode behavior enforcement
+- [x] **T4.4** Mode behavior enforcement
   - Live mode: Enable Actual input, state transitions, evidence upload
   - History mode: Lock date cursor, disable edits, show reflow_runs
   - Approval mode: Show baseline snapshot, disable Apply, hide Preview
   - Compare mode: Load option_c as baseline, overlay delta from compare source
 
-- [ ] **T4.5** UI component tests
+- [x] **T4.5** UI component tests
   - Test: Mode switcher updates store
   - Test: Approval mode hides Apply button
   - Test: Date cursor change triggers reflow preview
@@ -315,24 +315,24 @@ Single-view TR movement dashboard where **Where → When/What → Evidence** ans
 **Goal**: Spatial visualization with TR position + route segments
 
 #### Tasks
-- [ ] **T5.1** Map component setup (`src/components/map/MapPanel.tsx`)
+- [x] **T5.1** Map component setup (`components/map/MapPanel.tsx`)
   - Base map with geolocation provider (Mapbox/Leaflet)
   - Layer: Locations (LOC_YARD_A, LOC_JETTY_A, etc.)
   - Layer: Routes (ROUTE_ALPHA, ROUTE_BETA, etc.)
   - Layer: TR markers with current position
   - Layer: Geofences
 
-- [ ] **T5.2** TR marker styling by state
+- [x] **T5.2** TR marker styling by state
   - Use semantic tokens from patch4.md section 4.1
   - `status.planned`, `status.ready`, `status.active`, `status.blocked`, `status.done`
   - Collision overlay: blocking → red outline, warning → yellow outline
 
-- [ ] **T5.3** Route segment highlighting
+- [x] **T5.3** Route segment highlighting
   - Display `plan.location.route_id` as polyline
   - Highlight segment when activity selected in Timeline
   - Show constraint violations (WX risk overlay)
 
-- [ ] **T5.4** Map ↔ Timeline sync
+- [x] **T5.4** Map ↔ Timeline sync
   ```typescript
   // On map click: TR marker → select TR → find current activity → scroll Timeline
   const handleMapClick = (tr_id: string) => {
@@ -348,7 +348,7 @@ Single-view TR movement dashboard where **Where → When/What → Evidence** ans
   };
   ```
 
-- [ ] **T5.5** Map interaction tests
+- [x] **T5.5** Map interaction tests
   - Test: Click TR marker → Timeline scrolls to activity
   - Test: Select activity → Map highlights route
   - Test: Risk overlay filters markers
@@ -492,7 +492,7 @@ Single-view TR movement dashboard where **Where → When/What → Evidence** ans
 **Goal**: Append-only event log + evidence checklist
 
 #### Tasks
-- [ ] **T8.1** History tab (`src/components/history/HistoryTab.tsx`)
+- [x] **T8.1** History tab (`components/history/HistoryTab.tsx`)
   - Timeline view of `history_events[]`
   - Event types: `plan_changed`, `actual_changed`, `state_transition`, `blocker_changed`, `evidence_changed`, `reflow_previewed`, `reflow_applied`, `collision_opened`, `baseline_created`
   - Group by date/actor
@@ -504,12 +504,12 @@ Single-view TR movement dashboard where **Where → When/What → Evidence** ans
   - Show missing evidence (min_count not met)
   - Upload button for new evidence
 
-- [ ] **T8.3** Evidence gate warnings
+- [x] **T8.3** Evidence gate warnings
   - Highlight missing evidence with red badge
   - Show gate reason: "READY→IN_PROGRESS blocked: before_start evidence missing"
   - Link to required evidence type
 
-- [ ] **T8.4** History/Evidence tests
+- [x] **T8.4** History/Evidence tests
   - Test: History events sorted by timestamp
   - Test: Evidence checklist shows missing items
   - Test: Evidence upload appends history_event

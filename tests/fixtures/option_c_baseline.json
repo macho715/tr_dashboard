@@ -313,7 +313,9 @@
       "LOC_YARD_A": { "location_id": "LOC_YARD_A", "name": "Yard A", "lat": 25.0501, "lon": 55.1202 },
       "LOC_JETTY_A": { "location_id": "LOC_JETTY_A", "name": "Jetty A", "lat": 25.0611, "lon": 55.1404 },
       "LOC_ISLAND_PORT": { "location_id": "LOC_ISLAND_PORT", "name": "Island Port", "lat": 25.0902, "lon": 55.2109 },
-      "LOC_SUBSTATION_1": { "location_id": "LOC_SUBSTATION_1", "name": "Substation 1", "lat": 25.1020, "lon": 55.2501 }
+      "LOC_SUBSTATION_1": { "location_id": "LOC_SUBSTATION_1", "name": "Substation 1", "lat": 25.1020, "lon": 55.2501 },
+      "LOC_MZP": { "location_id": "LOC_MZP", "name": "Mina Zayed Port", "lat": 24.52489, "lon": 54.37798 },
+      "LOC_AGI": { "location_id": "LOC_AGI", "name": "AGI Jetty", "lat": 24.841096, "lon": 53.658619 }
     },
 
     "resource_pools": {

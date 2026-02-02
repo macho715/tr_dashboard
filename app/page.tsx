@@ -13,9 +13,18 @@ import { Footer } from "@/components/dashboard/footer"
 import { BackToTop } from "@/components/dashboard/back-to-top"
 import { VoyageFocusDrawer } from "@/components/dashboard/voyage-focus-drawer"
 import { SectionNav } from "@/components/dashboard/section-nav"
+import dynamic from "next/dynamic"
 import { TrThreeColumnLayout } from "@/components/dashboard/layouts/tr-three-column-layout"
+import { DashboardLayout } from "@/components/layout/DashboardLayout"
 import { NotesDecisions } from "@/components/dashboard/notes-decisions"
+
+// Leaflet uses window - load MapPanelWrapper only on client
+const MapPanelWrapper = dynamic(
+  () => import("@/components/map/MapPanelWrapper").then((m) => m.MapPanelWrapper),
+  { ssr: false }
+)
 import { WhyPanel } from "@/components/dashboard/WhyPanel"
+import { HistoryEvidencePanel } from "@/components/history/HistoryEvidencePanel"
 import { OverviewSection } from "@/components/dashboard/sections/overview-section"
 import { KPISection } from "@/components/dashboard/sections/kpi-section"
 import { AlertsSection } from "@/components/dashboard/sections/alerts-section"
@@ -91,11 +100,39 @@ export default function Page() {
   const [jumpTrigger, setJumpTrigger] = useState(0)
   const [selectedVoyage, setSelectedVoyage] = useState<(typeof voyages)[number] | null>(null)
   const [selectedCollision, setSelectedCollision] = useState<ScheduleConflict | null>(null)
+  const [focusedActivityId, setFocusedActivityId] = useState<string | null>(null)
   const conflicts = useMemo(() => detectResourceConflicts(activities), [activities])
   const [ops, setOps] = useState(() =>
     createDefaultOpsState({ activities: scheduleActivities, projectEndDate: PROJECT_END_DATE })
   )
   const ganttRef = useRef<GanttChartHandle>(null)
+  const evidenceRef = useRef<HTMLDivElement>(null)
+  const [trips, setTrips] = useState<{ trip_id: string; name: string }[]>([])
+  const [trs, setTrs] = useState<{ tr_id: string; name: string }[]>([])
+
+  useEffect(() => {
+    fetch("/api/ssot")
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data?.entities?.trips) {
+          setTrips(
+            Object.values(data.entities.trips).map((t: { trip_id: string; name: string }) => ({
+              trip_id: t.trip_id,
+              name: t.name,
+            }))
+          )
+        }
+        if (data?.entities?.trs) {
+          setTrs(
+            Object.values(data.entities.trs).map((t: { tr_id: string; name: string }) => ({
+              tr_id: t.tr_id,
+              name: t.name,
+            }))
+          )
+        }
+      })
+      .catch(() => {})
+  }, [])
 
   const handleApplyPreview = (
     nextActivities: ScheduleActivity[],
@@ -173,6 +210,23 @@ export default function Page() {
     setOps(nextOps)
   }
 
+  const focusTimelineActivity = (activityId: string) => {
+    setFocusedActivityId(activityId)
+    ganttRef.current?.scrollToActivity(activityId)
+    const ganttSection = document.getElementById("gantt")
+    ganttSection?.scrollIntoView({ behavior: "smooth", block: "start" })
+  }
+
+  const handleViewInTimeline = (collision: ScheduleConflict, activityId?: string) => {
+    const targetId = activityId ?? collision.activity_id
+    if (!targetId) return
+    focusTimelineActivity(targetId)
+  }
+
+  const handleJumpToEvidence = () => {
+    evidenceRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+  }
+
   return (
     <DateProvider>
       <div className="relative z-10 max-w-[1800px] mx-auto px-4 sm:px-6 py-6">
@@ -184,6 +238,11 @@ export default function Page() {
         </a>
 
         <DashboardHeader />
+        <DashboardLayout
+          trips={trips}
+          trs={trs}
+          onReflowPreview={() => setJumpTrigger((n) => n + 1)}
+        >
         <StoryHeader
           trId={selectedVoyage ? String(selectedVoyage.voyage) : null}
           where={
@@ -215,10 +274,22 @@ export default function Page() {
           <AlertsSection />
           <TrThreeColumnLayout
             mapSlot={
-              <VoyagesSection
-                onSelectVoyage={setSelectedVoyage}
-                selectedVoyage={selectedVoyage}
-              />
+              <div className="space-y-3">
+                <MapPanelWrapper
+                  selectedActivityId={selectedCollision?.activity_id ?? null}
+                  onTrClick={() => {
+                    // Phase 5: TR click → onActivitySelect fires with current activity
+                  }}
+                  onActivitySelect={(activityId) => {
+                    // Phase 5: Map↔Timeline sync - scroll to activity (works when Timeline uses option_c)
+                    ganttRef.current?.scrollToActivity?.(activityId)
+                  }}
+                />
+                <VoyagesSection
+                  onSelectVoyage={setSelectedVoyage}
+                  selectedVoyage={selectedVoyage}
+                />
+              </div>
             }
             timelineSlot={
               <>
@@ -237,6 +308,7 @@ export default function Page() {
                   onActivityClick={handleActivityClick}
                   conflicts={conflicts}
                   onCollisionClick={setSelectedCollision}
+                  focusedActivityId={focusedActivityId}
                 />
               </>
             }
@@ -245,12 +317,24 @@ export default function Page() {
                 <WhyPanel
                   collision={selectedCollision}
                   onClose={() => setSelectedCollision(null)}
+                  onViewInTimeline={handleViewInTimeline}
+                  onJumpToEvidence={handleJumpToEvidence}
+                  onRelatedActivityClick={focusTimelineActivity}
                 />
-                <NotesDecisions />
+                <HistoryEvidencePanel
+                  selectedActivityId={selectedCollision?.activity_id ?? null}
+                  onUploadClick={(_activityId, _evidenceType) => {
+                    // Phase 8: Evidence upload - TODO: open upload modal
+                  }}
+                />
+                <div ref={evidenceRef}>
+                  <NotesDecisions />
+                </div>
               </div>
             }
           />
         </div>
+        </DashboardLayout>
 
         <Footer />
         <BackToTop />

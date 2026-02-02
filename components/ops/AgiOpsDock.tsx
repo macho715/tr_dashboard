@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import type { ScheduleActivity } from "@/lib/ssot/schedule";
+import { useViewModeOptional } from "@/src/lib/stores/view-mode-store";
 import { detectResourceConflicts } from "@/lib/utils/detect-resource-conflicts";
 
 import type { AgiCommand, PreviewResult } from "@/lib/ops/agi/types";
@@ -26,6 +27,8 @@ export function AgiOpsDock(props: {
   projectEndDate?: string;
   onFocusQuery?: (query: string) => void;
 }) {
+  const viewMode = useViewModeOptional();
+  const canApplyReflow = viewMode?.canApplyReflow ?? true;
   const [preview, setPreview] = React.useState<PreviewResult | null>(null);
   const [drawerOpen, setDrawerOpen] = React.useState(false);
   const [bulkText, setBulkText] = React.useState(""); // /bulk 입력용
@@ -205,6 +208,7 @@ ACT-023=2026-02-18`}
         onApply={applyPreview}
         onExportPatch={exportPatch}
         onExportFull={exportFull}
+        canApply={canApplyReflow}
       />
 
       {lastFocusQuery ? (

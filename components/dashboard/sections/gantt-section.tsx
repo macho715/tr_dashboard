@@ -19,6 +19,7 @@ type GanttSectionProps = {
   onActivityClick?: (activityId: string, start: string) => void
   conflicts?: ScheduleConflict[]
   onCollisionClick?: (conflict: ScheduleConflict) => void
+  focusedActivityId?: string | null
 }
 
 export function GanttSection({
@@ -35,6 +36,7 @@ export function GanttSection({
   onActivityClick,
   conflicts,
   onCollisionClick,
+  focusedActivityId,
 }: GanttSectionProps) {
   return (
     <section id="gantt" aria-label="Gantt Chart">
@@ -52,6 +54,7 @@ export function GanttSection({
         onActivityClick={onActivityClick}
         conflicts={conflicts}
         onCollisionClick={onCollisionClick}
+        focusedActivityId={focusedActivityId}
       />
     </section>
   )

@@ -127,6 +127,7 @@ interface GanttChartProps {
   onActivityClick?: (activityId: string, start: string) => void
   conflicts?: ScheduleConflict[]
   onCollisionClick?: (conflict: ScheduleConflict) => void
+  focusedActivityId?: string | null
 }
 
 export const GanttChart = forwardRef<GanttChartHandle, GanttChartProps>(function GanttChart(
@@ -143,6 +144,7 @@ export const GanttChart = forwardRef<GanttChartHandle, GanttChartProps>(function
     onActivityClick,
     conflicts = [],
     onCollisionClick,
+    focusedActivityId,
   },
   ref
 ) {
@@ -246,6 +248,9 @@ export const GanttChart = forwardRef<GanttChartHandle, GanttChartProps>(function
 
   const getHighlightClass = (meta: ScheduleActivity | undefined, activityEnd: string) => {
     if (!meta) return ""
+    if (focusedActivityId && meta.activity_id === focusedActivityId) {
+      return "ring-2 ring-cyan-200/90 ring-offset-2 ring-offset-slate-900"
+    }
     const isLocked = Boolean(meta.is_locked)
     const hasConstraint = Boolean(meta.constraint)
     const plannedFinish = new Date(`${activityEnd}T12:00:00.000Z`)
