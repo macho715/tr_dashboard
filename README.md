@@ -372,6 +372,7 @@ Preview 패널 (변경 사항 표시)
 
 ## 📚 참고 문서
 
+- [BUGFIX_APPLIED_20260202.md](./docs/BUGFIX_APPLIED_20260202.md) - **Bugfix 적용 보고서** (2026-02-02)
 - [SYSTEM_ARCHITECTURE.md](./docs/SYSTEM_ARCHITECTURE.md) - **시스템 아키텍처 상세** (레이어 구조, 데이터 흐름, 핵심 컴포넌트)
 - [VERCEL.md](./docs/VERCEL.md) - Vercel 배포 설정 가이드
 - [.cursor/rules/](./.cursor/rules/) - Cursor IDE 규칙
@@ -449,6 +450,21 @@ Private project - Samsung C&T × Mammoet
 ---
 
 ## 📝 최근 업데이트
+
+### Phase 6: Bugfix (TR_Dashboard_Bugfix_Prompt_v1.1, 2026-02-02)
+
+#### 적용 완료
+- ✅ **Bug #4**: WHERE/WHEN/WHAT/EVIDENCE 가이드 문구 제거 (StoryHeader, tr-three-column-layout)
+- ✅ **Bug #2**: Trip/TR 필터 + 7 TRs visible (trips/trs fallback, selectedVoyage 동기화, schedule-table fallback)
+- ✅ **Bug #1**: Selected Date UTC 정렬 (dateToIsoUtc, toUtcNoon, gantt-chart, date-picker)
+- ✅ **Bug #3**: View 버튼 → Detailed Voyage Schedule 스크롤
+- ✅ **Bug #5**: Compare Diff Baseline/Compare as-of 표시
+- ⏸️ **Bug #6**: Note 영속 + 비밀번호 삭제 (별도 Phase 이관)
+
+#### 상세 문서
+- [docs/BUGFIX_APPLIED_20260202.md](./docs/BUGFIX_APPLIED_20260202.md)
+
+---
 
 ### Phase 5: SSOT Upgrade v1.0 (patchm1~m5, 2026-02-02)
 

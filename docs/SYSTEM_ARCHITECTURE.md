@@ -1,7 +1,7 @@
 # HVDC TR Transport Dashboard - 시스템 아키텍처
 
-**버전**: 1.2  
-**최종 업데이트**: 2026-02-02 (Phase 5: SSOT Upgrade v1.0)  
+**버전**: 1.3  
+**최종 업데이트**: 2026-02-02 (Phase 6: Bugfix + Phase 5: SSOT Upgrade v1.0)  
 **프로젝트**: HVDC TR Transport - AGI Site Logistics Dashboard  
 **SSOT**: patch.md, option_c.json (AGENTS.md)
 
@@ -484,11 +484,12 @@ const changeImpactItems = useMemo(() => {
 
 ## 참고 문서
 
-- [README.md](./README.md) - 프로젝트 개요 및 사용 가이드
+- [README.md](../README.md) - 프로젝트 개요 및 사용 가이드 (루트)
+- [BUGFIX_APPLIED_20260202.md](./BUGFIX_APPLIED_20260202.md) - Phase 6 Bugfix 적용 보고서
 - [VERCEL.md](./VERCEL.md) - 배포 설정
-- [.cursor/rules/](./.cursor/rules/) - Cursor IDE 규칙
+- [.cursor/rules/](../.cursor/rules/) - Cursor IDE 규칙
 
 ---
 
 **Last Updated**: 2026-02-02  
-**참조**: patch.md, AGENTS.md, plan_patchm1_m5.md, WORK_LOG_20260202.md
+**참조**: patch.md, AGENTS.md, plan_patchm1_m5.md, WORK_LOG_20260202.md, BUGFIX_APPLIED_20260202.md

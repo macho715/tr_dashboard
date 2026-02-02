@@ -1,7 +1,7 @@
 # HVDC TR Transport Dashboard - Layout 문서
 
-> **버전**: 1.3.0  
-> **최종 업데이트**: 2026-02-02 (Phase 5: SSOT Upgrade v1.0)  
+> **버전**: 1.4.0  
+> **최종 업데이트**: 2026-02-02 (Phase 6: Bugfix + Phase 5: SSOT Upgrade v1.0)  
 > **프로젝트**: HVDC TR Transport Dashboard - AGI Site  
 > **SSOT**: patch.md, option_c.json (AGENTS.md)
 
@@ -28,8 +28,8 @@ HVDC TR Transport Dashboard는 **Al Ghallan Island (AGI) Site**의 7개 Transfor
 
 ### 핵심 특징
 
-- **3-Column Layout (patch.md §2.1)**: Map(Where) | Timeline(When/What) | Detail(State/Risk)
-- **단일 시선 흐름**: Where → When/What → Evidence (3초 내 읽기)
+- **3-Column Layout (patch.md §2.1)**: Map | Timeline | Detail(State/Risk)
+- **단일 시선 흐름**: Location → Schedule → Verification (3초 내 읽기, Phase 6: WHERE/WHEN/WHAT/EVIDENCE 가이드 제거)
 - **2-click Collision UX**: 배지 → Why 패널 → Root cause + Evidence
 - **Compare Mode** (patch.md §2.2): baseline vs compare delta overlay, Gantt ghost bars
 - **Sticky Navigation**: 섹션 간 빠른 이동
@@ -48,7 +48,7 @@ graph TB
     RootLayout --> Page[app/page.tsx<br/>DateProvider + DashboardLayout]
     
     Page --> Header[DashboardHeader]
-    Page --> StoryHeader[StoryHeader<br/>WHERE/WHEN/WHAT/EVIDENCE]
+    Page --> StoryHeader[StoryHeader<br/>Location/Schedule/Verification]
     Page --> Overview[OverviewSection]
     Page --> SectionNav[SectionNav]
     Page --> TrLayout[TrThreeColumnLayout<br/>Map | Timeline | Detail]
@@ -76,7 +76,7 @@ graph TB
 ┌─────────────────────────────────────────────────────────┐
 │ DashboardHeader (제목, DatePicker)                        │
 ├─────────────────────────────────────────────────────────┤
-│ StoryHeader (WHERE / WHEN/WHAT / EVIDENCE)               │
+│ StoryHeader (Location / Schedule / Verification)          │
 ├─────────────────────────────────────────────────────────┤
 │ OverviewSection (OperationOverviewRibbon, MilestoneTracker, AgiOpsDock*, AgiScheduleUpdaterBar) │
 │ *AgiOpsDock: BulkAnchors 기본 숨김 (showBulkAnchors=false)                                      │
@@ -87,7 +87,7 @@ graph TB
 ├─────────────────────────────────────────────────────────┤
 │ TrThreeColumnLayout (patch.md §2.1)                      │
 │ ┌──────────────┬─────────────────────┬────────────────┐ │
-│ │ Map (Where)  │ Timeline (When/What)│ Detail         │ │
+│ │ Map          │ Timeline            │ Detail         │ │
 │ │ min 180px    │ 2fr                  │ min 200px      │ │
 │ │              │                      │                │ │
 │ │ MapPanel     │ ScheduleSection      │ DetailPanel    │ │
@@ -134,7 +134,7 @@ graph TB
 **역할**: Global Control Bar + ViewModeProvider (patch.md §2.1)
 
 **구성**:
-- GlobalControlBar: Trip/TR 선택, Date Cursor, View Mode, Risk Overlay
+- GlobalControlBar: Trip/TR 선택, **View 버튼** (→ Schedule 스크롤), Date Cursor, View Mode, Risk Overlay
 - ViewModeProvider: Live/History/Approval/Compare 모드
 
 ### 3. Page Component (`app/page.tsx`)
@@ -219,8 +219,8 @@ graph TB
 **레이아웃 구조**:
 ```tsx
 <div className="grid gap-4 lg:grid-cols-[minmax(180px,1fr)_2fr_minmax(200px,1fr)]">
-  <aside aria-label="WHERE (Map)">{mapSlot}</aside>
-  <main aria-label="WHEN/WHAT (Timeline)">{timelineSlot}</main>
+  <aside aria-label="Map">{mapSlot}</aside>
+  <main aria-label="Timeline">{timelineSlot}</main>
   <aside aria-label="DETAIL">{detailSlot}</aside>
 </div>
 ```
@@ -232,7 +232,7 @@ graph TB
 - HistoryEvidencePanel (History | Evidence | Compare Diff | Trip Closeout)
   - HistoryTab: Add event (note, delay, decision 등), append-only
   - EvidenceTab: Add link (URL/경로), Evidence checklist
-  - CompareDiffPanel: Baseline vs Current diff 테이블
+  - CompareDiffPanel: Baseline vs Current diff 테이블 (Phase 6: Baseline snapshot / Compare as-of 표시)
   - TripCloseoutForm: Trip Report Export (MD/JSON)
 - ReadinessPanel: Ready/Not Ready 배지, milestones, missing evidence, blockers
 - NotesDecisions
@@ -566,7 +566,7 @@ app/
 components/
 ├── dashboard/
 │   ├── header.tsx         # DashboardHeader
-│   ├── StoryHeader.tsx    # WHERE/WHEN/WHAT/EVIDENCE
+│   ├── StoryHeader.tsx    # Location/Schedule/Verification
 │   ├── section-nav.tsx    # SectionNav
 │   ├── footer.tsx         # Footer
 │   ├── back-to-top.tsx    # BackToTop
@@ -784,4 +784,4 @@ sequenceDiagram
 **문서 작성일**: 2025-01-31  
 **최종 업데이트**: 2026-02-02  
 **프로젝트**: HVDC TR Transport Dashboard  
-**참조**: patch.md §2.1, §2.2, §4.2, AGENTS.md, WORK_LOG_20260202.md
+**참조**: patch.md §2.1, §2.2, §4.2, AGENTS.md, WORK_LOG_20260202.md, BUGFIX_APPLIED_20260202.md

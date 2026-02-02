@@ -1,6 +1,6 @@
 # TR Dashboard Implementation - Summary
 **Date**: 2026-02-02 (Updated)  
-**Status**: Phase 1-11 Complete ✅  
+**Status**: Phase 1-11 + Phase 6 Bugfix Complete ✅  
 **Build**: PASS ✅  
 **Tests**: 124 passed ✅  
 **Deployment**: Vercel Auto-Deploy Active ✅
@@ -17,6 +17,7 @@ Successfully implemented TR 이동 대시보드 complete system with UI/UX/layou
 - ✅ Phase 8: Evidence checklist & upload
 - ✅ Phase 10: Compare Mode (baseline vs delta overlay)
 - ✅ Phase 11: E2E tests (cycle detection, evidence gates)
+- ✅ Phase 6: Bugfix (WHERE/WHEN/WHAT 제거, Trip/TR 7개, Selected Date UTC, View 버튼, Compare Diff 표시)
 
 **운영 규모**: 1 Trip당 1 TR 운송, 총 7 Trip, SPMT 1기 운영  
 **테스트**: 124 tests passed (12 test files)  
@@ -28,7 +29,7 @@ Successfully implemented TR 이동 대시보드 complete system with UI/UX/layou
 
 ### Task 1: StoryHeader Component ✅
 - **File**: `components/dashboard/StoryHeader.tsx`
-- **Features**: WHERE/WHEN-WHAT/EVIDENCE display, placeholder when no TR selected
+- **Features**: Location/Schedule/Verification display (Phase 6: WHERE/WHEN/WHAT/EVIDENCE 제거), placeholder "TR을 선택하세요"
 - **Verification**: Build PASS
 
 ### Task 2: 3-Column Layout ✅
@@ -166,7 +167,7 @@ All tasks verified with `pnpm build`:
 ## Deliverables Summary
 
 ### UI Components (patch.md §2)
-- ✅ Story Header (WHERE/WHEN-WHAT/EVIDENCE)
+- ✅ Story Header (Location/Schedule/Verification, Phase 6: WHERE/WHEN/WHAT/EVIDENCE 제거)
 - ✅ 3-column layout (Map | Timeline | Detail)
 - ✅ Map status colors (Planned/In progress/Completed/Blocked/Delayed)
 - ✅ Timeline badges ([W][PTW][CERT][LNK][BRG][RES][COL])
@@ -244,6 +245,7 @@ All tasks verified with `pnpm build`:
 
 ## Related Documentation
 
+- [BUGFIX_APPLIED_20260202.md](./BUGFIX_APPLIED_20260202.md) - Phase 6 Bugfix 적용 보고서
 - [SYSTEM_ARCHITECTURE.md](./SYSTEM_ARCHITECTURE.md) - System architecture, data flow, components
 - [LAYOUT.md](./LAYOUT.md) - Layout structure, interactions, state management
 - [WORK_LOG_20260202.md](./WORK_LOG_20260202.md) - Detailed Phase 4-11 work log
