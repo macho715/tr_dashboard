@@ -20,9 +20,12 @@ HVDC TR Transport Dashboard는 **7개의 Transformer Unit**을 **LCT BUSHRA**로
 - **Gantt 차트**: 7개 항차의 시각적 일정 관리 (Jan 26 - Mar 22, 2026)
 - **스케줄 재계산 엔진**: 의존성 기반 자동 일정 조정
 - **Preview 패널**: 변경 사항 미리보기 및 충돌 검사
-- **Compare Mode**: baseline vs compare delta overlay, Gantt ghost bars (changed 활동 노란 점선)
+- **Compare Mode**: baseline vs compare delta overlay, Gantt ghost bars, **Compare Diff 패널**
 - **날짜 변경 UI**: Calendar + 직접 입력으로 시작일 변경
 - **항차 상세 정보**: Load-out, Sail-away, Load-in, Turning, Jack-down 일정
+- **History/Evidence (append-only)**: History 입력, Evidence 링크 추가, localStorage 저장
+- **Trip Report Export**: MD/JSON 보고서 다운로드
+- **Next Trip Readiness**: Ready/Not Ready 배지, 마일스톤/증빙/블로커 체크리스트
 
 ---
 
@@ -127,6 +130,12 @@ hvdc-tr-dashboard/
 ├── lib/
 │   ├── ssot/              # Single Source of Truth
 │   │   └── schedule.ts   # 스케줄 타입 정의 + UTC 날짜 유틸
+│   ├── store/
+│   │   └── trip-store.ts  # History/Evidence localStorage (append-only)
+│   ├── reports/
+│   │   └── trip-report.ts # Trip Report 생성 + MD/JSON Export
+│   ├── baseline/
+│   │   └── baseline-compare.ts  # computeActivityDiff (Compare Diff)
 │   ├── data/
 │   │   └── schedule-data.ts  # data/schedule/option_c.json 로더 + scheduleActivitiesToGanttRows() 변환 함수
 │   ├── utils/
@@ -372,11 +381,8 @@ Preview 패널 (변경 사항 표시)
 
 ## 🧪 테스트
 
-현재 테스트 프레임워크는 설정되지 않았습니다. 향후 추가 예정:
-
-- Unit 테스트: `lib/utils/*` 순수 함수
-- Integration 테스트: 재계산 엔진 통합
-- E2E 테스트: Gantt 차트 인터랙션
+- **Vitest**: 160 tests passed (state-machine, reflow, collision, baseline, evidence 등)
+- **실행**: `pnpm test -- --run`
 
 ---
 
@@ -444,6 +450,36 @@ Private project - Samsung C&T × Mammoet
 
 ## 📝 최근 업데이트
 
+### Phase 5: SSOT Upgrade v1.0 (patchm1~m5, 2026-02-02)
+
+#### PR#1: Upload 제거 + BulkAnchors 숨김
+- ✅ **BulkAnchors**: 기본 숨김 (`showBulkAnchors={false}`), Ops Tools에서만 노출
+- ✅ **Upload 제거**: EvidenceUploadModal 삭제, Evidence는 링크/URL 입력만
+
+#### PR#2: SSOT 타입 확장
+- ✅ **Trip**: closeout, baseline_id_at_start, milestones, status
+- ✅ **TripCloseout, TripReport, ProjectReport**: patchm1 §3.6, §3.7
+- ✅ **BlockerCode**: PTW_MISSING, CERT_MISSING, WX_NO_WINDOW 등
+
+#### PR#3: History/Evidence 입력 + 저장 (append-only)
+- ✅ **lib/store/trip-store.ts**: localStorage 기반 History/Evidence 저장
+- ✅ **HistoryTab**: Add event (note, delay, decision, risk, milestone, issue)
+- ✅ **EvidenceTab**: Add link (URL/경로) — 파일 업로드 대체
+
+#### PR#4: Compare Diff 패널
+- ✅ **CompareDiffPanel**: Baseline vs Current diff 테이블
+- ✅ **computeActivityDiff**: shift/add/remove/change 분류
+- ✅ **HistoryEvidencePanel**: Compare Diff 탭 추가
+
+#### PR#5: Trip Report Source + Export
+- ✅ **lib/reports/trip-report.ts**: generateTripReport, tripReportToMarkdown, tripReportToJson
+- ✅ **TripCloseoutForm**: Export MD/JSON 다운로드
+
+#### PR#6: Next Trip Readiness 패널
+- ✅ **ReadinessPanel**: Ready/Not Ready 배지, milestones, missing evidence, blockers
+
+---
+
 ### Phase 4: UI Foundation (2026-02-02)
 
 #### 신규 컴포넌트 (28개 파일)
@@ -454,8 +490,8 @@ Private project - Samsung C&T × Mammoet
 - ✅ **DetailPanel**: Activity Inspector (Header, State, Plan vs Actual, Resources, Constraints, Collision Tray)
 - ✅ **WhyPanel**: 2-click Collision UX (Root cause + suggested_actions)
 - ✅ **ReflowPreviewPanel**: suggested_action → reflowSchedule → Preview UI
-- ✅ **HistoryEvidencePanel**: History/Evidence 탭 통합
-- ✅ **EvidenceTab/HistoryTab**: 증빙 업로드 및 이력 추적
+- ✅ **HistoryEvidencePanel**: History | Evidence | Compare Diff | Trip Closeout 탭
+- ✅ **EvidenceTab/HistoryTab**: Evidence 링크 추가, History append-only 입력
 
 #### State Machine & Evidence (Phase 3)
 - ✅ **State Machine**: `src/lib/state-machine/` - Activity 상태 전이 (ALLOWED_TRANSITIONS, Evidence Gates)

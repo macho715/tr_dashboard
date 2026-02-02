@@ -26,7 +26,10 @@ export function AgiOpsDock(props: {
   setActivities: (next: ScheduleActivity[]) => void;
   projectEndDate?: string;
   onFocusQuery?: (query: string) => void;
+  /** @default false - Bulk Anchors hidden by default (patchm1) */
+  showBulkAnchors?: boolean;
 }) {
+  const showBulkAnchors = props.showBulkAnchors ?? false;
   const viewMode = useViewModeOptional();
   const canApplyReflow = viewMode?.canApplyReflow ?? true;
   const [preview, setPreview] = React.useState<PreviewResult | null>(null);
@@ -169,36 +172,37 @@ export function AgiOpsDock(props: {
         onFocusQuery={onFocusQuery}
       />
 
-      {/* Bulk 텍스트 입력(간단조작용) */}
-      <div className="rounded-md border p-3">
-        <div className="text-sm font-medium">Bulk Anchors (for /bulk)</div>
-        <div className="mt-1 text-xs opacity-60">
-          형식: <code>ACTIVITY_ID YYYY-MM-DD</code> 또는 <code>ACTIVITY_ID=YYYY-MM-DD</code>
-        </div>
-        <textarea
-          className="mt-2 w-full rounded-md border p-2 text-sm"
-          rows={4}
-          value={bulkText}
-          onChange={(e) => setBulkText(e.target.value)}
-          placeholder={`예)
+      {showBulkAnchors && (
+        <div className="rounded-md border p-3">
+          <div className="text-sm font-medium">Bulk Anchors (for /bulk)</div>
+          <div className="mt-1 text-xs opacity-60">
+            형식: <code>ACTIVITY_ID YYYY-MM-DD</code> 또는 <code>ACTIVITY_ID=YYYY-MM-DD</code>
+          </div>
+          <textarea
+            className="mt-2 w-full rounded-md border p-2 text-sm"
+            rows={4}
+            value={bulkText}
+            onChange={(e) => setBulkText(e.target.value)}
+            placeholder={`예)
 ACT-001 2026-02-15
 ACT-023=2026-02-18`}
-        />
-        <div className="mt-2 flex gap-2">
-          <button
-            className="rounded-md border px-3 py-2 text-sm"
-            onClick={() => execute({ kind: "BULK", anchors: [], previewOnly: true }, "/bulk")}
-          >
-            Bulk Preview
-          </button>
-          <button
-            className="rounded-md border px-3 py-2 text-sm"
-            onClick={() => execute({ kind: "BULK", anchors: [], previewOnly: false }, "/bulk")}
-          >
-            Bulk (preview + apply via drawer)
-          </button>
+          />
+          <div className="mt-2 flex gap-2">
+            <button
+              className="rounded-md border px-3 py-2 text-sm"
+              onClick={() => execute({ kind: "BULK", anchors: [], previewOnly: true }, "/bulk")}
+            >
+              Bulk Preview
+            </button>
+            <button
+              className="rounded-md border px-3 py-2 text-sm"
+              onClick={() => execute({ kind: "BULK", anchors: [], previewOnly: false }, "/bulk")}
+            >
+              Bulk (preview + apply via drawer)
+            </button>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Preview Drawer */}
       <AgiPreviewDrawer

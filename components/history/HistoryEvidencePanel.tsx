@@ -2,58 +2,24 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { HistoryTab } from './HistoryTab'
-import { EvidenceTab, type EvidenceOverlayItem } from '@/components/evidence/EvidenceTab'
-import { EvidenceUploadModal } from '@/components/evidence/EvidenceUploadModal'
-import type { OptionC, EvidenceItem } from '@/src/types/ssot'
-import { useViewModeOptional } from '@/src/lib/stores/view-mode-store'
+import { EvidenceTab } from '@/components/evidence/EvidenceTab'
+import { CompareDiffPanel } from '@/components/compare/CompareDiffPanel'
+import { TripCloseoutForm } from '@/components/history/TripCloseoutForm'
+import type { OptionC } from '@/src/types/ssot'
+import { getHistoryEvents, getEvidenceItems, appendHistoryEvent, appendEvidenceItem, subscribe } from '@/lib/store/trip-store'
 
 type HistoryEvidencePanelProps = {
   selectedActivityId?: string | null
   filterEventType?: string | null
-  onUploadClick?: (activityId: string, evidenceType: string) => void
 }
 
 export function HistoryEvidencePanel({
   selectedActivityId = null,
   filterEventType = null,
-  onUploadClick: onUploadClickProp,
 }: HistoryEvidencePanelProps) {
   const [ssot, setSsot] = useState<OptionC | null>(null)
-  const [activeTab, setActiveTab] = useState<'history' | 'evidence'>('history')
-  const [evidenceOverlay, setEvidenceOverlay] = useState<EvidenceOverlayItem[]>([])
-  const [modalOpen, setModalOpen] = useState(false)
-  const [modalActivityId, setModalActivityId] = useState('')
-  const [modalActivityTitle, setModalActivityTitle] = useState('')
-  const [modalEvidenceType, setModalEvidenceType] = useState('')
-  const viewMode = useViewModeOptional()
-  const canUpload = viewMode?.canUploadEvidence ?? true
-
-  const handleUploadClick = useCallback(
-    (activityId: string, evidenceType: string) => {
-      if (onUploadClickProp) {
-        onUploadClickProp(activityId, evidenceType)
-        return
-      }
-      const act = ssot?.entities?.activities?.[activityId]
-      setModalActivityId(activityId)
-      setModalActivityTitle(act?.title ?? activityId)
-      setModalEvidenceType(evidenceType)
-      setModalOpen(true)
-    },
-    [onUploadClickProp, ssot]
-  )
-
-  const handleEvidenceConfirm = useCallback((item: EvidenceItem) => {
-    setEvidenceOverlay((prev) => [
-      ...prev,
-      {
-        activityId: modalActivityId,
-        evidenceType: item.evidence_type,
-        evidenceId: item.evidence_id,
-      },
-    ])
-    setModalOpen(false)
-  }, [modalActivityId])
+  const [activeTab, setActiveTab] = useState<'history' | 'evidence' | 'compare' | 'closeout'>('history')
+  const [storeVersion, setStoreVersion] = useState(0)
 
   useEffect(() => {
     fetch('/api/ssot')
@@ -61,6 +27,53 @@ export function HistoryEvidencePanel({
       .then((data: OptionC | null) => setSsot(data))
       .catch(() => setSsot(null))
   }, [])
+
+  useEffect(() => {
+    const unsub = subscribe(() => setStoreVersion((v) => v + 1))
+    return unsub
+  }, [])
+
+  const mergedSsot = ssot
+    ? {
+        ...ssot,
+        history_events: [...(ssot.history_events ?? []), ...getHistoryEvents()].sort(
+          (a, b) => new Date(b.ts).getTime() - new Date(a.ts).getTime()
+        ),
+        entities: {
+          ...ssot.entities,
+          evidence_items: {
+            ...(ssot.entities?.evidence_items ?? {}),
+            ...Object.fromEntries(getEvidenceItems().map((e) => [e.evidence_id, e])),
+          },
+        },
+      }
+    : null
+
+  const onAddHistory = useCallback(
+    (eventType: string, message: string) => {
+      appendHistoryEvent({
+        event_type: eventType,
+        message,
+        activity_id: selectedActivityId ?? undefined,
+        trip_id: ssot?.entities?.trips ? Object.keys(ssot.entities.trips)[0] : undefined,
+      })
+    },
+    [selectedActivityId, ssot]
+  )
+
+  const onAddEvidence = useCallback(
+    (item: { uri: string; evidence_type: string; title?: string; activityId: string; tripId?: string; trId?: string }) => {
+      appendEvidenceItem({
+        ...item,
+        linked_to: {
+          activity_id: item.activityId,
+          trip_id: item.tripId,
+          tr_id: item.trId,
+        },
+      })
+    },
+    []
+  )
 
   return (
     <div
@@ -92,31 +105,56 @@ export function HistoryEvidencePanel({
         >
           Evidence
         </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('compare')}
+          className={`rounded px-2 py-1 text-xs font-medium transition ${
+            activeTab === 'compare'
+              ? 'bg-primary text-primary-foreground'
+              : 'text-muted-foreground hover:bg-accent/10'
+          }`}
+          data-testid="tab-compare-diff"
+        >
+          Compare Diff
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab('closeout')}
+          className={`rounded px-2 py-1 text-xs font-medium transition ${
+            activeTab === 'closeout'
+              ? 'bg-primary text-primary-foreground'
+              : 'text-muted-foreground hover:bg-accent/10'
+          }`}
+          data-testid="tab-closeout"
+        >
+          Trip Closeout
+        </button>
       </div>
       {activeTab === 'history' && (
         <HistoryTab
-          ssot={ssot}
+          ssot={mergedSsot}
           filterEventType={filterEventType}
           selectedActivityId={selectedActivityId}
+          onAddEvent={onAddHistory}
+          canAdd={true}
         />
       )}
       {activeTab === 'evidence' && (
         <EvidenceTab
-          ssot={ssot}
+          ssot={mergedSsot}
           selectedActivityId={selectedActivityId}
-          onUploadClick={handleUploadClick}
-          canUpload={canUpload}
-          evidenceOverlay={evidenceOverlay}
+          onAddEvidence={onAddEvidence}
+          canAddEvidence={true}
         />
       )}
-      {modalOpen && (
-        <EvidenceUploadModal
-          activityId={modalActivityId}
-          activityTitle={modalActivityTitle}
-          evidenceType={modalEvidenceType}
-          onConfirm={handleEvidenceConfirm}
-          onCancel={() => setModalOpen(false)}
+      {activeTab === 'compare' && (
+        <CompareDiffPanel
+          ssot={mergedSsot}
+          baselineId={ssot?.baselines?.current_baseline_id ?? null}
         />
+      )}
+      {activeTab === 'closeout' && (
+        <TripCloseoutForm ssot={mergedSsot} />
       )}
     </div>
   )

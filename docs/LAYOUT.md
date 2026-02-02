@@ -1,7 +1,7 @@
 # HVDC TR Transport Dashboard - Layout 문서
 
-> **버전**: 1.2.0  
-> **최종 업데이트**: 2026-02-02  
+> **버전**: 1.3.0  
+> **최종 업데이트**: 2026-02-02 (Phase 5: SSOT Upgrade v1.0)  
 > **프로젝트**: HVDC TR Transport Dashboard - AGI Site  
 > **SSOT**: patch.md, option_c.json (AGENTS.md)
 
@@ -62,7 +62,8 @@ graph TB
     DetailSlot --> DetailPanel[DetailPanel<br/>ActivityHeader, State, PlanVsActual, Resources, Constraints, CollisionTray]
     DetailSlot --> WhyPanel[WhyPanel<br/>2-click: root cause + suggested_actions]
     DetailSlot --> ReflowPreview[ReflowPreviewPanel<br/>onApplyAction → reflowSchedule]
-    DetailSlot --> HistoryEvidence[HistoryEvidencePanel]
+    DetailSlot --> HistoryEvidence[HistoryEvidencePanel<br/>History | Evidence | Compare Diff | Trip Closeout]
+    DetailSlot --> ReadinessPanel[ReadinessPanel<br/>Ready/Not Ready, milestones, missing evidence]
     DetailSlot --> NotesDecisions[NotesDecisions]
     
     style TrLayout fill:#06b6d4,color:#fff
@@ -77,7 +78,8 @@ graph TB
 ├─────────────────────────────────────────────────────────┤
 │ StoryHeader (WHERE / WHEN/WHAT / EVIDENCE)               │
 ├─────────────────────────────────────────────────────────┤
-│ OverviewSection (OperationOverviewRibbon, MilestoneTracker, AgiOpsDock, AgiScheduleUpdaterBar) │
+│ OverviewSection (OperationOverviewRibbon, MilestoneTracker, AgiOpsDock*, AgiScheduleUpdaterBar) │
+│ *AgiOpsDock: BulkAnchors 기본 숨김 (showBulkAnchors=false)                                      │
 ├─────────────────────────────────────────────────────────┤
 │ SectionNav (Overview, KPI, Alerts, Voyages, Schedule, Gantt) │
 ├─────────────────────────────────────────────────────────┤
@@ -92,7 +94,8 @@ graph TB
 │ │ VoyagesSection│ GanttSection        │ WhyPanel       │ │
 │ │              │ (compareDelta→ghost bars)│ CompareModeBanner (Compare 모드) │ │
 │ │              │                      │ ReflowPreviewPanel │
-│ │              │                      │ HistoryEvidencePanel │
+│ │              │                      │ HistoryEvidencePanel (History | Evidence | Compare Diff | Trip Closeout) │
+│ │              │                      │ ReadinessPanel │
 │ │              │                      │ NotesDecisions │ │
 │ └──────────────┴─────────────────────┴────────────────┘ │
 ├─────────────────────────────────────────────────────────┤
@@ -226,7 +229,12 @@ graph TB
 - DetailPanel (ActivityHeader, StateSection, PlanVsActualSection, ResourcesSection, ConstraintsSection, CollisionTray)
 - WhyPanel (2-click: root_cause_code, suggested_actions)
 - ReflowPreviewPanel (onApplyAction → reflowSchedule → Preview UI)
-- HistoryEvidencePanel
+- HistoryEvidencePanel (History | Evidence | Compare Diff | Trip Closeout)
+  - HistoryTab: Add event (note, delay, decision 등), append-only
+  - EvidenceTab: Add link (URL/경로), Evidence checklist
+  - CompareDiffPanel: Baseline vs Current diff 테이블
+  - TripCloseoutForm: Trip Report Export (MD/JSON)
+- ReadinessPanel: Ready/Not Ready 배지, milestones, missing evidence, blockers
 - NotesDecisions
 
 **반응형**:
@@ -435,8 +443,8 @@ body {
 
 3. **AgiOpsDock**
    - AGI 명령 처리 인터페이스
-   - 활동 검색 및 필터링
-   - 활동 포커스 기능
+   - BulkAnchors 기본 숨김 (showBulkAnchors=false)
+   - 활동 검색 및 필터링, 활동 포커스 기능
 
 4. **AgiScheduleUpdaterBar**
    - 스케줄 업데이트 명령 입력
@@ -575,6 +583,7 @@ components/
 │   │   └── gantt-section.tsx
 │   ├── WhyPanel.tsx       # 2-click: root cause + suggested_actions
 │   ├── ReflowPreviewPanel.tsx  # onApplyAction → reflowSchedule
+│   ├── ReadinessPanel.tsx      # Next Trip Readiness
 │   ├── notes-decisions.tsx
 │   ├── gantt-chart.tsx
 │   └── ...
@@ -589,15 +598,22 @@ components/
 │       ├── ResourcesSection.tsx
 │       └── ConstraintsSection.tsx
 ├── history/
-│   ├── HistoryEvidencePanel.tsx
-│   ├── HistoryTab.tsx
+│   ├── HistoryEvidencePanel.tsx  # History | Evidence | Compare Diff | Trip Closeout
+│   ├── HistoryTab.tsx            # Add event (append-only)
+│   ├── TripCloseoutForm.tsx      # Trip Report Export (MD/JSON)
 │   └── ...
+├── evidence/
+│   └── EvidenceTab.tsx           # Evidence checklist + Add link (URL)
+├── compare/
+│   ├── CompareDiffPanel.tsx      # Baseline vs Current diff
+│   └── CompareModeBanner.tsx
 ├── map/
 │   ├── MapPanelWrapper.tsx
 │   └── MapPanel.tsx
 ├── approval/
 │   └── ApprovalModeBanner.tsx
 └── compare/
+    ├── CompareDiffPanel.tsx   # Baseline vs Current diff 테이블
     └── CompareModeBanner.tsx  # Compare 모드: +X added, −Y removed, Z shifted, W collisions
 
 lib/
@@ -608,8 +624,13 @@ lib/
 │   ├── slack-calc.ts       # calculateSlack (ES/EF/LS/LF)
 │   └── detect-resource-conflicts.ts
 ├── baseline/              # Baseline/Approval mode
+│   ├── baseline-compare.ts  # computeActivityDiff
 │   ├── baseline-loader.ts
 │   └── freeze-policy.ts
+├── store/
+│   └── trip-store.ts      # History/Evidence localStorage (append-only)
+├── reports/
+│   └── trip-report.ts     # Trip Report MD/JSON Export
 └── compare/               # Compare Mode (Phase 10, 완료)
     ├── compare-loader.ts   # calculateDelta(baseline, compare)
     ├── types.ts

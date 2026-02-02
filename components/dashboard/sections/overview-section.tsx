@@ -28,6 +28,7 @@ export function OverviewSection({
           activities={activities}
           setActivities={onSetActivities}
           onFocusQuery={onFocusActivity}
+          showBulkAnchors={false}
         />
         <AgiScheduleUpdaterBar
           activities={activities}

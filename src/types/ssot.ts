@@ -9,7 +9,7 @@
 // Core Enums (lowercase per Contract v0.8.0)
 // ============================================================================
 
-export type ActivityState = 
+export type ActivityState =
   | 'draft'
   | 'planned'
   | 'ready'
@@ -17,8 +17,21 @@ export type ActivityState =
   | 'paused'
   | 'blocked'
   | 'completed'
+  | 'done'  // patchm1 alias for completed
   | 'canceled'
+  | 'cancelled'  // patchm1 spelling
   | 'aborted';
+
+/** patchm1 §3.2: Blocker taxonomy */
+export type BlockerCode =
+  | 'none'
+  | 'PTW_MISSING'
+  | 'CERT_MISSING'
+  | 'WX_NO_WINDOW'
+  | 'LINKSPAN_LIMIT'
+  | 'BARGE_LIMIT'
+  | 'RESOURCE_CONFLICT'
+  | 'MANUAL_HOLD';
 
 export type LockLevel = 
   | 'none'
@@ -200,16 +213,42 @@ export interface ReflowPin {
 // Trip (Reference only, no SSOT)
 // ============================================================================
 
+export interface TripMilestones {
+  loadout_activity_id?: string;
+  sailaway_activity_id?: string;
+  loadin_activity_id?: string;
+  turning_activity_id?: string;
+  jackdown_activity_id?: string;
+}
+
+export interface TripCloseoutRef {
+  status: 'not_started' | 'required' | 'in_progress' | 'finalized';
+  closeout_id: string | null;
+}
+
 export interface Trip {
   trip_id: string;
   name: string;
   tr_ids: string[];
   activity_ids: string[];
-  
-  // DERIVED ONLY (no state/location/progress)
+  /** patchm1 §3.3: Baseline at trip start */
+  baseline_id_at_start?: string | null;
+  /** patchm1 §3.3: Milestone activity refs */
+  milestones?: TripMilestones;
+  /** patchm1 §3.3: Closeout status */
+  closeout?: TripCloseoutRef;
+  /** patchm1 §3.3: Trip status */
+  status?: 'planned' | 'active' | 'done';
+  /** DERIVED ONLY (no state/location/progress) */
   calc?: {
     collision_ids: string[];
     risk_score: number;
+    planned_start_ts?: string | null;
+    planned_end_ts?: string | null;
+    actual_start_ts?: string | null;
+    actual_end_ts?: string | null;
+    delay_minutes?: number;
+    delay_reason_codes?: string[];
     [key: string]: any;
   };
 }
@@ -353,21 +392,35 @@ export interface HistoryEvent {
     entity_type: string;
     entity_id: string;
   };
+  /** patchm2: target for compatibility */
+  target?: { type: string; id: string };
   details: Record<string, any>;
+  payload?: Record<string, any>;
 }
 
 // ============================================================================
 // Evidence
 // ============================================================================
 
+export type EvidenceKind = 'PHOTO' | 'PDF' | 'EMAIL' | 'WHATSAPP' | 'LINK' | 'OTHER';
+
 export interface EvidenceItem {
   evidence_id: string;
   evidence_type: string;
   title: string;
+  /** patchm2: URL/path only, no file upload */
   uri: string;
   captured_at: string;
   captured_by: string;
   tags: string[];
+  /** patchm1 §3.5 */
+  uploaded_at?: string;
+  uploaded_by?: string;
+  linked_to?: {
+    trip_id?: string;
+    tr_id?: string;
+    activity_id?: string;
+  };
 }
 
 // ============================================================================
@@ -500,6 +553,66 @@ export interface PTWCertificate {
 }
 
 // ============================================================================
+// Trip Closeout & Reports (patchm1 §3.6, §3.7)
+// ============================================================================
+
+export interface TripCloseout {
+  closeout_id: string;
+  trip_id: string;
+  tr_id: string;
+  status: 'draft' | 'finalized';
+  entered_at: string;
+  entered_by: string;
+  summary_md?: string;
+  delay_reason_codes?: string[];
+  delay_details?: Array<{
+    code: string;
+    minutes: number;
+    notes_md?: string;
+  }>;
+  evidence_ids?: string[];
+  snapshot_refs?: {
+    baseline_id_at_start?: string;
+    baseline_id_original?: string;
+  };
+}
+
+export interface TripReportMilestone {
+  name: string;
+  planned_ts: string;
+  actual_ts: string | null;
+  delta_minutes: number;
+}
+
+export interface TripReport {
+  report_id: string;
+  trip_id: string;
+  tr_id: string;
+  generated_at: string;
+  baseline_id?: string;
+  milestones: TripReportMilestone[];
+  delay_minutes: number;
+  delay_reason_codes?: string[];
+  evidence_completeness?: {
+    required_total: number;
+    provided_total: number;
+    missing?: Array<{
+      activity_id: string;
+      evidence_type: string;
+      stage: string;
+      min_count: number;
+    }>;
+  };
+  narrative_closeout_id?: string;
+}
+
+export interface ProjectReport {
+  report_id: string;
+  generated_at: string;
+  trip_report_ids: string[];
+}
+
+// ============================================================================
 // Top-level SSOT Structure
 // ============================================================================
 
@@ -532,7 +645,14 @@ export interface OptionC {
   reflow_runs: ReflowRun[];
   baselines: Baselines;
   history_events: HistoryEvent[];
-  
+  /** patchm1 §3.6 */
+  trip_closeouts?: { items: Record<string, TripCloseout> };
+  /** patchm1 §3.7 */
+  reports?: {
+    trip_reports?: Record<string, TripReport>;
+    project_reports?: Record<string, ProjectReport>;
+  };
+
   ui_defaults?: {
     view_mode: ViewMode;
     risk_overlay: string;

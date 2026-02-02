@@ -1,7 +1,7 @@
 # HVDC TR Transport Dashboard - 시스템 아키텍처
 
-**버전**: 1.1  
-**최종 업데이트**: 2026-02-02  
+**버전**: 1.2  
+**최종 업데이트**: 2026-02-02 (Phase 5: SSOT Upgrade v1.0)  
 **프로젝트**: HVDC TR Transport - AGI Site Logistics Dashboard  
 **SSOT**: patch.md, option_c.json (AGENTS.md)
 
@@ -150,17 +150,20 @@ function GanttChart() {
   - `lib/state-machine/`: State transitions, Evidence gates
   - `lib/utils/slack-calc.ts`: ES/EF/LS/LF, critical path
   - `lib/utils/detect-resource-conflicts.ts`: 충돌 감지
-  - `lib/baseline/`: Baseline/Approval 모드
+  - `lib/baseline/`: Baseline/Approval 모드, baseline-compare.ts (computeActivityDiff)
   - `lib/compare/`: Compare Mode (Phase 10 완료)
+  - `lib/store/trip-store.ts`: History/Evidence localStorage (append-only)
+  - `lib/reports/trip-report.ts`: Trip Report 생성 + MD/JSON Export
 - **특징**: 순수 함수, 사이드 이펙트 없음
 
 #### 3. Data Layer
 - **역할**: 데이터 정의 및 저장
 - **구성요소**:
   - `lib/ssot/schedule.ts`: ScheduleActivity, ScheduleConflict, SuggestedAction
-  - `src/types/ssot.ts`: Contract v0.8.0 Activity, Collision, Baseline
+  - `src/types/ssot.ts`: Contract v0.8.0 Activity, Collision, Baseline, TripCloseout, TripReport
   - `data/schedule/option_c.json`: 마스터 스케줄 데이터
-- **특징**: SSOT 원칙 준수
+  - `lib/store/trip-store.ts`: History/Evidence 클라이언트 저장 (localStorage)
+- **특징**: SSOT 원칙 준수, History append-only
 
 ---
 
@@ -488,4 +491,4 @@ const changeImpactItems = useMemo(() => {
 ---
 
 **Last Updated**: 2026-02-02  
-**참조**: patch.md, AGENTS.md, tr-dashboard-plan-patch4.md, WORK_LOG_20260202.md
+**참조**: patch.md, AGENTS.md, plan_patchm1_m5.md, WORK_LOG_20260202.md

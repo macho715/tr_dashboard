@@ -1,47 +1,17 @@
 'use client'
 
-import { useCallback, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import dynamic from 'next/dynamic'
-import type { OptionC, Location, Activity } from '@/src/types/ssot'
+import type { OptionC, Location } from '@/src/types/ssot'
 import { calculateCurrentActivityForTR, calculateCurrentLocationForTR } from '@/src/lib/derived-calc'
-import { activityStateToMapStatus, MAP_STATUS_HEX, COLLISION_OUTLINE } from '@/src/lib/map-status-colors'
+import { activityStateToMapStatus, MAP_STATUS_HEX } from '@/src/lib/map-status-colors'
 import type { MapStatusToken } from '@/src/lib/map-status-colors'
 
-// Dynamic import to avoid SSR issues with Leaflet
-const MapContainer = dynamic(
-  () => import('react-leaflet').then((mod) => mod.MapContainer),
+// Single dynamic import for entire map - avoids appendChild race with TileLayer
+const MapContent = dynamic(
+  () => import('./MapContent').then((m) => m.MapContent),
   { ssr: false }
 )
-const TileLayer = dynamic(
-  () => import('react-leaflet').then((mod) => mod.TileLayer),
-  { ssr: false }
-)
-const Marker = dynamic(
-  () => import('react-leaflet').then((mod) => mod.Marker),
-  { ssr: false }
-)
-const Popup = dynamic(
-  () => import('react-leaflet').then((mod) => mod.Popup),
-  { ssr: false }
-)
-const Polyline = dynamic(
-  () => import('react-leaflet').then((mod) => mod.Polyline),
-  { ssr: false }
-)
-
-// L must be imported for Leaflet to work (icon fix)
-import L from 'leaflet'
-import 'leaflet/dist/leaflet.css'
-
-// Fix default marker icon in Next.js
-const DefaultIcon = L.icon({
-  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
-  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
-  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
-  iconSize: [25, 41],
-  iconAnchor: [12, 41],
-})
-L.Marker.prototype.options.icon = DefaultIcon
 
 export type MapPanelProps = {
   ssot: OptionC | null
@@ -54,8 +24,20 @@ export type MapPanelProps = {
   onActivitySelect?: (activityId: string) => void
 }
 
-const DEFAULT_CENTER: [number, number] = [25.07, 55.15]
-const DEFAULT_ZOOM = 12
+const LOCATION_OVERRIDES: Record<string, Location> = {
+  LOC_MZP: {
+    location_id: 'LOC_MZP',
+    name: 'Mina Zayed Port',
+    lat: 24.52489,
+    lon: 54.37798,
+  },
+  LOC_AGI: {
+    location_id: 'LOC_AGI',
+    name: 'AGI Jetty',
+    lat: 24.841096,
+    lon: 53.658619,
+  },
+}
 
 function getRoutePolyline(
   locations: Record<string, Location>,
@@ -81,7 +63,19 @@ export function MapPanel({
   onTrClick,
   onActivitySelect,
 }: MapPanelProps) {
-  const locations = ssot?.entities?.locations ?? {}
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  const locations = useMemo(
+    () => ({
+      ...(ssot?.entities?.locations ?? {}),
+      ...LOCATION_OVERRIDES,
+    }),
+    [ssot]
+  )
   const trs = ssot?.entities?.trs ?? {}
   const activities = ssot?.entities?.activities ?? {}
   const collisions = ssot?.collisions ?? {}
@@ -200,67 +194,19 @@ export function MapPanel({
 
   return (
     <div className="h-[280px] w-full overflow-hidden rounded-lg" data-testid="map-panel">
-      <MapContainer
-        center={DEFAULT_CENTER}
-        zoom={DEFAULT_ZOOM}
-        className="h-full w-full rounded-lg"
-        scrollWheelZoom={true}
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+      {mounted ? (
+        <MapContent
+          locations={locations}
+          routeSegments={routeSegments}
+          trMarkers={trMarkers}
+          onTrMarkerClick={handleTrMarkerClick}
+          mapStatusHex={MAP_STATUS_HEX}
         />
-
-        {/* Route polylines (background layer) */}
-        {routeSegments.map((seg) => (
-          <Polyline
-            key={`${seg.routeId}-${seg.activityId}`}
-            positions={seg.coords}
-            pathOptions={{
-              color: seg.isHighlighted ? '#2563eb' : '#64748b',
-              weight: seg.isHighlighted ? 4 : 2,
-              opacity: 0.8,
-            }}
-          />
-        ))}
-
-        {/* Location markers (nodes: Yard, Jetty, etc.) */}
-        {Object.entries(locations).map(([locId, loc]) => (
-          <Marker key={locId} position={[loc.lat, loc.lon]}>
-            <Popup>{loc.name}</Popup>
-          </Marker>
-        ))}
-
-        {/* TR markers with state styling (patch §4.1) */}
-        {trMarkers.map((m) => {
-          const bgColor = MAP_STATUS_HEX[m.status]
-          const outlineColor = m.hasBlockingCollision ? '#dc2626' : m.hasWarningCollision ? '#eab308' : 'white'
-          const outlineWidth = m.hasBlockingCollision || m.hasWarningCollision ? 3 : 2
-          const icon = L.divIcon({
-            className: 'tr-marker',
-            html: `<div style="width:32px;height:32px;border-radius:50%;background:${bgColor};border:${outlineWidth}px solid ${outlineColor};display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,0.3);color:white;font-size:10px;font-weight:bold;">${m.trId.slice(-3)}</div>`,
-            iconSize: [32, 32],
-            iconAnchor: [16, 16],
-          })
-          return (
-            <Marker
-              key={m.trId}
-              position={[m.lat, m.lon]}
-              icon={icon}
-              eventHandlers={{
-                click: () => handleTrMarkerClick(m.trId),
-              }}
-            >
-              <Popup>
-                <div className="text-sm">
-                  <strong>{m.label}</strong>
-                  <span className="ml-1 text-muted-foreground">({m.status})</span>
-                </div>
-              </Popup>
-            </Marker>
-          )
-        })}
-      </MapContainer>
+      ) : (
+        <div className="flex h-full w-full items-center justify-center rounded-lg bg-muted/20 text-sm text-muted-foreground">
+          Loading map…
+        </div>
+      )}
     </div>
   )
 }

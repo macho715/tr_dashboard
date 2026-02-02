@@ -20,3 +20,9 @@ Next.js 앱이 **루트**에 있습니다. Root Directory를 **반드시 비워�
 | Settings → Git → Production Branch | `main` |
 | Settings → Build and Deployment → Root Directory | **비움** (앱이 루트에 있음) |
 | Deployments | 최신 배포 후 **Redeploy** 실행 |
+
+## Phase 5 (patchm1~m5) 호환
+
+- **localStorage**: History/Evidence는 클라이언트 저장 — 서버 파일 쓰기 불필요
+- **option_c.json**: `/api/ssot` route로 읽기 전용 제공
+- **빌드**: `pnpm build` 통과 필수

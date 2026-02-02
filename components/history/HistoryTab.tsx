@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import type { OptionC, HistoryEvent } from '@/src/types/ssot'
 
 const EVENT_TYPE_LABELS: Record<string, string> = {
@@ -14,19 +14,31 @@ const EVENT_TYPE_LABELS: Record<string, string> = {
   collision_opened: 'Collision opened',
   baseline_created: 'Baseline created',
   baseline_activated: 'Baseline activated',
+  note: 'Note',
+  delay: 'Delay',
+  decision: 'Decision',
+  risk: 'Risk',
+  milestone: 'Milestone',
+  issue: 'Issue',
 }
 
 type HistoryTabProps = {
   ssot: OptionC | null
   filterEventType?: string | null
   selectedActivityId?: string | null
+  onAddEvent?: (eventType: string, message: string) => void
+  canAdd?: boolean
 }
 
 export function HistoryTab({
   ssot,
   filterEventType = null,
   selectedActivityId = null,
+  onAddEvent,
+  canAdd = false,
 }: HistoryTabProps) {
+  const [newType, setNewType] = useState('note')
+  const [newMessage, setNewMessage] = useState('')
   const events = ssot?.history_events ?? []
   const filtered = useMemo(() => {
     let list = [...events].sort(
@@ -64,11 +76,54 @@ export function HistoryTab({
     )
   }
 
+  const handleAdd = () => {
+    if (newMessage.trim() && onAddEvent) {
+      onAddEvent(newType, newMessage.trim())
+      setNewMessage('')
+    }
+  }
+
   return (
     <div className="space-y-3" data-testid="history-tab">
-      <div className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-        History (append-only)
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
+          History (append-only)
+        </span>
       </div>
+      {canAdd && onAddEvent && (
+        <div className="flex gap-2 rounded-lg border border-accent/20 bg-background/50 p-2">
+          <select
+            value={newType}
+            onChange={(e) => setNewType(e.target.value)}
+            className="rounded border border-accent/30 px-2 py-1 text-xs"
+            data-testid="history-add-type"
+            aria-label="Event type"
+          >
+            {['note', 'delay', 'decision', 'risk', 'milestone', 'issue'].map((t) => (
+              <option key={t} value={t}>
+                {EVENT_TYPE_LABELS[t] ?? t}
+              </option>
+            ))}
+          </select>
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Message..."
+            className="min-w-0 flex-1 rounded border border-accent/30 px-2 py-1 text-xs"
+            data-testid="history-add-message"
+          />
+          <button
+            type="button"
+            onClick={handleAdd}
+            disabled={!newMessage.trim()}
+            className="rounded border border-accent/30 px-2 py-1 text-xs hover:bg-accent/10 disabled:opacity-50"
+            data-testid="history-add-submit"
+          >
+            Add
+          </button>
+        </div>
+      )}
       <div className="max-h-[240px] overflow-y-auto rounded-lg border border-accent/20 bg-background/50">
         {filtered.length === 0 ? (
           <div className="p-4 text-center text-sm text-muted-foreground">

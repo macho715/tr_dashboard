@@ -125,7 +125,8 @@ export function ViewModeProvider({ children }: { children: ReactNode }) {
   // Mode behavior (patch §2.2, §5.4)
   const canEdit = state.mode === 'live'
   const canApplyReflow = state.mode === 'live' // Limited (approval required)
-  const canUploadEvidence = state.mode === 'live'
+  // v1.0: Upload disabled (patchm2/m4/m5) — Evidence link input in PR#3
+  const canUploadEvidence = false
 
   return (
     <ViewModeContext.Provider

@@ -29,6 +29,7 @@ import { DetailPanel } from "@/components/detail/DetailPanel"
 import { ApprovalModeBanner } from "@/components/approval/ApprovalModeBanner"
 import { CompareModeBanner } from "@/components/compare/CompareModeBanner"
 import { HistoryEvidencePanel } from "@/components/history/HistoryEvidencePanel"
+import { ReadinessPanel } from "@/components/dashboard/ReadinessPanel"
 import { calculateSlack } from "@/lib/utils/slack-calc"
 import { OverviewSection } from "@/components/dashboard/sections/overview-section"
 import { KPISection } from "@/components/dashboard/sections/kpi-section"
@@ -128,7 +129,7 @@ export default function Page() {
     createDefaultOpsState({ activities: scheduleActivities, projectEndDate: PROJECT_END_DATE })
   )
   const ganttRef = useRef<GanttChartHandle>(null)
-  const evidenceRef = useRef<HTMLDivElement>(null)
+  const evidenceRef = useRef<HTMLElement>(null)
   const [trips, setTrips] = useState<{ trip_id: string; name: string }[]>([])
   const [trs, setTrs] = useState<{ tr_id: string; name: string }[]>([])
   const [reflowPreview, setReflowPreview] = useState<{
@@ -296,155 +297,170 @@ export default function Page() {
         </a>
 
         <DashboardHeader />
-        <DashboardLayout
-          trips={trips}
-          trs={trs}
-          onReflowPreview={() => setJumpTrigger((n) => n + 1)}
-        >
-        <ApprovalModeBanner activities={activities} />
-        <CompareModeBanner
-          compareResult={
-            viewMode?.state.mode === "compare"
-              ? calculateDelta(scheduleActivities, activities, baselineConflicts, conflicts.length)
-              : null
-          }
-        />
-        <StoryHeader
-          trId={selectedVoyage ? String(selectedVoyage.voyage) : null}
-          where={
-            selectedVoyage
-              ? `Now @ Load-out ${selectedVoyage.loadOut} | ETA Sail ${selectedVoyage.sailDate}`
-              : undefined
-          }
-          whenWhat={
-            selectedVoyage
-              ? `Next: ${nextActivityName} | Blockers: —`
-              : undefined
-          }
-          evidence={
-            selectedVoyage
-              ? `Last: — | Missing: 0 | PTW: —`
-              : undefined
-          }
-        />
-        <OverviewSection
-          activities={activities}
-          onApplyActivities={handleApplyPreview}
-          onSetActivities={setActivities}
-          onFocusActivity={(id) => ganttRef.current?.scrollToActivity(id)}
-        />
-        <SectionNav activeSection={activeSection} sections={sections} />
+        <main id="main" tabIndex={-1}>
+          <DashboardLayout
+            trips={trips}
+            trs={trs}
+            onReflowPreview={() => setJumpTrigger((n) => n + 1)}
+          >
+            <ApprovalModeBanner activities={activities} />
+            <CompareModeBanner
+              compareResult={
+                viewMode?.state.mode === "compare"
+                  ? calculateDelta(scheduleActivities, activities, baselineConflicts, conflicts.length)
+                  : null
+              }
+            />
+                <StoryHeader
+              trId={selectedVoyage ? String(selectedVoyage.voyage) : null}
+              where={
+                selectedVoyage
+                  ? `Now @ Load-out ${selectedVoyage.loadOut} | ETA Sail ${selectedVoyage.sailDate}`
+                  : undefined
+              }
+              whenWhat={
+                selectedVoyage
+                  ? `Next: ${nextActivityName} | Blockers: —`
+                  : undefined
+              }
+              evidence={
+                selectedVoyage
+                  ? `Last: — | Missing: 0 | PTW: —`
+                  : undefined
+              }
+            />
+                <OverviewSection
+              activities={activities}
+              onApplyActivities={handleApplyPreview}
+              onSetActivities={setActivities}
+              onFocusActivity={(id) => ganttRef.current?.scrollToActivity(id)}
+            />
+            <SectionNav activeSection={activeSection} sections={sections} />
 
-        <div className="space-y-6">
-          <KPISection />
-          <AlertsSection />
-          <TrThreeColumnLayout
-            mapSlot={
-              <div className="space-y-3">
-                <MapPanelWrapper
-                  selectedActivityId={selectedActivityId ?? selectedCollision?.activity_id ?? null}
-                  onTrClick={() => {
-                    // Phase 5: TR click → onActivitySelect fires with current activity
-                  }}
-                  onActivitySelect={(activityId) => {
-                    setSelectedActivityId(activityId)
-                    ganttRef.current?.scrollToActivity?.(activityId)
-                  }}
-                />
-                <VoyagesSection
-                  onSelectVoyage={setSelectedVoyage}
-                  selectedVoyage={selectedVoyage}
-                />
-              </div>
-            }
-            timelineSlot={
-              <>
-                <ScheduleSection />
-                <GanttSection
-                  ganttRef={ganttRef}
-                  activities={activities}
-                  view={timelineView}
-                  onViewChange={setTimelineView}
-                  highlightFlags={highlightFlags}
-                  onHighlightFlagsChange={setHighlightFlags}
-                  jumpDate={jumpDate}
-                  onJumpDateChange={setJumpDate}
-                  jumpTrigger={jumpTrigger}
-                  onJumpRequest={() => setJumpTrigger((n) => n + 1)}
-                  onActivityClick={handleActivityClick}
-                  conflicts={conflicts}
-                  onCollisionClick={(col) => {
-                    setSelectedCollision(col)
-                    if (col.activity_id) setSelectedActivityId(col.activity_id)
-                  }}
-                  focusedActivityId={focusedActivityId}
-                  projectEndDate={PROJECT_END_DATE}
-                  compareDelta={
-                    viewMode?.state.mode === "compare"
-                      ? calculateDelta(scheduleActivities, activities, baselineConflicts, conflicts.length)
-                      : null
-                  }
-                />
-              </>
-            }
-            detailSlot={
-              <div className="space-y-3">
-                <DetailPanel
-                  activity={
-                    selectedActivityId
-                      ? activities.find((a) => a.activity_id === selectedActivityId) ?? null
-                      : null
-                  }
-                  slackResult={
-                    selectedActivityId ? slackMap.get(selectedActivityId) ?? null : null
-                  }
-                  conflicts={conflicts}
-                  onClose={() => setSelectedActivityId(null)}
-                  onCollisionClick={(col) => {
-                    setSelectedCollision(col)
-                    if (col.activity_id) setSelectedActivityId(col.activity_id)
-                  }}
-                />
-                <WhyPanel
-                  collision={selectedCollision}
-                  onClose={() => setSelectedCollision(null)}
-                  onViewInTimeline={handleViewInTimeline}
-                  onJumpToEvidence={handleJumpToEvidence}
-                  onRelatedActivityClick={focusTimelineActivity}
-                  onApplyAction={handleApplyAction}
-                />
-                {reflowPreview && (
-                  <ReflowPreviewPanel
-                    changes={reflowPreview.changes}
-                    conflicts={reflowPreview.conflicts.map((c) => ({
-                      message: c.message,
-                      severity: c.severity,
-                    }))}
-                    onApply={handleApplyPreviewFromWhy}
-                    onCancel={() => setReflowPreview(null)}
-                    canApply={canApplyReflow}
-                  />
-                )}
+            <div className="space-y-6">
+              <KPISection />
+              <AlertsSection />
+              <TrThreeColumnLayout
+                mapSlot={
+                  <div className="space-y-3">
+                    <MapPanelWrapper
+                      selectedActivityId={selectedActivityId ?? selectedCollision?.activity_id ?? null}
+                      onTrClick={() => {
+                        // Phase 5: TR click → onActivitySelect fires with current activity
+                      }}
+                      onActivitySelect={(activityId) => {
+                        setSelectedActivityId(activityId)
+                        ganttRef.current?.scrollToActivity?.(activityId)
+                      }}
+                    />
+                    <VoyagesSection
+                      onSelectVoyage={setSelectedVoyage}
+                      selectedVoyage={selectedVoyage}
+                    />
+                  </div>
+                }
+                timelineSlot={
+                  <>
+                    <ScheduleSection />
+                    <GanttSection
+                      ganttRef={ganttRef}
+                      activities={activities}
+                      view={timelineView}
+                      onViewChange={setTimelineView}
+                      highlightFlags={highlightFlags}
+                      onHighlightFlagsChange={setHighlightFlags}
+                      jumpDate={jumpDate}
+                      onJumpDateChange={setJumpDate}
+                      jumpTrigger={jumpTrigger}
+                      onJumpRequest={() => setJumpTrigger((n) => n + 1)}
+                      onActivityClick={handleActivityClick}
+                      conflicts={conflicts}
+                      onCollisionClick={(col) => {
+                        setSelectedCollision(col)
+                        if (col.activity_id) setSelectedActivityId(col.activity_id)
+                      }}
+                      focusedActivityId={focusedActivityId}
+                      projectEndDate={PROJECT_END_DATE}
+                      compareDelta={
+                        viewMode?.state.mode === "compare"
+                          ? calculateDelta(
+                              scheduleActivities,
+                              activities,
+                              baselineConflicts,
+                              conflicts.length
+                            )
+                          : null
+                      }
+                    />
+                  </>
+                }
+                detailSlot={
+                  <div className="space-y-3">
+                    <DetailPanel
+                      activity={
+                        selectedActivityId
+                          ? activities.find((a) => a.activity_id === selectedActivityId) ?? null
+                          : null
+                      }
+                      slackResult={
+                        selectedActivityId ? slackMap.get(selectedActivityId) ?? null : null
+                      }
+                      conflicts={conflicts}
+                      onClose={() => setSelectedActivityId(null)}
+                      onCollisionClick={(col) => {
+                        setSelectedCollision(col)
+                        if (col.activity_id) setSelectedActivityId(col.activity_id)
+                      }}
+                    />
+                    <WhyPanel
+                      collision={selectedCollision}
+                      onClose={() => setSelectedCollision(null)}
+                      onViewInTimeline={handleViewInTimeline}
+                      onJumpToEvidence={handleJumpToEvidence}
+                      onRelatedActivityClick={focusTimelineActivity}
+                      onApplyAction={handleApplyAction}
+                    />
+                    {reflowPreview && (
+                      <ReflowPreviewPanel
+                        changes={reflowPreview.changes}
+                        conflicts={reflowPreview.conflicts.map((c) => ({
+                          message: c.message,
+                          severity: c.severity,
+                        }))}
+                        onApply={handleApplyPreviewFromWhy}
+                        onCancel={() => setReflowPreview(null)}
+                        canApply={canApplyReflow}
+                      />
+                    )}
+                  </div>
+                }
+              />
+              <section
+                id="evidence"
+                ref={evidenceRef}
+                aria-label="EVIDENCE"
+                className="space-y-3"
+              >
                 <HistoryEvidencePanel
-                  selectedActivityId={selectedActivityId ?? selectedCollision?.activity_id ?? null}
+                  selectedActivityId={
+                    selectedActivityId ?? selectedCollision?.activity_id ?? null
+                  }
                 />
-                <div ref={evidenceRef}>
-                  <NotesDecisions />
-                </div>
-              </div>
-            }
-          />
-        </div>
-        </DashboardLayout>
+                <ReadinessPanel tripId={selectedVoyage?.id ?? null} />
+                <NotesDecisions />
+              </section>
+            </div>
+          </DashboardLayout>
 
-        <Footer />
-        <BackToTop />
-        {selectedVoyage && (
-          <VoyageFocusDrawer
-            voyage={selectedVoyage}
-            onClose={() => setSelectedVoyage(null)}
-          />
-        )}
+          <Footer />
+          <BackToTop />
+          {selectedVoyage && (
+            <VoyageFocusDrawer
+              voyage={selectedVoyage}
+              onClose={() => setSelectedVoyage(null)}
+            />
+          )}
+        </main>
       </div>
     </DateProvider>
   )
