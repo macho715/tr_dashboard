@@ -53,7 +53,7 @@ export function ScheduleTable() {
               ].map((header) => (
                 <th
                   key={header}
-                  className="bg-gradient-to-b from-cyan-500/10 to-cyan-500/5 text-cyan-400 font-mono font-semibold text-[10px] uppercase tracking-wider p-3.5 text-center first:rounded-tl-lg last:rounded-tr-lg"
+                  className="bg-gradient-to-b from-cyan-500/10 to-cyan-500/5 text-cyan-400 font-mono font-semibold text-xs uppercase tracking-wider p-3.5 text-center first:rounded-tl-lg last:rounded-tr-lg"
                 >
                   {header}
                 </th>

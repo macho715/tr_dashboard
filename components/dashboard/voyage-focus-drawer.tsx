@@ -123,11 +123,11 @@ export function VoyageFocusDrawer({ voyage, onClose }: VoyageFocusDrawerProps) {
               <AlertTriangle className="h-4 w-4 text-amber-300" />
               Weather window tightening after {voyage.sailDate}
             </div>
-            <div className="mt-3 space-y-1 text-[11px] text-slate-400">
+            <div className="mt-3 space-y-1 text-xs text-slate-400">
               <div>
                 Delay days: {formatMetric(riskSnapshot.delayDays)}
               </div>
-              <div className="text-[10px] text-slate-500">
+              <div className="text-xs text-slate-500">
                 Threshold: {formatMetric(DELAY_THRESHOLD_DAYS)} days
               </div>
             </div>
@@ -138,7 +138,7 @@ export function VoyageFocusDrawer({ voyage, onClose }: VoyageFocusDrawerProps) {
               <Anchor className="h-4 w-4 text-cyan-300" />
               Activity Summary
             </div>
-            <div className="grid gap-2 text-[11px] text-slate-400">
+            <div className="grid gap-2 text-xs text-slate-400">
               <div>Arrival MZP: {voyage.arrivalMZP}</div>
               <div>SPMT Load-out: {voyage.loadOut}</div>
               <div>Sail-away: {voyage.sailAway}</div>
@@ -155,8 +155,8 @@ export function VoyageFocusDrawer({ voyage, onClose }: VoyageFocusDrawerProps) {
             <div className="space-y-2">
               {miniTimeline.map((item) => (
                 <div key={item.label} className="flex items-center justify-between">
-                  <span className="text-[11px] text-slate-300">{item.label}</span>
-                  <span className="text-[11px] text-slate-500">{item.date}</span>
+                  <span className="text-xs text-slate-300">{item.label}</span>
+                  <span className="text-xs text-slate-500">{item.date}</span>
                 </div>
               ))}
             </div>

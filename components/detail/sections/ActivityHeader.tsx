@@ -18,7 +18,7 @@ export function ActivityHeader({ activity, onClose }: ActivityHeaderProps) {
         <h3 className="font-bold text-foreground">{activity.activity_id}</h3>
         <p className="mt-0.5 text-sm text-slate-400">{activity.activity_name}</p>
         {activity.level1 && (
-          <p className="mt-0.5 text-[11px] text-slate-500">
+          <p className="mt-0.5 text-xs text-slate-500">
             {activity.level1}
             {activity.level2 && ` / ${activity.level2}`}
           </p>

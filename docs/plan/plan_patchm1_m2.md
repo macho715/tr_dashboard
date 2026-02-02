@@ -196,7 +196,7 @@
 
 ## 9. Tests (plan.md 규약)
 
-- [ ] test: BulkAnchors hidden by default (file: components/ops/__tests__/AgiOpsDock.test.tsx)
+- [x] test: BulkAnchors hidden by default (file: components/ops/__tests__/AgiOpsDock.test.tsx) # passed
 - [ ] test: EvidenceLinkModal accepts URL and creates EvidenceItem (file: components/evidence/__tests__/EvidenceLinkModal.test.tsx)
 - [ ] test: History append-only — no edit/delete UI (file: components/history/__tests__/HistoryTab.test.tsx)
 - [ ] test: computeActivityDiff returns correct delta (file: lib/baseline/__tests__/baseline-compare.test.ts)

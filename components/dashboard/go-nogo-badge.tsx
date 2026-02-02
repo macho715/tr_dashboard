@@ -41,12 +41,12 @@ export function GoNoGoBadge() {
       <div>
         <div className="font-bold text-sm">Decision: {config.label}</div>
         {goNoGoReasonCodes.length > 0 && (
-          <div className="text-[10px] opacity-90 mt-0.5">
+          <div className="text-xs opacity-90 mt-0.5">
             {goNoGoReasonCodes.join(", ")}
           </div>
         )}
         {goNoGoUpdatedAt && (
-          <div className="text-[10px] opacity-75 mt-1">
+          <div className="text-xs opacity-75 mt-1">
             Updated: {new Date(goNoGoUpdatedAt).toISOString().split("T")[0]}
           </div>
         )}

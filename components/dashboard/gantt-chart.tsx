@@ -6,7 +6,6 @@ import { useEffect, useMemo, useRef, useState, forwardRef, useImperativeHandle }
 import { Calendar } from "lucide-react"
 import {
   legendItems,
-  milestones,
   PROJECT_START,
   PROJECT_END,
   TOTAL_DAYS,
@@ -15,13 +14,24 @@ import {
   activityTypeNames,
 } from "@/lib/dashboard-data"
 import { scheduleActivitiesToGanttRows } from "@/lib/data/schedule-data"
+import { ganttRowsToVisData } from "@/lib/gantt/visTimelineMapper"
+import {
+  VisTimelineGantt,
+  type VisTimelineGanttHandle,
+} from "@/components/gantt/VisTimelineGantt"
+import type { GanttEventBase } from "@/lib/gantt/gantt-contract"
 import type { ScheduleActivity } from "@/lib/ssot/schedule"
+import {
+  parseDateInput,
+  parseDateToNoonUtc,
+  toUtcNoon,
+  dateToIsoUtc,
+} from "@/lib/ssot/schedule"
 import {
   TimelineControls,
   type HighlightFlags,
   type TimelineView,
 } from "@/components/dashboard/timeline-controls"
-import { DependencyHeatmap } from "@/components/dashboard/dependency-heatmap"
 import { cn } from "@/lib/utils"
 import { useDate } from "@/lib/contexts/date-context"
 import {
@@ -62,8 +72,8 @@ function calcPosition(
   view: TimelineView,
   totalUnits: number
 ) {
-  const start = new Date(startDate)
-  const end = new Date(endDate)
+  const start = parseDateToNoonUtc(startDate) ?? PROJECT_START
+  const end = parseDateToNoonUtc(endDate) ?? PROJECT_END
   const startDays =
     Math.floor((start.getTime() - PROJECT_START.getTime()) / MS_PER_DAY) + 1
   const duration =
@@ -82,27 +92,11 @@ function calcPosition(
   }
 }
 
-function formatShortDate(date: Date) {
-  const month = String(date.getMonth() + 1).padStart(2, "0")
-  const day = String(date.getDate()).padStart(2, "0")
+/** Format date for Gantt labels (UTC, Bug #1) */
+function formatShortDateUtc(date: Date) {
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0")
+  const day = String(date.getUTCDate()).padStart(2, "0")
   return `${month}-${day}`
-}
-
-function parseJumpDate(value: string) {
-  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value.trim())
-  if (!match) return null
-  const year = Number(match[1])
-  const month = Number(match[2])
-  const day = Number(match[3])
-  const date = new Date(Date.UTC(year, month - 1, day, 12))
-  if (
-    date.getUTCFullYear() !== year ||
-    date.getUTCMonth() + 1 !== month ||
-    date.getUTCDate() !== day
-  ) {
-    return null
-  }
-  return date
 }
 
 interface TooltipState {
@@ -127,6 +121,8 @@ interface GanttChartProps {
   jumpTrigger?: number
   onJumpRequest?: () => void
   onActivityClick?: (activityId: string, start: string) => void
+  /** Bug 3: 배경 클릭 시 선택 해제 */
+  onActivityDeselect?: () => void
   conflicts?: ScheduleConflict[]
   onCollisionClick?: (conflict: ScheduleConflict) => void
   focusedActivityId?: string | null
@@ -134,6 +130,8 @@ interface GanttChartProps {
   compareDelta?: CompareResult | null
   /** Project end date for slack calculation (must match page.tsx for consistent DetailPanel/Gantt values) */
   projectEndDate: string
+  /** GANTTPATCH2: Event stream (ITEM_SELECTED, GANTT_READY) */
+  onGanttEvent?: (event: GanttEventBase) => void
 }
 
 export const GanttChart = forwardRef<GanttChartHandle, GanttChartProps>(function GanttChart(
@@ -148,11 +146,13 @@ export const GanttChart = forwardRef<GanttChartHandle, GanttChartProps>(function
     jumpTrigger = 0,
     onJumpRequest,
     onActivityClick,
+    onActivityDeselect,
     conflicts = [],
     onCollisionClick,
     focusedActivityId,
     compareDelta,
     projectEndDate,
+    onGanttEvent,
   },
   ref
 ) {
@@ -170,6 +170,8 @@ export const GanttChart = forwardRef<GanttChartHandle, GanttChartProps>(function
   })
   const ganttContainerRef = useRef<HTMLDivElement>(null)
   const activityRefs = useRef<Map<string, HTMLDivElement>>(new Map())
+  const visTimelineRef = useRef<VisTimelineGanttHandle>(null)
+  const useVisEngine = process.env.NEXT_PUBLIC_GANTT_ENGINE === "vis"
   const ganttRows = useMemo(
     () => scheduleActivitiesToGanttRows(activities),
     [activities]
@@ -226,14 +228,15 @@ export const GanttChart = forwardRef<GanttChartHandle, GanttChartProps>(function
     for (let i = 0; i < totalSteps; i += 1) {
       const offset = i * step
       const date = new Date(PROJECT_START.getTime() + offset * MS_PER_DAY)
-      marks.push(formatShortDate(date))
+      marks.push(formatShortDateUtc(date))
     }
     return marks
   }, [view, totalWeeks])
 
   const getDatePosition = (date: Date) => {
+    const noon = toUtcNoon(date)
     const daysFromStart =
-      Math.floor((date.getTime() - PROJECT_START.getTime()) / MS_PER_DAY) + 1
+      Math.floor((noon.getTime() - PROJECT_START.getTime()) / MS_PER_DAY) + 1
     if (view === "Week") {
       const weeksFromStart = Math.floor((daysFromStart - 1) / DAYS_PER_WEEK) + 1
       return Math.max(0, Math.min(100, ((weeksFromStart - 0.5) / totalUnits) * 100))
@@ -241,8 +244,17 @@ export const GanttChart = forwardRef<GanttChartHandle, GanttChartProps>(function
     return Math.max(0, Math.min(100, ((daysFromStart - 0.5) / totalUnits) * 100))
   }
 
+  const visData = useMemo(
+    () => ganttRowsToVisData(ganttRows, compareDelta),
+    [ganttRows, compareDelta]
+  )
+
   const scrollToActivity = (activityId: string) => {
     const normalizedId = activityId.split(":")[0].trim()
+    if (useVisEngine) {
+      visTimelineRef.current?.scrollToActivity(normalizedId)
+      return
+    }
     const el = activityRefs.current.get(normalizedId)
     if (!el) {
       for (const [key, value] of activityRefs.current.entries()) {
@@ -268,12 +280,17 @@ export const GanttChart = forwardRef<GanttChartHandle, GanttChartProps>(function
   useEffect(() => {
     if (jumpTrigger === 0) return
     if (!jumpDate) return
-    const parsed = parseJumpDate(jumpDate)
+    const parsed = parseDateInput(jumpDate)
     if (!parsed) return
     const clamped = new Date(
       Math.min(Math.max(parsed.getTime(), PROJECT_START.getTime()), PROJECT_END.getTime())
     )
     setSelectedDate(clamped)
+
+    if (useVisEngine) {
+      visTimelineRef.current?.moveToToday(clamped)
+      return
+    }
 
     const container = ganttContainerRef.current
     if (!container) return
@@ -285,7 +302,7 @@ export const GanttChart = forwardRef<GanttChartHandle, GanttChartProps>(function
     // Only run when Go is clicked (jumpTrigger). Omit setSelectedDate from deps:
     // it's a stable setState setter; including it can cause redundant runs if
     // DateProvider re-renders and context value reference changes.
-  }, [jumpTrigger, jumpDate, view])
+  }, [jumpTrigger, jumpDate, view, useVisEngine])
 
   const getHighlightClass = (meta: ScheduleActivity | undefined, activityEnd: string) => {
     if (!meta || !meta.activity_id) return ""
@@ -330,7 +347,7 @@ export const GanttChart = forwardRef<GanttChartHandle, GanttChartProps>(function
   }
 
   return (
-    <section className="bg-card/85 backdrop-blur-lg rounded-2xl p-6 border border-accent/15">
+    <section className="flex flex-col flex-1 min-h-0 bg-card/85 backdrop-blur-lg rounded-2xl p-6 border border-accent/15">
       <h2 className="text-foreground text-base font-bold mb-5 flex items-center gap-2 tracking-tight">
         <Calendar className="w-5 h-5 text-cyan-400" />
         Gantt Chart (Jan 26 - Mar 22, 2026)
@@ -345,6 +362,18 @@ export const GanttChart = forwardRef<GanttChartHandle, GanttChartProps>(function
         jumpDate={jumpDate}
         onJumpDateChange={onJumpDateChange}
         onJumpRequest={onJumpRequest}
+        zoomCallbacks={
+          useVisEngine
+            ? {
+                onZoomIn: () => visTimelineRef.current?.zoomIn(),
+                onZoomOut: () => visTimelineRef.current?.zoomOut(),
+                onFit: () => visTimelineRef.current?.fit(),
+                onToday: () => visTimelineRef.current?.moveToToday(selectedDate),
+                onPanLeft: () => visTimelineRef.current?.panLeft(),
+                onPanRight: () => visTimelineRef.current?.panRight(),
+              }
+            : undefined
+        }
       />
 
       {/* Legend */}
@@ -361,7 +390,7 @@ export const GanttChart = forwardRef<GanttChartHandle, GanttChartProps>(function
           </div>
         ))}
         <span className="text-slate-500">|</span>
-        <div className="flex flex-wrap gap-2 text-[10px] font-medium text-slate-500">
+        <div className="flex flex-wrap gap-2 text-xs font-medium text-slate-500">
           <span title="Weather">[W]</span>
           <span title="Permit">[PTW]</span>
           <span title="Certificate">[CERT]</span>
@@ -384,8 +413,25 @@ export const GanttChart = forwardRef<GanttChartHandle, GanttChartProps>(function
         </div>
       </div>
 
-      {/* Gantt Container */}
-      <div className="overflow-x-auto" ref={ganttContainerRef}>
+      {/* Gantt Container: flexible height so detail + Gantt grow together */}
+      <div className="flex min-h-[400px] flex-1 flex-col">
+      {useVisEngine ? (
+        <VisTimelineGantt
+          ref={visTimelineRef}
+          groups={visData.groups}
+          items={visData.items}
+          selectedDate={selectedDate}
+          view={view}
+          onEvent={onGanttEvent}
+          onItemClick={(id) => {
+            const activityId = id.startsWith("ghost_") ? id.slice(6) : id
+            onActivityClick?.(activityId, activities.find((a) => a.activity_id === activityId)?.planned_start ?? "")
+          }}
+          onDeselect={onActivityDeselect}
+          focusedActivityId={focusedActivityId}
+        />
+      ) : (
+      <div className="overflow-x-auto flex-1 min-h-0" ref={ganttContainerRef}>
         <div className="relative" style={{ minWidth: `${chartWidth}px` }}>
           {/* Date Header */}
           <div className="flex ml-[200px] lg:ml-[220px] mb-3 border-b border-accent/15 pb-3">
@@ -403,12 +449,10 @@ export const GanttChart = forwardRef<GanttChartHandle, GanttChartProps>(function
             <div
               className="absolute top-[36px] bottom-0 w-0.5 bg-amber-400 z-20 pointer-events-none"
               style={{ left: `${selectedDatePosition}%` }}
+              title={`Selected Date: ${dateToIsoUtc(toUtcNoon(selectedDate))} (UTC)`}
             >
               <div className="absolute -top-5 left-1/2 -translate-x-1/2 bg-amber-400 text-slate-900 text-[8px] font-bold px-1.5 py-0.5 rounded whitespace-nowrap">
-                {selectedDate.toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                })}
+                {formatShortDateUtc(toUtcNoon(selectedDate))} ({dateToIsoUtc(toUtcNoon(selectedDate))})
               </div>
             </div>
           )}
@@ -626,21 +670,7 @@ export const GanttChart = forwardRef<GanttChartHandle, GanttChartProps>(function
           ))}
         </div>
       </div>
-
-      {/* Milestones */}
-      <div className="flex justify-between items-start px-6 py-7 bg-glass rounded-xl mt-6 relative border border-accent/15">
-        <div className="absolute top-12 left-[70px] right-[70px] h-0.5 bg-gradient-to-r from-cyan-500 via-amber-400 via-emerald-500 to-blue-500 rounded" />
-        {milestones.map((milestone, index) => (
-          <div key={index} className="text-center relative z-10">
-            <div className="w-4.5 h-4.5 bg-gradient-to-br from-cyan-400 to-teal-500 rounded-full mx-auto mb-3 border-[3px] border-slate-800 shadow-[0_0_0_3px_rgba(6,182,212,0.3)]" />
-            <div className="font-mono text-sm font-bold text-cyan-400 mb-1">
-              {milestone.date}
-            </div>
-            <div className="text-[10px] font-medium text-slate-500 max-w-[80px]">
-              {milestone.label}
-            </div>
-          </div>
-        ))}
+      )}
       </div>
 
       {/* Collision popover (1-click: summary, 2-click: Why → Detail) */}
@@ -656,13 +686,13 @@ export const GanttChart = forwardRef<GanttChartHandle, GanttChartProps>(function
           <div className="text-xs font-bold text-red-300 mb-1">
             Collision summary
           </div>
-          <p className="text-[11px] text-slate-300 mb-2">
+          <p className="text-xs text-slate-300 mb-2">
             {collisionPopover.conflicts[0].message}
           </p>
           <div className="flex gap-1">
             <button
               type="button"
-              className="flex-1 rounded bg-red-900/50 px-2 py-1 text-[10px] font-medium text-red-200 hover:bg-red-800/60"
+              className="flex-1 rounded bg-red-900/50 px-2 py-1 text-xs font-medium text-red-200 hover:bg-red-800/60"
               onClick={() => {
                 onCollisionClick?.(collisionPopover.conflicts[0])
                 setCollisionPopover(null)
@@ -672,7 +702,7 @@ export const GanttChart = forwardRef<GanttChartHandle, GanttChartProps>(function
             </button>
             <button
               type="button"
-              className="rounded px-2 py-1 text-[10px] text-slate-400 hover:text-foreground"
+              className="rounded px-2 py-1 text-xs text-slate-400 hover:text-foreground"
               onClick={() => setCollisionPopover(null)}
             >
               Close
@@ -703,7 +733,6 @@ export const GanttChart = forwardRef<GanttChartHandle, GanttChartProps>(function
         </div>
       )}
 
-      <DependencyHeatmap onSelectActivity={scrollToActivity} />
     </section>
   )
 })

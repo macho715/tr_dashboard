@@ -216,6 +216,7 @@ export default function Page() {
 
   const handleActivityClick = (activityId: string, start: string) => {
     setSelectedActivityId(activityId)
+    setFocusedActivityId(activityId)
     const v = findVoyageByActivityDate(start, voyages)
     if (v) setSelectedVoyage(v)
   }
@@ -288,7 +289,7 @@ export default function Page() {
 
   return (
     <DateProvider>
-      <div className="relative z-10 max-w-[1800px] mx-auto px-4 sm:px-6 py-6">
+      <div className="relative z-10 flex min-h-screen w-full max-w-[1920px] flex-col mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-50 bg-card/95 border border-accent/20 rounded-lg px-3 py-2 text-sm font-medium text-foreground shadow-glow"
@@ -297,7 +298,7 @@ export default function Page() {
         </a>
 
         <DashboardHeader />
-        <main id="main" tabIndex={-1}>
+        <main id="main" tabIndex={-1} className="flex flex-1 flex-col min-h-0">
           <DashboardLayout
             trips={trips}
             trs={trs}
@@ -337,20 +338,23 @@ export default function Page() {
             />
             <SectionNav activeSection={activeSection} sections={sections} />
 
-            <div className="space-y-6">
+            <div className="flex flex-1 flex-col min-h-0 space-y-6">
               <KPISection />
               <AlertsSection />
               <TrThreeColumnLayout
                 mapSlot={
                   <div className="space-y-3">
                     <MapPanelWrapper
-                      selectedActivityId={selectedActivityId ?? selectedCollision?.activity_id ?? null}
+                      selectedActivityId={selectedActivityId ?? selectedCollision?.activity_id ?? focusedActivityId ?? null}
                       onTrClick={() => {
                         // Phase 5: TR click → onActivitySelect fires with current activity
                       }}
                       onActivitySelect={(activityId) => {
                         setSelectedActivityId(activityId)
+                        setFocusedActivityId(activityId)
                         ganttRef.current?.scrollToActivity?.(activityId)
+                        const ganttSection = document.getElementById("gantt")
+                        ganttSection?.scrollIntoView({ behavior: "smooth", block: "start" })
                       }}
                     />
                     <VoyagesSection
@@ -360,7 +364,7 @@ export default function Page() {
                   </div>
                 }
                 timelineSlot={
-                  <>
+                  <div className="flex flex-1 flex-col min-h-0">
                     <ScheduleSection />
                     <GanttSection
                       ganttRef={ganttRef}
@@ -374,6 +378,7 @@ export default function Page() {
                       jumpTrigger={jumpTrigger}
                       onJumpRequest={() => setJumpTrigger((n) => n + 1)}
                       onActivityClick={handleActivityClick}
+                      onActivityDeselect={() => setFocusedActivityId(null)}
                       conflicts={conflicts}
                       onCollisionClick={(col) => {
                         setSelectedCollision(col)
@@ -392,7 +397,7 @@ export default function Page() {
                           : null
                       }
                     />
-                  </>
+                  </div>
                 }
                 detailSlot={
                   <div className="space-y-3">

@@ -15,7 +15,7 @@ export function WeatherBlock() {
         <h4 className="text-amber-400 text-sm font-bold mb-2 tracking-tight">
           Weather & Marine Risk Update (Mina Zayed Port)
         </h4>
-        <p className="text-slate-500 text-[10px] mb-2">
+        <p className="text-slate-500 text-xs mb-2">
           Last Updated: {weatherLastUpdated} | Update Frequency: Weekly
         </p>
         <div className="text-slate-400 text-xs leading-relaxed space-y-2">

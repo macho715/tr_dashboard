@@ -20,7 +20,7 @@ export function ResourcesSection({ activity }: ResourcesSectionProps) {
       className="rounded-lg border border-slate-700/60 bg-slate-900/30 p-3"
       data-testid="resources-section"
     >
-      <div className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase text-slate-500">
+      <div className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase text-slate-500">
         <Package className="h-3.5 w-3.5" />
         Resources
       </div>
@@ -28,7 +28,7 @@ export function ResourcesSection({ activity }: ResourcesSectionProps) {
         {tags.map((tag) => (
           <span
             key={tag}
-            className="rounded-md border border-slate-600/60 bg-slate-800/60 px-2 py-1 text-[11px] font-medium text-slate-300"
+            className="rounded-md border border-slate-600/60 bg-slate-800/60 px-2 py-1 text-xs font-medium text-slate-300"
           >
             {tag}
           </span>

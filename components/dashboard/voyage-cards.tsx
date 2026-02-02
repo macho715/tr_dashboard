@@ -73,13 +73,13 @@ export function VoyageCards({ onSelectVoyage, selectedVoyage }: VoyageCardsProps
                 : ""
             }`}
           >
-            <div className="font-mono text-amber-400 text-[10px] font-bold tracking-widest uppercase mb-2">
+            <div className="font-mono text-amber-400 text-xs font-bold tracking-widest uppercase mb-2">
               Voyage {v.voyage}
             </div>
             <div className="text-foreground text-sm font-bold mb-3 tracking-tight">
               {v.trUnit}
             </div>
-            <div className="font-mono text-[10px] text-slate-500 leading-relaxed space-y-0.5">
+            <div className="font-mono text-xs text-slate-500 leading-relaxed space-y-0.5">
               <p>
                 <strong className="text-slate-400">Load-out:</strong> {v.loadOut}
               </p>
@@ -90,7 +90,7 @@ export function VoyageCards({ onSelectVoyage, selectedVoyage }: VoyageCardsProps
                 <strong className="text-slate-400">Jack-down:</strong> {v.jackDown}
               </p>
             </div>
-            <div className="inline-flex items-center gap-1.5 mt-3 bg-gradient-to-r from-cyan-500 to-cyan-600 text-slate-900 px-3 py-1.5 rounded-full font-mono text-[10px] font-bold tracking-wide">
+            <div className="inline-flex items-center gap-1.5 mt-3 bg-gradient-to-r from-cyan-500 to-cyan-600 text-slate-900 px-3 py-1.5 rounded-full font-mono text-xs font-bold tracking-wide">
               <Sailboat className="w-3 h-3" />
               {v.sailDate}
             </div>

@@ -55,7 +55,7 @@ export function OperationOverviewRibbon() {
           <Gauge className="h-6 w-6 text-cyan-400" />
           <div>
             <div className="text-sm font-semibold text-foreground">Operation Overview</div>
-            <div className="text-[11px] text-slate-400">
+            <div className="text-xs text-slate-400">
               Daily pulse · {selectedDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
             </div>
           </div>
@@ -71,7 +71,7 @@ export function OperationOverviewRibbon() {
           </div>
         </div>
         {!isCompact && (
-          <div className="ml-auto flex items-center gap-3 text-[11px] text-slate-400">
+          <div className="ml-auto flex items-center gap-3 text-xs text-slate-400">
             <span className="rounded-full border border-slate-600/40 bg-slate-900/60 px-2.5 py-1">
               Focus: Load-out & Sail-away readiness
             </span>

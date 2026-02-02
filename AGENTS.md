@@ -1,5 +1,12 @@
+---
+doc_id: agents
+refs: [patch.md, docs/LAYOUT.md, option_c.json]
+updated: 2026-02-03
+---
+
 # AGENTS.md — TR Movement Dashboard (SSOT: option_c.json)
-Last updated: 2026-02-01 (Asia/Dubai)
+Last updated: 2026-02-01 (Asia/Dubai)  
+**최신 작업 반영**: 2026-02-03 — [docs/WORK_LOG_20260202.md](docs/WORK_LOG_20260202.md), [docs/BUGFIX_APPLIED_20260202.md](docs/BUGFIX_APPLIED_20260202.md)
 
 > 이 저장소에서 작업하는 모든 AI 코딩 에이전트는 아래 규칙을 “절대 우선”으로 준수한다.
 > 목표: TR 하나 = 하나의 이동 스토리. 한 화면에서 Where → When/What → Evidence가 3초 내 읽혀야 한다.
@@ -155,3 +162,12 @@ Last updated: 2026-02-01 (Asia/Dubai)
 - Trip/TR에 현재 상태/현재 위치/진척률을 SSOT처럼 저장하지 말 것(반드시 Activity에서 계산).
 - Actual이 있는 Activity의 start/end를 리플로우로 이동하지 말 것.
 - Approval(Read-only)에서 plan 변경을 허용하지 말 것.
+
+---
+
+## Refs
+
+- [patch.md](patch.md)
+- [docs/LAYOUT.md](docs/LAYOUT.md)
+- [option_c.json](option_c.json)
+- [docs/WORK_LOG_20260202.md](docs/WORK_LOG_20260202.md), [docs/BUGFIX_APPLIED_20260202.md](docs/BUGFIX_APPLIED_20260202.md) — 최신 작업 반영

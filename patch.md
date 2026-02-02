@@ -1,3 +1,9 @@
+---
+doc_id: patch
+refs: [AGENTS.md, docs/LAYOUT.md, docs/SYSTEM_ARCHITECTURE.md]
+updated: 2026-02-03
+---
+
 ## 1) 요약
 
 **목표(SSOT 관점):** “TR 하나 = 하나의 이동 스토리”를 **한 화면에서** 운영·엔지니어·관리자가 동일하게 읽도록 재구성합니다.
@@ -2565,3 +2571,12 @@ Activity는 **반드시** 아래 키를 가져야 합니다(SSOT):
 ---
 
 원하면, 위 계약을 기준으로  **(1) activity_types를 귀사 실제 작업분류로 1:1 매핑** , (2) `constraint_rules`(WX/LINKSPAN/BARGE/PTW) 파라미터를 운영 기준치로 구체화(수치/창)까지 내려서 **완전한 option_c.json 샘플(여러 TR/여러 trip 포함)** 형태로 확장해 드릴 수 있습니다.
+
+---
+
+## Refs
+
+- [AGENTS.md](AGENTS.md)
+- [docs/LAYOUT.md](docs/LAYOUT.md)
+- [docs/SYSTEM_ARCHITECTURE.md](docs/SYSTEM_ARCHITECTURE.md)
+- [docs/WORK_LOG_20260202.md](docs/WORK_LOG_20260202.md), [docs/BUGFIX_APPLIED_20260202.md](docs/BUGFIX_APPLIED_20260202.md) — 최신 작업 반영 (Phase 6 #1~5,#7, Phase 7/10/11)

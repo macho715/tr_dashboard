@@ -37,11 +37,11 @@ export function PlanVsActualSection({ activity, slackResult }: PlanVsActualSecti
       className="rounded-lg border border-slate-700/60 bg-slate-900/30 p-3"
       data-testid="plan-vs-actual-section"
     >
-      <div className="mb-2 text-[11px] font-semibold uppercase text-slate-500">
+      <div className="mb-2 text-xs font-semibold uppercase text-slate-500">
         Plan vs Actual vs Calc
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[260px] text-[11px]">
+        <table className="w-full min-w-[260px] text-xs">
           <thead>
             <tr className="border-b border-slate-700/60 text-slate-400">
               <th className="py-1.5 pr-2 text-left font-medium">Plan</th>

@@ -25,7 +25,7 @@ export function DashboardLayout({
 }: DashboardLayoutProps) {
   return (
     <ViewModeProvider>
-      <div className="space-y-4" data-testid="dashboard-layout">
+      <div className="flex flex-1 flex-col min-h-0 space-y-4" data-testid="dashboard-layout">
         <GlobalControlBar
           trips={trips}
           trs={trs}

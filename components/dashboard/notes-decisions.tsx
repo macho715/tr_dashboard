@@ -33,9 +33,9 @@ export function NotesDecisions() {
             <div key={note.title} className="rounded-xl border border-slate-700/60 bg-slate-900/60 p-3">
               <div className="flex items-center justify-between">
                 <div className="text-xs font-semibold text-slate-200">{note.title}</div>
-                <span className="text-[10px] text-slate-500">{note.time}</span>
+                <span className="text-xs text-slate-500">{note.time}</span>
               </div>
-              <p className="mt-1 text-[11px] text-slate-400">{note.detail}</p>
+              <p className="mt-1 text-xs text-slate-400">{note.detail}</p>
             </div>
           ))}
         </div>

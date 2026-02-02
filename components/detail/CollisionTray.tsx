@@ -32,12 +32,12 @@ export function CollisionTray({ collisions, onCollisionClick }: CollisionTrayPro
       </div>
       <div className="space-y-2">
         {collisions.length === 0 ? (
-          <p className="text-[11px] text-slate-500">No collisions</p>
+          <p className="text-xs text-slate-500">No collisions</p>
         ) : (
           <>
             {bySeverity.error.length > 0 && (
               <div>
-                <div className="mb-1.5 text-[10px] font-semibold uppercase text-red-400">
+                <div className="mb-1.5 text-xs font-semibold uppercase text-red-400">
                   Critical ({bySeverity.error.length})
                 </div>
                 <ul className="space-y-1.5">
@@ -51,7 +51,7 @@ export function CollisionTray({ collisions, onCollisionClick }: CollisionTrayPro
             )}
             {bySeverity.warn.length > 0 && (
               <div>
-                <div className="mb-1.5 text-[10px] font-semibold uppercase text-amber-400">
+                <div className="mb-1.5 text-xs font-semibold uppercase text-amber-400">
                   Warning ({bySeverity.warn.length})
                 </div>
                 <ul className="space-y-1.5">

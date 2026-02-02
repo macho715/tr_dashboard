@@ -29,11 +29,11 @@ export function ConstraintsSection({ activity }: ConstraintsSectionProps) {
       className="rounded-lg border border-sky-500/30 bg-sky-500/10 p-3"
       data-testid="constraints-section"
     >
-      <div className="mb-2 flex items-center gap-1.5 text-[11px] font-semibold uppercase text-sky-400">
+      <div className="mb-2 flex items-center gap-1.5 text-xs font-semibold uppercase text-sky-400">
         <Calendar className="h-3.5 w-3.5" />
         Constraints
       </div>
-      <div className="rounded border border-sky-500/30 bg-sky-900/20 px-2 py-1.5 text-[11px] text-sky-200">
+      <div className="rounded border border-sky-500/30 bg-sky-900/20 px-2 py-1.5 text-xs text-sky-200">
         <span className="font-medium">{label}:</span> {constraint.date}
         {constraint.reason && (
           <span className="mt-1 block text-sky-300/80">({constraint.reason})</span>

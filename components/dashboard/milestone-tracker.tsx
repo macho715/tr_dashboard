@@ -39,7 +39,7 @@ export function MilestoneTracker() {
           </div>
         ))}
       </div>
-      <p className="mt-3 text-[11px] text-slate-500">
+      <p className="mt-3 text-xs text-slate-500">
         Stage progress summary for the active voyage window.
       </p>
     </section>

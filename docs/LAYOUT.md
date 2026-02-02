@@ -1,7 +1,14 @@
+---
+doc_id: layout
+refs: [../patch.md, ../AGENTS.md, SYSTEM_ARCHITECTURE.md]
+updated: 2026-02-03
+---
+
 # HVDC TR Transport Dashboard - Layout 문서
 
 > **버전**: 1.4.0  
 > **최종 업데이트**: 2026-02-02 (Phase 6: Bugfix + Phase 5: SSOT Upgrade v1.0)  
+> **최신 작업 반영**: 2026-02-03 — [WORK_LOG_20260202](WORK_LOG_20260202.md) (Phase 6 Bugfix #1~5,#7, Phase 7/10/11), [BUGFIX_APPLIED_20260202](BUGFIX_APPLIED_20260202.md)  
 > **프로젝트**: HVDC TR Transport Dashboard - AGI Site  
 > **SSOT**: patch.md, option_c.json (AGENTS.md)
 
@@ -29,7 +36,7 @@ HVDC TR Transport Dashboard는 **Al Ghallan Island (AGI) Site**의 7개 Transfor
 ### 핵심 특징
 
 - **3-Column Layout (patch.md §2.1)**: Map | Timeline | Detail(State/Risk)
-- **단일 시선 흐름**: Location → Schedule → Verification (3초 내 읽기, Phase 6: WHERE/WHEN/WHAT/EVIDENCE 가이드 제거)
+- **단일 시선 흐름**: Location → Schedule → Verification (3초 내 읽기). Phase 6에서 UI 가이드 문구 제거 완료 — StoryHeader·3열 라벨은 Location/Schedule/Verification, Map/Timeline 사용.
 - **2-click Collision UX**: 배지 → Why 패널 → Root cause + Evidence
 - **Compare Mode** (patch.md §2.2): baseline vs compare delta overlay, Gantt ghost bars
 - **Sticky Navigation**: 섹션 간 빠른 이동
@@ -134,7 +141,7 @@ graph TB
 **역할**: Global Control Bar + ViewModeProvider (patch.md §2.1)
 
 **구성**:
-- GlobalControlBar: Trip/TR 선택, **View 버튼** (→ Schedule 스크롤), Date Cursor, View Mode, Risk Overlay
+- GlobalControlBar: Trip/TR 선택, **View 버튼** (Phase 6 Bug #3: 클릭 시 `id="schedule"` Detailed Voyage Schedule 섹션으로 스크롤), Date Cursor, View Mode, Risk Overlay. **Phase 6 Bug #2**: API 실패/7개 미만 시 voyages 기반 fallback으로 trips/trs 7개 노출, selectedVoyage ↔ selectedTripId/selectedTrIds 동기화.
 - ViewModeProvider: Live/History/Approval/Compare 모드
 
 ### 3. Page Component (`app/page.tsx`)
@@ -168,7 +175,7 @@ graph TB
 - 프로젝트 정보: "AGI Site | 7 Transformer Units | LCT BUSHRA"
 - 상태 배지: "Confirmed" (애니메이션 펄스)
 - 완료일: "March 22, 2026"
-- DatePicker: 날짜 선택 컴포넌트
+- DatePicker: 날짜 선택 컴포넌트. **Phase 6 Bug #1**: Selected Date는 UTC 기준(YYYY-MM-DD)으로 Gantt 축과 정렬. `dateToIsoUtc`, `toUtcNoon` 사용. 라벨에 (YYYY-MM-DD), tooltip "Selected date: YYYY-MM-DD (UTC day index used for Gantt)" 표시.
 
 **스타일링**:
 - `bg-glass`: 반투명 배경
@@ -214,14 +221,14 @@ graph TB
 
 ### 7. TrThreeColumnLayout (`components/dashboard/layouts/tr-three-column-layout.tsx`)
 
-**역할**: 3-Column Layout (patch.md §2.1) — Map(Where) | Timeline(When/What) | Detail
+**역할**: 3-Column Layout (patch.md §2.1) — Map | Timeline | Detail. Phase 6: UI 라벨은 "Map", "Timeline" (WHERE/WHEN/WHAT 제거됨).
 
 **레이아웃 구조**:
 ```tsx
 <div className="grid gap-4 lg:grid-cols-[minmax(180px,1fr)_2fr_minmax(200px,1fr)]">
   <aside aria-label="Map">{mapSlot}</aside>
   <main aria-label="Timeline">{timelineSlot}</main>
-  <aside aria-label="DETAIL">{detailSlot}</aside>
+  <aside aria-label="Detail">{detailSlot}</aside>
 </div>
 ```
 
@@ -511,6 +518,7 @@ body {
 2. **GanttChart**
    - 타임라인 차트
    - 활동 바 표시
+   - **Phase 6 Bug #1**: Selected Date는 UTC 기준(YYYY-MM-DD). `formatShortDateUtc`, `getDatePosition(toUtcNoon(date))` 사용. Gantt 날짜 축과 정렬.
    - **compareDelta** (Phase 10): Compare 모드 시 ghost bars (changed 활동 노란 점선)
    - 스크롤 및 줌 기능
 
@@ -784,4 +792,10 @@ sequenceDiagram
 **문서 작성일**: 2025-01-31  
 **최종 업데이트**: 2026-02-02  
 **프로젝트**: HVDC TR Transport Dashboard  
-**참조**: patch.md §2.1, §2.2, §4.2, AGENTS.md, WORK_LOG_20260202.md, BUGFIX_APPLIED_20260202.md
+
+## Refs
+
+- [patch.md](../patch.md) §2.1, §2.2, §4.2
+- [AGENTS.md](../AGENTS.md)
+- [WORK_LOG_20260202.md](WORK_LOG_20260202.md) — Phase 6/7/10/11 작업 요약
+- [BUGFIX_APPLIED_20260202.md](BUGFIX_APPLIED_20260202.md) — Bug #1~5,#7 적용

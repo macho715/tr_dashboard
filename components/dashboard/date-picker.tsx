@@ -3,14 +3,16 @@
 import { Calendar } from "lucide-react"
 import { useDate } from "@/lib/contexts/date-context"
 import { PROJECT_START, PROJECT_END } from "@/lib/dashboard-data"
+import { parseDateInput } from "@/lib/ssot/schedule"
 
 export function DatePicker() {
   const { selectedDate, setSelectedDate, formattedDate } = useDate()
 
   const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newDate = new Date(e.target.value)
-    if (newDate >= PROJECT_START && newDate <= PROJECT_END) {
-      setSelectedDate(newDate)
+    const parsed = parseDateInput(e.target.value)
+    if (!parsed) return
+    if (parsed >= PROJECT_START && parsed <= PROJECT_END) {
+      setSelectedDate(parsed)
     }
   }
 
@@ -30,6 +32,7 @@ export function DatePicker() {
         onChange={handleDateChange}
         min={minDate}
         max={maxDate}
+        title="Selected date: YYYY-MM-DD (UTC day index used for Gantt)"
         className="px-4 py-2 bg-slate-800/50 border border-accent/30 rounded-lg text-cyan-400 font-mono text-sm focus:outline-none focus:border-cyan-500 focus:ring-2 focus:ring-cyan-500/20 transition-colors"
       />
       <span className="text-cyan-400 font-mono text-sm font-semibold">

@@ -84,10 +84,10 @@ export function ApprovalModeBanner({ activities = [] }: ApprovalModeBannerProps)
                 <div className="flex items-start gap-2">
                   <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-400/80" />
                   <div>
-                    <span className="text-[11px] font-semibold text-slate-400">
+                    <span className="text-xs font-semibold text-slate-400">
                       Frozen fields:
                     </span>
-                    <ul className="mt-0.5 list-inside list-disc space-y-0.5 text-[11px] text-slate-500">
+                    <ul className="mt-0.5 list-inside list-disc space-y-0.5 text-xs text-slate-500">
                       {baseline.freeze_policy.frozen_fields.slice(0, 5).map((f) => (
                         <li key={f} className="font-mono">
                           {f}
@@ -103,7 +103,7 @@ export function ApprovalModeBanner({ activities = [] }: ApprovalModeBannerProps)
                 </div>
               )}
               {baseline.snapshot.hash && (
-                <div className="flex items-center gap-2 text-[11px] text-slate-500">
+                <div className="flex items-center gap-2 text-xs text-slate-500">
                   <Hash className="h-3 w-3" />
                   <span className="font-mono">
                     {baseline.snapshot.hash.algo}: {baseline.snapshot.hash.value.slice(0, 16)}…
@@ -111,7 +111,7 @@ export function ApprovalModeBanner({ activities = [] }: ApprovalModeBannerProps)
                 </div>
               )}
               {driftResult && driftResult.driftCount > 0 && (
-                <div className="flex items-center gap-2 text-[11px] text-amber-300/90">
+                <div className="flex items-center gap-2 text-xs text-amber-300/90">
                   <GitCompare className="h-3 w-3" />
                   <span>
                     Drift: {driftResult.driftCount} plan change

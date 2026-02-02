@@ -60,10 +60,10 @@ export function ResourceUtilizationPanel({
       <div className="mb-4 flex items-center justify-between">
         <div>
           <div className="text-sm font-semibold text-foreground">Resource Utilization</div>
-          <p className="text-[11px] text-slate-500">Select to filter conflicts</p>
+          <p className="text-xs text-slate-500">Select to filter conflicts</p>
         </div>
         <button
-          className="text-[11px] text-slate-400 hover:text-cyan-300"
+          className="text-xs text-slate-400 hover:text-cyan-300"
           onClick={() => onSelectResource(null)}
           type="button"
         >
@@ -93,7 +93,7 @@ export function ResourceUtilizationPanel({
                   {resource.icon}
                   {resource.label}
                 </div>
-                <span className="text-[10px] text-slate-400">{resource.count} acts</span>
+                <span className="text-xs text-slate-400">{resource.count} acts</span>
               </div>
               <div className="mt-2 h-1.5 rounded-full bg-slate-800">
                 <div
@@ -101,7 +101,7 @@ export function ResourceUtilizationPanel({
                   style={{ width: `${resource.percent}%` }}
                 />
               </div>
-              <div className="mt-1 text-[10px] text-slate-500">
+              <div className="mt-1 text-xs text-slate-500">
                 Utilization {resource.percent}%
               </div>
             </button>

@@ -68,11 +68,11 @@ export function WhyPanel({
       </div>
       <p className="text-sm font-medium text-foreground">{collision.message}</p>
       {collision.root_cause_code && (
-        <p className="mt-1 text-[11px] text-slate-400">
+        <p className="mt-1 text-xs text-slate-400">
           Root cause: <code className="rounded bg-slate-800/60 px-1">{collision.root_cause_code}</code>
         </p>
       )}
-      <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase">
+      <div className="mt-2 flex flex-wrap items-center gap-2 text-xs font-semibold uppercase">
         <span
           className={`rounded-full border px-2 py-0.5 tracking-wide ${severityStyles[collision.severity]}`}
         >
@@ -85,14 +85,14 @@ export function WhyPanel({
       <div className="mt-3 flex flex-wrap gap-2">
         <button
           type="button"
-          className="rounded bg-slate-800/70 px-3 py-1 text-[11px] font-semibold text-slate-100 hover:bg-slate-700/80"
+          className="rounded bg-slate-800/70 px-3 py-1 text-xs font-semibold text-slate-100 hover:bg-slate-700/80"
           onClick={() => onViewInTimeline?.(collision, collision.activity_id)}
         >
           View in Timeline
         </button>
         <button
           type="button"
-          className="rounded border border-slate-600/60 px-3 py-1 text-[11px] font-semibold text-slate-200 hover:border-slate-400/80 hover:text-foreground"
+          className="rounded border border-slate-600/60 px-3 py-1 text-xs font-semibold text-slate-200 hover:border-slate-400/80 hover:text-foreground"
           onClick={() => onJumpToEvidence?.(collision)}
         >
           Jump to Evidence
@@ -100,13 +100,13 @@ export function WhyPanel({
       </div>
       {suggestedActions.length > 0 && (
         <div className="mt-3">
-          <div className="text-[11px] font-semibold text-slate-300">Suggested actions</div>
+          <div className="text-xs font-semibold text-slate-300">Suggested actions</div>
           <ul className="mt-1.5 space-y-1">
             {suggestedActions.map((action, idx) => (
               <li key={`${action.kind}-${idx}`}>
                 <button
                   type="button"
-                  className="rounded border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-1 text-[11px] font-medium text-emerald-200 hover:bg-emerald-500/25"
+                  className="rounded border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-1 text-xs font-medium text-emerald-200 hover:bg-emerald-500/25"
                   onClick={() => onApplyAction?.(collision, action)}
                 >
                   {action.label}
@@ -118,7 +118,7 @@ export function WhyPanel({
       )}
       {collision.related_activity_ids && collision.related_activity_ids.length > 0 && (
         <div className="mt-3">
-          <div className="text-[11px] font-semibold text-slate-300">
+          <div className="text-xs font-semibold text-slate-300">
             Related activities
           </div>
           <ul className="mt-1 space-y-1">
@@ -126,7 +126,7 @@ export function WhyPanel({
               <li key={activityId}>
                 <button
                   type="button"
-                  className="text-[11px] font-medium text-cyan-200 hover:text-cyan-100"
+                  className="text-xs font-medium text-cyan-200 hover:text-cyan-100"
                   onClick={() => onRelatedActivityClick?.(activityId)}
                 >
                   {activityId}

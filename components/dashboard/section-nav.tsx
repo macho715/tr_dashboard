@@ -33,7 +33,7 @@ export function SectionNav({ activeSection, sections }: SectionNavProps) {
             >
               {section.label}
               {typeof section.count === "number" && (
-                <span className="text-[10px] rounded-full border border-slate-700/60 px-2 py-0.5 text-slate-400">
+                <span className="text-xs rounded-full border border-slate-700/60 px-2 py-0.5 text-slate-400">
                   {section.count}
                 </span>
               )}

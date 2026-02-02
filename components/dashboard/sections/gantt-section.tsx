@@ -18,6 +18,7 @@ type GanttSectionProps = {
   jumpTrigger: number
   onJumpRequest: () => void
   onActivityClick?: (activityId: string, start: string) => void
+  onActivityDeselect?: () => void
   conflicts?: ScheduleConflict[]
   onCollisionClick?: (conflict: ScheduleConflict) => void
   focusedActivityId?: string | null
@@ -37,6 +38,7 @@ export function GanttSection({
   jumpTrigger,
   onJumpRequest,
   onActivityClick,
+  onActivityDeselect,
   conflicts,
   onCollisionClick,
   focusedActivityId,
@@ -44,7 +46,7 @@ export function GanttSection({
   projectEndDate,
 }: GanttSectionProps) {
   return (
-    <section id="gantt" aria-label="Gantt Chart">
+    <section id="gantt" aria-label="Gantt Chart" className="flex flex-1 flex-col min-h-0">
       <GanttChart
         ref={ganttRef}
         activities={activities}
@@ -57,6 +59,7 @@ export function GanttSection({
         jumpTrigger={jumpTrigger}
         onJumpRequest={onJumpRequest}
         onActivityClick={onActivityClick}
+        onActivityDeselect={onActivityDeselect}
         conflicts={conflicts}
         onCollisionClick={onCollisionClick}
         focusedActivityId={focusedActivityId}

@@ -165,7 +165,7 @@ export function DependencyHeatmap({ onSelectActivity }: DependencyHeatmapProps) 
             }
           >
             <div className="text-xs font-semibold text-slate-200">{item.label}</div>
-            <p className="mt-1 text-[11px] text-slate-400">
+            <p className="mt-1 text-xs text-slate-400">
               Risk score {item.risk} · Chain {item.chainLength} · Downstream{" "}
               {item.downstreamCount} · Upstream {item.upstreamCount}
             </p>

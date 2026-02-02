@@ -1,7 +1,14 @@
+---
+doc_id: system-architecture
+refs: [../patch.md, ../AGENTS.md, LAYOUT.md]
+updated: 2026-02-03
+---
+
 # HVDC TR Transport Dashboard - 시스템 아키텍처
 
 **버전**: 1.3  
 **최종 업데이트**: 2026-02-02 (Phase 6: Bugfix + Phase 5: SSOT Upgrade v1.0)  
+**최신 작업 반영**: 2026-02-03 — [WORK_LOG_20260202](WORK_LOG_20260202.md), [BUGFIX_APPLIED_20260202](BUGFIX_APPLIED_20260202.md) (Phase 6 #1~5,#7, Phase 7/10/11 반영)  
 **프로젝트**: HVDC TR Transport - AGI Site Logistics Dashboard  
 **SSOT**: patch.md, option_c.json (AGENTS.md)
 
@@ -35,6 +42,19 @@ HVDC TR Transport Dashboard는 **7개의 Transformer Unit**을 **LCT BUSHRA**로
 - **시각적 일정 표시**: Gantt 차트를 통한 7개 항차 타임라인
 - **변경 영향 분석**: 일정 변경 시 영향받는 작업 자동 계산
 - **불변성 보장**: 원본 데이터 보호 및 안전한 상태 업데이트
+
+### 최근 반영 (Phase 6/7/10/11) — 본문 반영
+
+| Phase | 반영 내용 (본문과 일치하도록 유지) |
+|-------|-----------------------------------|
+| **Phase 6 Bug #1** | Selected Date UTC 정렬: `lib/ssot/schedule.ts`의 `dateToIsoUtc`, `toUtcNoon`. Gantt/DatePicker는 UTC 기준(YYYY-MM-DD)으로 축과 정렬. |
+| **Phase 6 Bug #2** | Trip/TR 필터: API 실패/7개 미만 시 voyages 기반 fallback. `selectedVoyage` ↔ `selectedTripId`/`selectedTrIds` 동기화. schedule-table 0개 시 7개 fallback. |
+| **Phase 6 Bug #3** | GlobalControlBar View 버튼: 클릭 시 `id="schedule"` Detailed Voyage Schedule로 스크롤. |
+| **Phase 6 Bug #4** | StoryHeader·3열: WHERE/WHEN/WHAT/EVIDENCE 제거 → Location/Schedule/Verification, Map/Timeline. |
+| **Phase 6 Bug #5** | CompareDiffPanel: 상단에 "Baseline snapshot: (created_at) (immutable)", "Compare as-of: Live (current state)" 표시. |
+| **Phase 7** | DetailPanel 구조화, CollisionTray, Why 패널 suggested_actions → reflowSchedule 연결. ReflowPreviewPanel 연동. |
+| **Phase 10** | Compare Mode: compare-loader, CompareModeBanner, Gantt ghost bars (compareDelta). |
+| **Phase 11** | T11.2 Cycle detection, T11.3 Evidence gate, T11.4 E2E workflow 테스트 완료. |
 
 ---
 
@@ -492,4 +512,11 @@ const changeImpactItems = useMemo(() => {
 ---
 
 **Last Updated**: 2026-02-02  
-**참조**: patch.md, AGENTS.md, plan_patchm1_m5.md, WORK_LOG_20260202.md, BUGFIX_APPLIED_20260202.md
+
+## Refs
+
+- [patch.md](../patch.md)
+- [AGENTS.md](../AGENTS.md)
+- [LAYOUT.md](LAYOUT.md)
+- [WORK_LOG_20260202.md](WORK_LOG_20260202.md), [BUGFIX_APPLIED_20260202.md](BUGFIX_APPLIED_20260202.md) — 최신 작업 반영
+- [plan_patchm1_m5.md](plan/plan_patchm1_m5.md)

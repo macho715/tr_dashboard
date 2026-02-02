@@ -3,6 +3,8 @@
 import { Search, Calendar } from 'lucide-react'
 import { useViewMode } from '@/src/lib/stores/view-mode-store'
 import type { ViewMode, RiskOverlay } from '@/src/lib/stores/view-mode-store'
+import { useDate } from '@/lib/contexts/date-context'
+import { parseDateInput } from '@/lib/ssot/schedule'
 
 const VIEW_MODES: { value: ViewMode; label: string }[] = [
   { value: 'live', label: 'Live' },
@@ -41,10 +43,16 @@ export function GlobalControlBar({
     setRiskOverlay,
     setSearch,
   } = useViewMode()
+  const { setSelectedDate } = useDate()
 
   const handleDateChange = (value: string) => {
-    setDateCursor(value)
-    onDateCursorChange?.(value)
+    const datePart = value.trim().slice(0, 10)
+    const normalized = parseDateInput(datePart)
+    if (!normalized) return
+    const iso = normalized.toISOString()
+    setDateCursor(iso)
+    setSelectedDate(normalized)
+    onDateCursorChange?.(iso)
     onReflowPreview?.()
   }
 
@@ -97,7 +105,7 @@ export function GlobalControlBar({
         <input
           type="datetime-local"
           value={state.dateCursor.slice(0, 16)}
-          onChange={(e) => handleDateChange(new Date(e.target.value).toISOString())}
+          onChange={(e) => handleDateChange(e.target.value)}
           disabled={state.mode === 'history'}
           className="h-8 rounded-md border border-input bg-background px-2 text-xs"
           data-testid="date-cursor"

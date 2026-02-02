@@ -10,6 +10,7 @@ export default defineConfig({
       'lib/**/__tests__/**/*.test.ts',
       'components/detail/__tests__/**/*.test.{ts,tsx}',
       'components/dashboard/__tests__/**/*.test.{ts,tsx}',
+      'components/ops/__tests__/**/*.test.{ts,tsx}',
     ],
     coverage: {
       provider: 'v8',
@@ -23,6 +24,8 @@ export default defineConfig({
   resolve: {
     alias: [
       { find: '@/lib/ssot', replacement: path.resolve(__dirname, './lib/ssot') },
+      { find: '@/lib', replacement: path.resolve(__dirname, './lib') },
+      { find: '@/src', replacement: path.resolve(__dirname, './src') },
       { find: '@', replacement: path.resolve(__dirname, './src') },
     ],
   },

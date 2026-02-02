@@ -48,14 +48,14 @@ export function ReflowPreviewPanel({
       </div>
       {hasChanges ? (
         <div className="space-y-2">
-          <div className="text-[11px] font-semibold text-slate-300">
+          <div className="text-xs font-semibold text-slate-300">
             Proposed changes ({changes.length})
           </div>
           <ul className="space-y-1.5 max-h-32 overflow-y-auto">
             {changes.map((c) => (
               <li
                 key={`${c.activity_id}-${c.old_start}-${c.new_start}`}
-                className="rounded border border-slate-700/60 bg-slate-900/40 px-2 py-1.5 text-[11px]"
+                className="rounded border border-slate-700/60 bg-slate-900/40 px-2 py-1.5 text-xs"
               >
                 <span className="font-medium text-foreground">{c.activity_id}</span>
                 <span className="text-slate-400">: </span>
@@ -71,14 +71,14 @@ export function ReflowPreviewPanel({
             ))}
           </ul>
           {conflicts.length > 0 && (
-            <div className="mt-2 rounded border border-amber-500/40 bg-amber-500/10 px-2 py-1.5 text-[11px] text-amber-200">
+            <div className="mt-2 rounded border border-amber-500/40 bg-amber-500/10 px-2 py-1.5 text-xs text-amber-200">
               {conflicts.length} conflict{conflicts.length !== 1 ? "s" : ""} detected
             </div>
           )}
           <div className="mt-3 flex gap-2">
             <button
               type="button"
-              className="flex items-center gap-1 rounded bg-emerald-600/80 px-3 py-1.5 text-[11px] font-semibold text-emerald-100 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-1 rounded bg-emerald-600/80 px-3 py-1.5 text-xs font-semibold text-emerald-100 hover:bg-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed"
               onClick={onApply}
               disabled={!canApply || hasBlocking}
             >
@@ -87,7 +87,7 @@ export function ReflowPreviewPanel({
             </button>
             <button
               type="button"
-              className="rounded border border-slate-600/60 px-3 py-1.5 text-[11px] font-semibold text-slate-300 hover:border-slate-500"
+              className="rounded border border-slate-600/60 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:border-slate-500"
               onClick={onCancel}
             >
               Cancel
@@ -95,7 +95,7 @@ export function ReflowPreviewPanel({
           </div>
         </div>
       ) : (
-        <p className="text-[11px] text-slate-400">No date changes proposed.</p>
+        <p className="text-xs text-slate-400">No date changes proposed.</p>
       )}
     </div>
   )

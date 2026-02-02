@@ -43,7 +43,7 @@ export function KPICards() {
             <div className="font-mono text-3xl font-bold text-cyan-400 mb-1 tracking-tight">
               {kpi.value}
             </div>
-            <div className="text-slate-500 text-[10px] font-semibold uppercase tracking-widest">
+            <div className="text-slate-500 text-xs font-semibold uppercase tracking-widest">
               {kpi.label}
             </div>
           </div>

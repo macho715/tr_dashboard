@@ -1,213 +1,384 @@
-# TR Dashboard Plan (patch.md + AGENTS.md + Contract v0.8.0)
+# TR Dashboard Plan — vis-timeline Gantt 통합
 
-**Generated**: 2026-02-01  
-**Last Updated**: 2026-02-02  
-**SSOT**: patch.md (레이아웃/UX), option_c.json (데이터), AGENTS.md (프로젝트 룰)
+**생성일**: 2026-02-02  
+**갱신일**: 2026-02-02 (tr-planner: GANTTPATCH4 Task 12 추가)  
+**참조**: GANTTPATCH.MD, GANTTPATCH1.MD, GANTTPATCH2.MD, **GANTTPATCH4.MD**, vis-timeline-gantt, AGENTS.md, patch.md, LAYOUT.md
 
-**운영 규모**: 1 Trip당 1 TR 운송, 총 7 Trip, SPMT 1기 운영
+---
 
-**상세 계획**: `docs/plan/tr-dashboard-plan-patch4.md` (Phase 0~11, Task breakdown)
+## Gantt 차트 전체 레이아웃 (검토 결과)
+
+```
+┌─────────────────────────────────────────────────────────────────────────┐
+│ Gantt Chart (Jan 26 - Mar 22, 2026)                                     │
+├─────────────────────────────────────────────────────────────────────────┤
+│ TimelineControls: View(Day/Week) | Highlights(Delay/Lock/Constraint)    │
+│                    Jump to YYYY-MM-DD [Go]                               │
+├─────────────────────────────────────────────────────────────────────────┤
+│ Legend: [Mobilization][Loadout][Transport][Loadin][Turning][Jackdown]   │
+│         [W][PTW][CERT][LNK][BRG][RES] [COL][COL-LOC][COL-DEP] +Xd CP    │
+├─────────────────────────────────────────────────────────────────────────┤
+│ Gantt Container (vis-timeline 또는 legacy DOM)                           │
+│ ┌────────────────────┬────────────────────────────────────────────────┐ │
+│ │ 좌측: 그룹 라벨     │ 우측: 타임라인 그리드 (막대/의존성)              │ │
+│ │ MOBILIZATION       │                                                │ │
+│ │   SPMT             │  [막대들]                                       │ │
+│ │   MARINE           │                                                │ │
+│ │   ...              │                                                │ │
+│ └────────────────────┴────────────────────────────────────────────────┘ │
+├─────────────────────────────────────────────────────────────────────────┤
+│ Milestones: Jan 26 | Jan 31 | Feb 14 | Feb 28 | Mar 14 | Mar 22         │
+├─────────────────────────────────────────────────────────────────────────┤
+│ Dependency Heatmap                                                      │
+└─────────────────────────────────────────────────────────────────────────┘
+```
+
+**vis vs legacy 갭**: vis-timeline 모드에서 시간 범위 미설정 → 막대 미표시. Task 5a로 해결.
 
 ---
 
 ## 0) SSOT/Contract 최상단 고정
 
-| 항목 | 참조 |
+- option_c.json Contract 준수 (activities: level1, level2, activity_id, planned_start, planned_finish)
+- SSOT 권위: entities.activities{} — vis-timeline은 **표시 전용**, SSOT 우회 금지
+- Plan 변경: Preview→Apply 분리 (1차 통합에서는 editable=false, 기존 Dialog/Preview 흐름 유지)
+- Freeze: actual_start/actual_finish 존재 시 해당 시각 리플로우 금지
+
+---
+
+## 1) UX 계약 (단일 시선 + 2-click)
+
+- Where(Map) → When/What(Gantt) → Evidence(History/Evidence)
+- 2-click 충돌: 배지 클릭 → Why 패널 → Root cause + Evidence
+- Gantt 통합 포인트: `components/dashboard/sections/gantt-section.tsx` → `GanttChart` (렌더러만 교체)
+
+---
+
+## 2) 통합 전략 (GANTTPATCH.MD / GANTTPATCH1.MD)
+
+### 2.1 권장: "Adapter + Feature Flag"로 무중단 교체
+
+- **렌더링 엔진만 교체**: DOM 기반 커스텀 → vis-timeline
+- 기존 `currentActivities`, `reflowSchedule`, `scheduleActivitiesToGanttRows`, Compare Diff 패널 **유지**
+- `vis-timeline`은 DOM 의존 → **Client-only + dynamic import (ssr:false)**
+
+### 2.2 교체 지점
+
+| 현재 | 통합 후 |
+|------|---------|
+| gantt-chart.tsx (막대/축 그리기) | VisTimelineGantt (vis-timeline 렌더러) |
+| scheduleActivitiesToGanttRows() | 유지 → GanttRow[] → vis groups/items 매핑 추가 |
+| scrollToActivity (DOM ref) | timeline.setSelection([id], { focus: true }) |
+| selectedDate 세로 라인 | addCustomTime / setCustomTime ("selected-date") |
+
+### 2.3 날짜 파싱 통일 (버그 #1 방지)
+
+- `new Date("2026-02-07")` 금지 (UTC/로컬 혼재)
+- 단일 경로: `parseDateInput()` 또는 `new Date(y, m-1, d, 12, 0, 0)` (로컬 정오)
+- items(start/end)와 selectedDate custom time bar에 **동일 파서** 사용
+
+### 2.4 Gantt 계약 (GANTTPATCH2.MD)
+
+**Props/State/Events** JSON Schema (draft 2020-12) 기준:
+
+| 계약 | 용도 |
 |------|------|
-| option_c.json Contract | contract-optionc-v0.8.0.md |
-| SSOT 권위 | entities.activities{} |
-| Reflow 출력 | calc.* + reflow_runs[] + collisions{} |
-| Baseline | baselines.current_baseline_id/items + freeze_policy 강제 |
-| patch.md | 레이아웃/UX/시각 규칙 절대 우선 |
+| `GanttRendererProps` | 오케스트레이터 → 렌더러 입력 (trip, timeline, groups, items, selected_date_cursor, options) |
+| `GanttRendererState` | 복원 가능한 상태 (trip_id, timezone, selection, viewport, compare_as_of_date) |
+| `GanttEvent` | 렌더러 → 오케스트레이터 이벤트 (ITEM_SELECTED, DATE_CURSOR_CHANGED, VIEWPORT_CHANGED 등) |
+
+**적용 가이드** (GANTTPATCH2 §적용 가이드):
+
+1. **Props 고정**: 오케스트레이터는 계산/SSOT/저장을 처리, 렌더러는 `GanttRendererProps`만 받아서 그림
+2. **State**: `selected_date_cursor`, `compare_as_of_date`, `viewport.visible_window` 등 복원 가능한 것만 저장
+3. **이벤트**: `ITEM_SELECTED` → Detail/Evidence 패널 동기화, `DATE_CURSOR_CHANGED` → 버그 #1 방지
+
+> **적용 완료**: `lib/gantt/contract.schema.json`, `lib/gantt/gantt-contract.ts` 추가. VisTimelineGantt `onEvent` → ITEM_SELECTED, GANTT_READY 발생. GanttChart `onGanttEvent` prop 전달.
 
 ---
 
-## 1) UX 계약 (patch.md §1, §2, §4)
+## 3) Runbook 계약
 
-### 1.1 단일 시선 흐름 (Where → When/What → Evidence)
-
-| 영역 | 내용 | patch.md |
-|------|------|----------|
-| **Story Header** | TR 선택 시 3초 내: WHERE / WHEN/WHAT / EVIDENCE | §2.1 |
-| **Map (Where)** | TR 마커, Route/Segment 색상, Node(Yard/Linkspan/Berth), Risk Overlay | §4.1 |
-| **Timeline (When/What)** | Activity rows, Plan/Actual bar, Dependency(FS/SS), Constraint 배지, Collision 배지 | §4.2 |
-| **Detail + History/Evidence** | Status, Risk/Constraints, "Why delayed?", History log, Evidence list | §2.1, §5 |
-
-### 1.2 2-click Collision UX (필수)
-
-- **1클릭**: Timeline 배지 → Collision 요약 팝오버
-- **2클릭**: Detail "Why" 패널 → Root cause chain + Evidence/로그 점프
-- Collision 객체: `kind`, `severity`, `root_cause_code`, `activity_ids`, `resource_ids`, `time_range`, `suggested_actions[]`
-
-### 1.3 시각 규칙 (patch.md §4)
-
-**Map 색상**: Planned=회색, In progress=파랑, Completed=초록, Blocked=빨강, Delayed=주황  
-**Constraint 배지**: [W] [PTW] [CERT] [LNK] [BRG] [RES]  
-**Collision 배지**: [COL] [COL-LOC] [COL-DEP]
+- state(소문자) + allowed transitions
+- Preview→Apply (Apply만 SSOT 변경)
+- Approval 모드 read-only
+- 1차 통합: vis-timeline **editable=false** (날짜 변경은 기존 Dialog → reflow → Preview 유지)
 
 ---
 
-## 2) View Modes (patch.md §2.2, §5.4)
+## 4) Work Breakdown (Small diffs)
 
-| 모드 | 수정 | Reflow Apply | Evidence | Export |
-|------|------|--------------|----------|--------|
-| Live | 역할 기반 | 제한(승인 가능) | 가능 | 가능 |
-| History | 불가 | 불가 | 조회만 | 가능 |
-| Approval | 불가 | 불가 | 보기만 | 가능 |
-| Compare | 불가(overlay만) | 불가 | 보기만 | 가능 |
+### Task 1: 의존성 + CSS 추가 (Structural) ✅
+
+- **Goal**: vis-timeline 설치, CSS 전역 로드
+- **Files**: package.json, app/globals.css (또는 app/layout.tsx)
+- **Data Contract**: 영향 없음
+- **Tests**: `pnpm install && pnpm build` 통과
+- **SSOT validator**: 해당 없음
+
+```bash
+pnpm add vis-timeline vis-data
+```
+
+```ts
+// app/globals.css 또는 app/layout.tsx
+import "vis-timeline/styles/vis-timeline-graph2d.min.css";
+```
 
 ---
 
-## 3) Runbook 계약 (runbook-state-reflow-collision.md)
+### Task 2: GanttRow → vis-timeline 매퍼 작성 (Structural) ✅
 
-- **state**: 소문자 enum (draft/planned/ready/in_progress/paused/blocked/done/verified/cancelled)
-- **lock_level**: none/soft/hard/baseline
-- **Preview→Apply**: Apply만 SSOT 변경
-- **Apply 시**: reflow_runs[] + history_events[] 반드시 기록
-- **collisions{}**: 전역 레지스트리 + activity.calc.collision_ids 동기화
-- **Approval 모드**: read-only, frozen_fields 변경 시 baseline_conflict 처리
+- **Goal**: `ganttRowsToVisData(GanttRow[])` 순수 함수로 `{ groups, items }` 변환
+- **Files**: lib/gantt/visTimelineMapper.ts (신규)
+- **Data Contract**: GanttRow (lib/dashboard-data.ts) → DataGroup, DataItem (vis-timeline)
+- **Tests**: 단위 테스트 (level1/level2/activity_id 매핑, 날짜 파싱 일관성)
+- **SSOT validator**: 해당 없음
+
+**매핑 규칙** (GANTTPATCH1.MD §4.2):
+
+- GanttRow (isHeader=false, activities) → group(id, content)
+- Activity (label, start, end) → item(id, group, content, start, end, type: "range")
+- 날짜: `parseDateInput()` 또는 `toUtcNoon()` 사용 (SSOT 유틸과 동일)
 
 ---
 
-## 4) 커맨드 탐지 (추정 금지)
+### Task 3: VisTimelineGantt 컴포넌트 추가 (Structural) ✅
+
+- **Goal**: Client-only vis-timeline 래퍼, Props는 gantt-chart.tsx 인터페이스와 호환
+- **Files**: components/gantt/VisTimelineGantt.tsx (신규)
+- **Data Contract**: groups, items, selectedDate, onItemClick
+- **Tests**: 렌더링 테스트 (activities 주입 시 아이템 수 검증)
+- **SSOT validator**: 해당 없음
+
+**핵심** (GANTTPATCH1.MD §4.1):
+
+- `"use client"`
+- DataSet(groups), DataSet(items) — 인스턴스 유지, clear/add로 업데이트
+- `timeline.on("select", ...)` → onItemClick(itemId)
+- `addCustomTime(selectedDate, "selected-date")` / `setCustomTime(selectedDate, "selected-date")`
+- cleanup: `timeline.destroy()`
+
+---
+
+### Task 4: gantt-chart.tsx facade로 전환 (Behavioral) ✅
+
+- **Goal**: GanttChart 내부에서 VisTimelineGantt로 렌더 위임, 외부 Props/상태 유지
+- **Files**: components/dashboard/gantt-chart.tsx
+- **Data Contract**: GanttChartProps, GanttChartHandle (scrollToActivity → setSelection)
+- **Tests**: 기존 GanttSection 연동 E2E 또는 통합 테스트
+- **SSOT validator**: 해당 없음
+
+**변경**:
+
+- `scheduleActivitiesToGanttRows(activities)` → `ganttRowsToVisData(ganttRows)` → `<VisTimelineGantt ... />`
+- `scrollToActivity(id)` → `timelineRef.current?.setSelection([id], { focus: true })`
+- selectedDate → parseDateInput(jumpDate) 또는 useDate().selectedDate
+
+---
+
+### Task 5a: vis-timeline 시간 범위(start/end) 설정 (Behavioral) ✅
+
+- **Goal**: VisTimelineGantt options에 `start`/`end` 추가 → Jan 26–Mar 22, 2026 프로젝트 기간에 맞춤
+- **Files**: components/gantt/VisTimelineGantt.tsx
+- **Data Contract**: PROJECT_START, PROJECT_END (lib/dashboard-data.ts) 또는 props로 전달
+- **Tests**: vis 모드에서 막대 표시 검증
+- **SSOT validator**: 해당 없음
+
+**원인**: vis-timeline 기본 시간 범위가 프로젝트 기간과 불일치 → 막대 미표시.
+
+```ts
+// VisTimelineGantt options 예시
+const options = {
+  start: new Date(2026, 0, 26),   // Jan 26, 2026
+  end: new Date(2026, 2, 23),    // Mar 23, 2026
+  // ...
+}
+```
+
+---
+
+### Task 5: Feature Flag로 Legacy/Vis 전환 (Behavioral) ✅
+
+- **Goal**: `NEXT_PUBLIC_GANTT_ENGINE=vis|legacy`로 렌더러 선택
+- **Files**: components/dashboard/gantt-chart.tsx, config
+- **Data Contract**: 영향 없음
+- **Tests**: 플래그별 렌더링 검증
+- **SSOT validator**: 해당 없음
+
+---
+
+### Task 6: selectedDate 라인 + 날짜 파싱 통일 (Behavioral, 버그 #1) ✅
+
+- **Goal**: jumpDate/selectedDate가 타임라인 상 2/7 입력 시 2/7 라인에 정확히 표시
+- **Files**: VisTimelineGantt.tsx, lib/ssot/schedule.ts (toUtcNoon 등)
+- **Data Contract**: parseDateInput / toUtcNoon 단일 경로 사용
+- **Tests**: 날짜 파싱 단위 테스트, selectedDate 라인 위치 검증
+- **SSOT validator**: 해당 없음
+
+---
+
+### Task 7: Map↔Timeline 상호 하이라이트 (Behavioral) ✅
+
+- **Goal**: Timeline 선택 → Map 지오펜스 하이라이트, Map 선택 → Timeline setSelection
+- **Files**: VisTimelineGantt, Map 컴포넌트, 상위 레이아웃
+- **Data Contract**: focusedActivityId 기반 선택 상태 공유
+- **Tests**: 상호 하이라이트 동작 검증
+- **SSOT validator**: 해당 없음
+
+**적용 완료** (app/page.tsx):
+- handleActivityClick: setFocusedActivityId(activityId) 추가 → Timeline 클릭 시 Gantt 막대 링 + Map 라우트 하이라이트
+- Map onActivitySelect: setFocusedActivityId(activityId) + scrollIntoView(gantt) 추가 → Map 클릭 시 Gantt 막대 링 + 스크롤
+- MapPanelWrapper selectedActivityId: focusedActivityId fallback 추가
+
+---
+
+### Task 8: Compare Mode ghost bars (Behavioral) ✅
+
+- **Goal**: compareDelta가 있으면 baseline items를 className "baseline-ghost"로 추가
+- **Files**: visTimelineMapper.ts, VisTimelineGantt.tsx
+- **Data Contract**: CompareResult
+- **Tests**: ghost bar 렌더링 검증
+- **SSOT validator**: 해당 없음
+
+**적용 완료**:
+- visTimelineMapper: ganttRowsToVisData(rows, compareDelta) — compareDelta.changed에 d.compare 있으면 ghost items 추가 (id: ghost_${activity_id}, className: baseline-ghost)
+- gantt-chart: compareDelta 전달, ghost 클릭 시 activityId 추출
+- globals.css: .vis-item.baseline-ghost 스타일 (dashed amber)
+
+---
+
+### Task 9: Zoom/Controls 통합 (Behavioral) ✅
+
+- **Goal**: vis-timeline-gantt의 ZoomIn/Out, ChevronLeft/Right, Today, Fit All → TimelineControls와 통합
+- **Files**: timeline-controls.tsx, VisTimelineGantt.tsx, gantt-chart.tsx
+- **Data Contract**: TimelineView (Day/Week)
+- **Tests**: 뷰 전환 시 scale 변경 검증
+- **SSOT validator**: 해당 없음
+
+**적용 완료**:
+- VisTimelineGantt: zoomIn, zoomOut, fit, moveToToday, panLeft, panRight handle 메서드
+- view prop → Day=14d, Week=56d visible window
+- TimelineControls: zoomCallbacks (onZoomIn, onZoomOut, onFit, onToday, onPanLeft, onPanRight)
+- gantt-chart: useVisEngine 시 zoomCallbacks 전달, Jump Go → moveToToday(clamped)
+
+---
+
+### Task 10: CSS/테마 오버라이드 (Structural) ✅
+
+- **Goal**: vis-timeline 기본 스타일을 Deep Ocean Theme와 조화
+- **Files**: app/globals.css, lib/gantt/visTimelineMapper.ts
+- **Data Contract**: 영향 없음
+- **Tests**: 시각적 회귀 (선택)
+- **SSOT validator**: 해당 없음
+
+**적용 완료**:
+- gantt-vis-wrapper 스코프로 vis-timeline 오버라이드
+- 컨테이너/패널/라벨/그리드: slate/cyan 배경·테두리
+- custom-time(selected date): amber
+- vis-selected: cyan 강조
+- visTimelineMapper: activity.type → gantt-type-{type} className
+- Activity type별 그라데이션 (mobilization/loadout/transport/loadin/turning/jackdown)
+
+---
+
+### Task 11: GANTTPATCH2 계약 정렬 ✅
+
+- **Goal**: VisTimelineGantt Props/State를 GanttRendererProps/GanttRendererState 스키마에 맞춤
+- **Files**: lib/gantt/contract.schema.json, lib/gantt/gantt-contract.ts, VisTimelineGantt.tsx, gantt-chart.tsx
+- **Data Contract**: DateCursor, GanttEventBase, createItemSelectedEvent, createGanttReadyEvent
+- **Tests**: build 통과
+- **SSOT validator**: 해당 없음
+
+**적용 완료**:
+- `contract.schema.json` — JSON Schema 저장
+- `gantt-contract.ts` — TypeScript 타입 + createItemSelectedEvent, createGanttReadyEvent
+- VisTimelineGantt `onEvent`, `tripId` — ITEM_SELECTED, GANTT_READY 발생
+- GanttChart `onGanttEvent` — 이벤트 스트림 구독
+
+---
+
+### Task 12: GANTTPATCH4 — JSON Schema(SSOT) → TS 타입 + Ajv 검증 (Structural)
+
+- **Goal**: GANTTPATCH4.MD 권장 구성 적용 — 스키마 TS const, json-schema-to-ts 타입 추출, Ajv server-only 검증
+- **Files**: schemas/gantt/contract.v1.ts, lib/gantt/contract.types.ts, lib/gantt/contract.validate.ts, lib/gantt/gantt-contract.ts
+- **Data Contract**: 기존 contract.schema.json 내용을 TS const로 이전, 타입은 FromSchema로 자동 생성
+- **Tests**: schema:smoke 스크립트, build 통과
+- **SSOT validator**: 해당 없음
+
+**Work Breakdown** (GANTTPATCH4.MD §1–8):
+
+| Step | Action | Files |
+|------|--------|-------|
+| 12a | 패키지 설치: `pnpm add ajv ajv-formats` `pnpm add -D json-schema-to-ts` | package.json |
+| 12b | 스키마 TS const: contract.schema.json → schemas/gantt/contract.v1.ts | schemas/gantt/contract.v1.ts |
+| 12c | 타입 추출: FromSchema + Extract (GanttContract, GanttRendererProps, GanttRendererState, GanttEvent) | lib/gantt/contract.types.ts |
+| 12d | Ajv validator (server-only): assertGanttContract, assertGanttRendererProps, assertGanttRendererState, assertGanttEvent | lib/gantt/contract.validate.ts |
+| 12e | gantt-contract.ts 마이그레이션: contract.types.ts에서 타입 import, createItemSelectedEvent/createGanttReadyEvent 유지 | lib/gantt/gantt-contract.ts |
+| 12f | schema:smoke 스크립트 (선택): scripts/schema-smoke.ts + package.json | scripts/schema-smoke.ts |
+
+**적용 가이드** (GANTTPATCH4 §5.1):
+- Ajv는 server-only → `/api/*`, Report export, Snapshot import/export 경계에서만 사용
+- Client 번들 보호: Ajv를 client에서 import하지 않음
+
+**가정**:
+- 기존 contract.schema.json의 $defs 구조를 그대로 TS const로 이전 (oneOf union 유지)
+- gantt-contract.ts의 createItemSelectedEvent, createGanttReadyEvent 시그니처는 유지 (하위 호환)
+
+**적용 완료**:
+- schemas/gantt/contract.v1.ts — JSON Schema TS const
+- lib/gantt/contract.types.ts — FromSchema 타입 (GanttContract, GanttEvent 등)
+- lib/gantt/contract.validate.ts — Ajv server-only
+- lib/gantt/contract.validate.runtime.ts — 스크립트/클라이언트용 (server-only 없음)
+- gantt-contract.ts — GanttEventBase = GanttEvent (contract.types)
+- pnpm schema:smoke — 스키마 검증 스크립트
+
+---
+
+## 5) 커맨드 탐지 (추정 금지)
 
 ```json
 {
-  "workspace_root": "C:\\tr_dashboard-main",
+  "workspace_root": "C:\\Users\\jichu\\Downloads\\tr_dashboard-main",
   "package_manager": "pnpm",
   "scripts": {
     "dev": "pnpm dev",
     "lint": "pnpm lint",
+    "typecheck": "pnpm typecheck",
+    "test": "pnpm test",
     "build": "pnpm build"
-  },
-  "notes": [
-    "missing_script:typecheck",
-    "missing_script:test"
-  ]
+  }
 }
 ```
 
-**가정**: typecheck/test 없음. 검증 시 lint/build만 사용. 필요 시 `tsc --noEmit` 또는 `vitest` 추가 검토.
+---
+
+## 6) DoD (Definition of Done)
+
+- [x] option_c.json에서만 데이터 소비 (SSOT 준수)
+- [x] scheduleActivitiesToGanttRows 유지, ganttRowsToVisData 추가
+- [x] Plan 변경 시 Preview→Apply 분리 유지 (editable=false 1차)
+- [x] **vis-timeline 시간 범위(start/end) 설정** — 막대 표시 (Task 5a)
+- [x] selectedDate 라인 정확 표시 (날짜 파싱 통일)
+- [x] scrollToActivity → setSelection 동작
+- [x] GANTTPATCH2 Event 스트림 (ITEM_SELECTED, GANTT_READY)
+- [x] Map↔Timeline 상호 하이라이트
+- [ ] lint/typecheck/test/build PASS
+- [ ] validate_optionc.py PASS (option_c 변경 시)
 
 ---
 
-## 5) Work Breakdown (Small diffs)
+## 7) 참조
 
-### Task 1: Story Header 컴포넌트 ✅
-- **Goal**: TR 선택 시 3초 내 WHERE / WHEN/WHAT / EVIDENCE 표시
-- **Files**: `components/dashboard/StoryHeader.tsx` (신규)
-- **Contract 영향**: 없음 (UI only)
-- **SSOT Guard**: N/A
-- **검증**: Story Header 렌더링 확인
-- **완료**: 2026-02-01. StoryHeader.tsx 생성, page.tsx에 통합(selectedVoyage→trId). build PASS.
-
-### Task 2: 3열 레이아웃 (Map | Timeline | Detail) ✅
-- **Goal**: patch.md §2.1 레이아웃 구현
-- **Files**: `components/dashboard/*`, `app/**/layout.tsx`
-- **Contract 영향**: 없음
-- **SSOT Guard**: N/A
-- **검증**: Map↔Timeline 상호 하이라이트 동작
-- **완료**: 2026-02-01. TrThreeColumnLayout 생성, Map=VoyagesSection, Timeline=Schedule+Gantt, Detail=NotesDecisions. Map↔Timeline: voyage 선택→Gantt 스크롤, Gantt 클릭→voyage 하이라이트. build PASS.
-
-### Task 3: Map 색상/배지 규칙 ✅
-- **Goal**: Planned=회색, In progress=파랑, Completed=초록, Blocked=빨강, Delayed=주황
-- **Files**: `components/map/*`, `lib/ssot/*`
-- **Contract 영향**: 없음
-- **SSOT Guard**: N/A
-- **검증**: 상태별 색상 일치
-- **완료**: 2026-02-01. lib/ssot/map-status-colors.ts 생성(patch.md §4.1). VoyageCards에 상태별 색상 적용(planned/in_progress/completed). build PASS.
-
-### Task 4: Timeline Constraint/Collision 배지 ✅
-- **Goal**: [W][PTW][CERT][LNK][BRG][RES], [COL][COL-LOC][COL-DEP]
-- **Files**: `components/gantt/*`, `components/timeline/*`
-- **Contract 영향**: 없음
-- **SSOT Guard**: N/A
-- **검증**: 배지 표시 및 2-click UX
-- **완료**: 2026-02-01. lib/ssot/timeline-badges.ts 생성(patch.md §4.2). GanttChart에 Constraint/Collision 배지 표시(constraint→[W], resource_tags→[RES]). Legend 추가. build PASS.
-
-### Task 5: 2-click Collision UX ✅
-- **Goal**: 1클릭 배지→요약, 2클릭 Why 패널→Root cause+Evidence
-- **Files**: `components/detail/*`, `components/gantt/*`
-- **Contract 영향**: collisions{} 구조, calc.collision_ids
-- **SSOT Guard**: validate_optionc.py CONTRACT
-- **검증**: 2클릭 이내 원인 도달
-- **완료**: 2026-02-01. WhyPanel.tsx 생성. GanttChart: [COL] 클릭→팝오버 요약→Why→Detail WhyPanel. detectResourceConflicts 연동. build PASS.
-
-### Task 6: Plan↔Actual 표시 규칙
-- **Goal**: patch.md §5.1 (Actual 없음→Plan 실선, Actual 있음→overlay, History→Actual 중심)
-- **Files**: `components/gantt/*`
-- **Contract 영향**: entities.activities[].actual
-- **SSOT Guard**: validate_optionc.py CONTRACT
-- **검증**: Plan/Actual 렌더링 일치
-- **완료**: 2026-02-01. ScheduleActivity에 actual_start/actual_finish 추가. GanttChart: Actual 있으면 Plan bar(반투명) + Actual bar(솔리드 overlay, border, "ACTUAL" 라벨). build PASS.
-
-### Task 7: Reflow Preview→Apply
-- **Goal**: Preview 출력 → Apply(권한) 시 option_c.json Plan 업데이트 + reflow_runs[] 기록
-- **Files**: `lib/utils/reflow*.ts`, `lib/ssot/*`
-- **Contract 영향**: reflow_runs[], entities.activities[].plan
-- **SSOT Guard**: validate_optionc.py CONTRACT (Apply 후 필수)
-- **검증**: Preview→Apply 분리, reflow_runs 기록
-- **완료**: 2026-02-01. reflow-engine.ts (computeReflowPreview, applyReflow) + reflow-runs.ts (appendReflowRun, getReflowRuns) 생성. Freeze/Lock/Pin 로직 포함. build PASS.
-
-### Task 8: View Mode 권한 분리
-- **Goal**: Live/History/Approval/Compare 모드별 수정/Apply/Evidence 권한
-- **Files**: `lib/ssot/*`, `components/control/*`
-- **Contract 영향**: policy.view_modes
-- **SSOT Guard**: validate_optionc.py CONTRACT
-- **검증**: Approval 모드에서 Apply 불가
-- **완료**: 2026-02-01. view-mode-permissions.ts (VIEW_MODE_PERMISSIONS matrix, canApplyReflowInMode) 생성. Approval 모드 Apply 금지 로직 포함. build 진행중 (Task 9로 진행).
-
-### Task 9: History/Evidence 규칙
-- **Goal**: History append-only, Evidence missing_required 자동 계산
-- **Files**: `lib/ssot/*`, `components/evidence/*`
-- **Contract 영향**: history_events[], evidence_required
-- **SSOT Guard**: validate_optionc.py CONTRACT
-- **검증**: History 삭제/수정 불가, Evidence gate 전이 차단
-- **완료**: 2026-02-01. history-events.ts (appendHistoryEvent, validateHistoryModification, append-only) + evidence-gate.ts (EVIDENCE_GATES, calculateMissingEvidence, validateEvidenceGate) 생성. Evidence gate 전이 차단 로직 포함. build PASS (static generation 완료).
-
----
-
-## 6) SSOT Guard (단계별)
-
-각 Task 완료 후 (Contract 영향 있을 때):
-```bash
-VALIDATION_MODE=CONTRACT python .cursor/skills/tr-dashboard-ssot-guard/scripts/validate_optionc.py
-```
-또는
-```bash
-python .cursor/skills/tr-dashboard-autopilot/scripts/validate_optionc.py
-```
-
----
-
-## 7) DoD (Definition of Done)
-
-- ⏸️ **Contract validator PASS** (validate_optionc.py CONTRACT) - option_c.json AGI 형식 유지(마이그레이션 취소). tests/fixtures/option_c_baseline.json은 Contract v0.8.0
-- ✅ **reflow_runs[] 기록** (Apply 시) - reflow-engine.ts, reflow-runs.ts 구현 완료
-- ✅ **collisions{} 레지스트리** + calc.collision_ids 동기화 - timeline-badges.ts, detect-resource-conflicts.ts 구현 완료
-- ✅ **baseline_conflict 차단** (Approval 모드) - view-mode-permissions.ts에서 Approval 모드 Apply 금지 구현
-- ✅ **2-click root cause 동작** - WhyPanel.tsx + collision popover (Task 5)
-- ✅ **lint/build PASS** (가능 범위) - 모든 Task 후 `pnpm build` 성공
-- ✅ **patch.md §2, §4 불변조건 충족** - SSOT 원칙, 2-click UX, Map/Timeline/Detail 레이아웃, Plan↔Actual, View Mode 분리 완료
-
----
-
-## 8) 참조 문서
-
-- patch.md (SSOT 레이아웃/UX)
-- AGENTS.md (프로젝트 룰)
-- contract-optionc-v0.8.0.md
-- runbook-state-reflow-collision.md
-- collision-taxonomy.md
-- ssot-api-contract.md
-- plan-template.md
-
----
-
-## 9) BLOCKER / 가정
-
-| 항목 | 상태 |
-|------|------|
-| typecheck/test 스크립트 없음 | 가정: lint/build만 사용. 필요 시 추가 |
-| option_c.json 현재 구조 | 가정: Contract v0.8.0 준수 또는 마이그레이션 필요 |
-| detect_project_commands 경로 | .cursor/skills/tr-dashboard-autopilot/scripts/ 또는 tr-dashboard-ssot-guard/scripts/ |
+- **Gantt 레이아웃 검토** — patch.md §2.1, LAYOUT.md, vis vs legacy 갭
+- **GANTTPATCH.MD** — Adapter + Feature Flag, Client-only, 렌더러만 교체
+- **GANTTPATCH1.MD** — VisTimelineGantt 스켈레톤, visTimelineMapper, selectedDate, 버그 #1
+- **GANTTPATCH2.MD** — Props/State/Events JSON Schema (GanttRendererProps, GanttRendererState, GanttEvent)
+- **GANTTPATCH4.MD** — JSON Schema(SSOT)→TS 타입(json-schema-to-ts)+Ajv 런타임 검증(server-only)
+- vis-timeline-gantt/ — PoC (groups, items, zoom, nestedGroups)
+- AGENTS.md §1 (SSOT, Plan 변경, Freeze)
+- patch.md §2 (레이아웃), §4 (배지, 2-click)
+- lib/data/schedule-data.ts (scheduleActivitiesToGanttRows)
+- lib/dashboard-data.ts (GanttRow, Activity)
+- lib/gantt/contract.schema.json (GANTTPATCH2 JSON Schema)
+- lib/gantt/gantt-contract.ts (GanttEventBase, createItemSelectedEvent, createGanttReadyEvent)

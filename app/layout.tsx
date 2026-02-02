@@ -3,6 +3,7 @@ import type { Metadata, Viewport } from 'next'
 import { Plus_Jakarta_Sans, JetBrains_Mono } from 'next/font/google'
 import { AnalyticsWrapper } from "@/components/analytics-wrapper"
 import './globals.css'
+import 'vis-timeline/styles/vis-timeline-graph2d.min.css'
 
 const plusJakarta = Plus_Jakarta_Sans({ 
   subsets: ["latin"],

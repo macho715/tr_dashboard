@@ -1,5 +1,8 @@
-export const PROJECT_START = new Date("2026-01-26")
-export const PROJECT_END = new Date("2026-03-22")
+import { parseUTCDate, toUtcNoon } from "@/lib/ssot/schedule"
+
+/** Noon UTC for consistency with parseDateInput (Bug #1: date range validation at boundaries) */
+export const PROJECT_START = toUtcNoon(parseUTCDate("2026-01-26"))
+export const PROJECT_END = toUtcNoon(parseUTCDate("2026-03-22"))
 // 포함일 기준 계산: Jan 26 = Day 1, Mar 22 = Day 56
 export const TOTAL_DAYS =
   Math.floor((PROJECT_END.getTime() - PROJECT_START.getTime()) / (1000 * 60 * 60 * 24)) + 1

@@ -39,7 +39,7 @@ export function AlertsTriage() {
           {["Weather", "Marine", "SPMT", "Safety", "Port Ops"].map((tag) => (
             <span
               key={tag}
-              className="rounded-full border border-slate-700/60 bg-slate-900/60 px-3 py-1 text-[10px] text-slate-400"
+              className="rounded-full border border-slate-700/60 bg-slate-900/60 px-3 py-1 text-xs text-slate-400"
             >
               {tag}
             </span>
@@ -48,20 +48,20 @@ export function AlertsTriage() {
       </div>
       <div className="space-y-4">
         <div>
-          <div className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-cyan-300">
+          <div className="mb-2 text-xs font-semibold uppercase tracking-widest text-cyan-300">
             Sea Transit Go/No-Go
           </div>
           <GoNoGoBadge />
         </div>
         <div className="grid gap-4 lg:grid-cols-2">
           <div>
-            <div className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-rose-300">
+            <div className="mb-2 text-xs font-semibold uppercase tracking-widest text-rose-300">
               Immediate Action
             </div>
             <OperationalNotice />
           </div>
           <div>
-            <div className="mb-2 text-[11px] font-semibold uppercase tracking-widest text-amber-300">
+            <div className="mb-2 text-xs font-semibold uppercase tracking-widest text-amber-300">
               Monitoring
             </div>
             <WeatherBlock />
