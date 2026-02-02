@@ -1,16 +1,26 @@
-# TR Dashboard Implementation - Final Summary
-**Date**: 2026-02-01  
-**Status**: Tasks 1-9 Complete ✅  
+# TR Dashboard Implementation - Summary
+**Date**: 2026-02-02 (Updated)  
+**Status**: Phase 1-11 Complete ✅  
 **Build**: PASS ✅  
-**SSOT Validator**: EXPECTED FAIL (data migration pending)
+**Tests**: 124 passed ✅  
+**Deployment**: Vercel Auto-Deploy Active ✅
 
 ---
 
 ## Executive Summary
 
-Successfully implemented TR 이동 대시보드 UI/UX/layout per `patch.md` specification. All 9 planned tasks completed with full `pnpm build` verification. SSOT validator shows expected failures due to `option_c.json` being in AGI schedule format rather than Contract v0.8.0 structure.
+Successfully implemented TR 이동 대시보드 complete system with UI/UX/layout per `patch.md` specification. Phases 1-11 completed including:
+- ✅ Phase 1-2: Reflow engine (Forward/Backward Pass, Collision Detection)
+- ✅ Phase 3: State Machine & Evidence Gates
+- ✅ Phase 4: UI Foundation (28 components: Map, Timeline, Detail, Controls)
+- ✅ Phase 7: 2-click Collision UX + WhyPanel + ReflowPreview
+- ✅ Phase 8: Evidence checklist & upload
+- ✅ Phase 10: Compare Mode (baseline vs delta overlay)
+- ✅ Phase 11: E2E tests (cycle detection, evidence gates)
 
-**운영 규모**: 1 Trip당 1 TR 운송, 총 7 Trip, SPMT 1기 운영
+**운영 규모**: 1 Trip당 1 TR 운송, 총 7 Trip, SPMT 1기 운영  
+**테스트**: 124 tests passed (12 test files)  
+**배포**: GitHub → Vercel 자동 배포 활성화
 
 ---
 
@@ -82,30 +92,47 @@ Successfully implemented TR 이동 대시보드 UI/UX/layout per `patch.md` spec
 
 ---
 
-## Files Created/Modified
+## Files Created/Modified (Phase 1-11)
 
-### Created Files (17)
-1. `components/dashboard/StoryHeader.tsx`
-2. `components/dashboard/layouts/tr-three-column-layout.tsx`
-3. `components/dashboard/WhyPanel.tsx`
-4. `lib/ssot/map-status-colors.ts`
-5. `lib/ssot/timeline-badges.ts`
-6. `lib/utils/reflow-engine.ts`
-7. `lib/ssot/reflow-runs.ts`
-8. `lib/ssot/view-mode-permissions.ts`
-9. `lib/ssot/history-events.ts`
-10. `lib/ssot/evidence-gate.ts`
-11. `.cursor/skills/tr-dashboard-patch/SKILL.md`
-12. `.cursor/skills/tr-dashboard-patch/references/patch-rules.md`
-13. `docs/plan/tr-dashboard-plan.md`
+### Phase 4: UI Foundation (28 new files)
+**Core Layout**:
+- `components/layout/DashboardLayout.tsx` - Global wrapper
+- `components/control-bar/GlobalControlBar.tsx` - Trip/TR selection, View Mode
+- `components/dashboard/StoryHeader.tsx` - WHERE/WHEN/WHAT/EVIDENCE
 
-### Modified Files (8)
-1. `app/page.tsx` (StoryHeader, TrThreeColumnLayout, WhyPanel, Map↔Timeline highlight)
-2. `components/dashboard/voyage-cards.tsx` (selectedVoyage, status colors)
-3. `components/dashboard/sections/voyages-section.tsx` (selectedVoyage prop)
-4. `components/dashboard/gantt-chart.tsx` (badges, popover, Plan/Actual rendering)
-5. `components/dashboard/sections/gantt-section.tsx` (onActivityClick, conflicts, onCollisionClick)
-6. `lib/ssot/schedule.ts` (actual_start/actual_finish fields)
+**Map (Where)**:
+- `components/map/MapPanel.tsx`, `MapPanelWrapper.tsx`
+- `components/map/__tests__/MapPanel.test.tsx`
+
+**Timeline (When/What)**:
+- `components/timeline/TimelinePanel.tsx`, `GanttChart.tsx`
+- `src/lib/timeline/gantt-utils.ts`, `__tests__/gantt-utils.test.ts`
+
+**Detail Panel**:
+- `components/detail/DetailPanel.tsx` - Activity inspector
+- `components/detail/sections/` - ActivityHeader, State, PlanVsActual, Resources, Constraints
+- `components/detail/CollisionTray.tsx`, `CollisionCard.tsx`
+
+**History & Evidence**:
+- `components/history/HistoryEvidencePanel.tsx`, `HistoryTab.tsx`
+- `components/evidence/EvidenceTab.tsx`
+
+**State & Logic**:
+- `src/lib/state-machine/` - states.ts, evidence-gate.ts, transition.ts (Phase 3)
+- `src/lib/reflow/` - forward-pass.ts, backward-pass.ts, collision-detect.ts, reflow-manager.ts
+- `src/lib/stores/view-mode-store.tsx` - Zustand store
+- `src/lib/map-status-colors.ts`, `ssot-queries.ts`
+
+**API**:
+- `app/api/ssot/route.ts` - option_c.json endpoint
+
+### Key Modified Files (14)
+1. `app/page.tsx` - DashboardLayout integration, state management
+2. `components/dashboard/WhyPanel.tsx` - 2-click UX + suggested_actions
+3. `components/dashboard/ReflowPreviewPanel.tsx` - Preview → Apply workflow
+4. `components/dashboard/gantt-chart.tsx` - Compare Mode ghost bars
+5. `components/ops/AgiOpsDock.tsx`, `AgiPreviewDrawer.tsx` - AGI integration
+6. `lib/ssot/schedule.ts`, `src/lib/derived-calc.ts`, `src/lib/ssot-loader.ts`
 
 ---
 
@@ -161,13 +188,23 @@ All tasks verified with `pnpm build`:
 
 ---
 
-## Known Limitations / Next Steps
+## Current Status & Next Steps
 
-1. **Data Migration**: `option_c.json` requires Contract v0.8.0 migration for full SSOT compliance
-2. **Reflow Engine**: Current implementation is minimal (placeholder for full topological sort, constraint snap, resource calendar)
-3. **Evidence Components**: UI components for evidence attachment/viewing not yet implemented (data layer complete)
-4. **History UI**: History view mode UI not implemented (permissions layer complete)
-5. **Collision Resolution**: Playbook UI (Wait/Priority/Swap) not implemented (detection/display complete)
+### ✅ Completed
+1. **Reflow Engine**: Forward/Backward Pass, Topological sort, Constraint snap, Resource calendar
+2. **Evidence System**: UI components (EvidenceTab, upload modal) + evidence gates
+3. **History System**: HistoryTab UI + append-only enforcement
+4. **Collision Detection**: Resource/Time/Dependency conflicts + 2-click UX
+5. **State Machine**: Full transition logic + evidence validation
+6. **Compare Mode**: Baseline vs delta overlay + ghost bars
+7. **Tests**: 124 tests passed (state-machine, reflow, collision, evidence)
+
+### 🔄 In Progress / Future Enhancements
+1. **Data Migration**: `option_c.json` → Contract v0.8.0 migration (planned, not blocking)
+2. **Collision Resolution**: Playbook UI (Wait/Priority/Swap) - detection complete, UI enhancement planned
+3. **Real-time Sync**: WebSocket-based live updates (current: manual refresh)
+4. **Mobile Optimization**: Touch gestures, responsive enhancements
+5. **Performance**: Virtual scrolling for large activity lists (500+ activities)
 
 ---
 
@@ -203,4 +240,14 @@ All tasks verified with `pnpm build`:
 
 ---
 
-**End of Implementation Summary**
+---
+
+## Related Documentation
+
+- [SYSTEM_ARCHITECTURE.md](./SYSTEM_ARCHITECTURE.md) - System architecture, data flow, components
+- [LAYOUT.md](./LAYOUT.md) - Layout structure, interactions, state management
+- [WORK_LOG_20260202.md](./WORK_LOG_20260202.md) - Detailed Phase 4-11 work log
+- [AGENT_DASHBOARD_INTEGRATION.md](./AGENT_DASHBOARD_INTEGRATION.md) - Agent/skill ↔ dashboard integration
+- [README.md](../README.md) - Project overview, quick start, recent updates
+
+**Last Updated**: 2026-02-02
