@@ -9,6 +9,7 @@ Last updated: 2026-02-01 (Asia/Dubai)
 ## 0) 미션 / 스코프
 
 - 제품 목표: TR(Transformer) 이동을 SSOT 관점으로 재구성한 대시보드.
+- 운영 규모: 1 Trip당 1 TR 운송, 총 7 Trip, SPMT 1기 운영.
 - 핵심 질문 3개를 모든 화면이 답해야 함:
   1) Where: 지금 어디인가?
   2) When/What: 언제 무엇을 하며 무엇에 막히는가?

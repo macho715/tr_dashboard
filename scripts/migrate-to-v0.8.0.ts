@@ -127,6 +127,7 @@ interface ContractV08 {
     trips: Record<string, any>
     trs: Record<string, any>
     activities: Record<string, ContractActivity>
+    locations?: Record<string, any>
   }
   collisions: Record<string, any>
   reflow_runs: any[]

@@ -12,6 +12,7 @@ export async function GET() {
   const candidates = [
     path.join(root, 'tests', 'fixtures', 'option_c_baseline.json'),
     path.join(root, 'option_c.json'),
+    path.join(root, 'data', 'schedule', 'option_c.json'),
   ]
 
   for (const p of candidates) {

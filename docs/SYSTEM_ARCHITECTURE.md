@@ -1,8 +1,9 @@
 # HVDC TR Transport Dashboard - 시스템 아키텍처
 
-**버전**: 1.0  
-**최종 업데이트**: 2026-01-22  
-**프로젝트**: HVDC TR Transport - AGI Site Logistics Dashboard
+**버전**: 1.1  
+**최종 업데이트**: 2026-02-02  
+**프로젝트**: HVDC TR Transport - AGI Site Logistics Dashboard  
+**SSOT**: patch.md, option_c.json (AGENTS.md)
 
 ---
 
@@ -25,6 +26,8 @@
 ### 목적
 
 HVDC TR Transport Dashboard는 **7개의 Transformer Unit**을 **LCT BUSHRA**로 운송하는 프로젝트의 실시간 물류 대시보드입니다. 복잡한 스케줄 의존성을 관리하고, 일정 변경의 영향을 실시간으로 시각화합니다.
+
+**운영 규모**: 1 Trip당 1 TR 운송, 총 7 Trip, SPMT 1기 운영
 
 ### 핵심 요구사항
 
@@ -142,14 +145,18 @@ function GanttChart() {
 #### 2. Business Logic Layer
 - **역할**: 비즈니스 로직 및 데이터 변환
 - **구성요소**:
-  - `lib/utils/schedule-reflow.ts`: 스케줄 재계산 엔진
-  - `lib/data/schedule-data.ts`: 데이터 로딩 및 변환
+  - `lib/utils/schedule-reflow.ts`: 스케줄 재계산 엔진 (reflowSchedule)
+  - `lib/utils/slack-calc.ts`: ES/EF/LS/LF, critical path
+  - `lib/utils/detect-resource-conflicts.ts`: 충돌 감지
+  - `lib/baseline/`: Baseline/Approval 모드 (baseline-loader, freeze-policy)
+  - `lib/compare/`: Compare Mode (compare-loader, types) — Phase 10 완료
 - **특징**: 순수 함수, 사이드 이펙트 없음
 
 #### 3. Data Layer
 - **역할**: 데이터 정의 및 저장
 - **구성요소**:
-  - `lib/ssot/schedule.ts`: 타입 정의
+  - `lib/ssot/schedule.ts`: ScheduleActivity, ScheduleConflict, SuggestedAction
+  - `src/types/ssot.ts`: Contract v0.8.0 Activity, Collision, Baseline
   - `data/schedule/option_c.json`: 마스터 스케줄 데이터
 - **특징**: SSOT 원칙 준수
 
@@ -254,14 +261,21 @@ ScheduleActivity[]
   → GanttRow[] (렌더링용)
 ```
 
-### 3. Preview 패널 (`components/gantt/SchedulePreviewPanel.tsx`)
+### 3. ReflowPreviewPanel (`components/dashboard/ReflowPreviewPanel.tsx`)
 
-**책임**: 변경 사항 미리보기 및 충돌 경고
+**책임**: Why 패널 suggested_action → reflowSchedule 결과 미리보기 (Phase 7 T7.7)
 
 **주요 기능**:
 - **변경 사항 목록**: 영향받은 작업의 이전/이후 날짜
 - **충돌 경고**: 의존성 사이클, 잠금 위반, 제약 조건 위반
 - **적용/취소**: Preview 적용 시 상태 업데이트
+- **연결**: `onApplyAction` → `reflowSchedule` → ReflowPreviewPanel 표시
+
+### 4. DetailPanel + WhyPanel (2-click Collision UX)
+
+**책임**: Activity inspector, Collision root cause, suggested_actions (patch.md §4.2)
+
+**흐름**: Collision 배지 클릭 → WhyPanel → suggested_action 클릭 → reflowSchedule → ReflowPreviewPanel
 
 ---
 
@@ -441,4 +455,14 @@ const changeImpactItems = useMemo(() => {
 
 ---
 
-**Last Updated**: 2026-01-22
+**Last Updated**: 2026-02-02  
+**참조**: patch.md, AGENTS.md, tr-dashboard-plan-patch4.md
+
+### 5. Compare Mode (Phase 10 완료)
+
+**책임**: baseline vs compare delta overlay (patch.md §2.2)
+
+**구성요소**:
+- `lib/compare/compare-loader.ts`: `calculateDelta(baseline, compare)` → added/removed/changed
+- `components/compare/CompareModeBanner.tsx`: +X added, −Y removed, Z shifted, W collisions new
+- `components/dashboard/gantt-chart.tsx`: `compareDelta` prop → ghost bars (changed 활동 노란 점선)

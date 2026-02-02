@@ -12,12 +12,15 @@
 
 HVDC TR Transport Dashboard는 **7개의 Transformer Unit**을 **LCT BUSHRA**로 운송하는 프로젝트의 실시간 물류 대시보드입니다.
 
+**운영 규모**: 1 Trip당 1 TR 운송, 총 7 Trip, SPMT 1기 운영
+
 ### 주요 기능
 
 - **실시간 KPI 모니터링**: 총 일수, 항차 수, SPMT 세트, TR Unit 추적
 - **Gantt 차트**: 7개 항차의 시각적 일정 관리 (Jan 26 - Mar 22, 2026)
 - **스케줄 재계산 엔진**: 의존성 기반 자동 일정 조정
 - **Preview 패널**: 변경 사항 미리보기 및 충돌 검사
+- **Compare Mode**: baseline vs compare delta overlay, Gantt ghost bars (changed 활동 노란 점선)
 - **날짜 변경 UI**: Calendar + 직접 입력으로 시작일 변경
 - **항차 상세 정보**: Load-out, Sail-away, Load-in, Turning, Jack-down 일정
 
@@ -134,15 +137,13 @@ hvdc-tr-dashboard/
 ├── data/schedule/
 │   └── option_c.json      # 마스터 스케줄 데이터 (139개 활동)
 ├── config/                # 설정 파일
-│   ├── eslintrc.json      # ESLint 설정
 │   ├── prettierignore     # Prettier 제외 목록
 │   └── env.example        # 환경변수 템플릿
 ├── docs/                  # 문서
 │   ├── guides/            # 가이드 (agi-schedule-updater, patch-guide, termux-ssh-cursor)
 │   └── ...
 ├── tools/                 # 개발 도구
-│   ├── detect_pm_and_scripts.mjs
-│   └── run_validate.mjs
+│   └── detect_pm_and_scripts.mjs  # 패키지 매니저·스크립트 탐지 (CI용)
 └── .cursor/               # Cursor IDE 규칙
     ├── rules/             # 코딩 규칙 (.mdc)
     ├── commands/          # 커스텀 명령어
@@ -268,7 +269,7 @@ pnpm run build
 
 프로젝트에는 다음 코드 품질 도구가 설정되어 있습니다:
 
-- **ESLint**: `config/eslintrc.json` - Next.js 및 TypeScript 규칙
+- **ESLint**: `eslint.config.mjs` - Next.js 16 flat config (core-web-vitals + TypeScript)
 - **Prettier**: `package.json` "prettier" - 코드 포맷팅 일관성
 - **TypeScript**: `tsconfig.json` - 타입 체크
 
@@ -471,7 +472,7 @@ Private project - Samsung C&T × Mammoet
 
 프로젝트에는 다음 설정 파일들이 포함되어 있습니다:
 
-- **`config/eslintrc.json`**: ESLint 설정 (Next.js + TypeScript 규칙)
+- **`eslint.config.mjs`**: ESLint flat config (Next.js 16 + TypeScript 규칙)
 - **`package.json` "prettier"**: Prettier 코드 포맷팅 설정
 - **`config/prettierignore`**: Prettier 제외 파일 목록
 - **`.nvmrc`**: Node.js 버전 고정 (20)

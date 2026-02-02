@@ -2,6 +2,8 @@
 
 Contract v0.8.0의 핵심은 **“Activity가 유일한 SSOT”**가 되도록 `option_c.json`을 **권위 분리(Plan/Actual/Calc)**, **Reflow/Collision 영속 레지스트리**, **Baseline/Approval(Freeze)**, **상태 머신 + Evidence Gate**까지 “바로 구현 가능한 계약(Contract)”으로 고정하는 것입니다.
 
+**운영 규모**: 1 Trip당 1 TR 운송, 총 7 Trip, SPMT 1기 운영
+
 이번 답변은 아래를 포함합니다.
 
 * **단일 화면 레이아웃(SSOT 관점)**: Map · Timeline(Gantt) · Detail(Risk/State) · History/Evidence + Global Control Bar

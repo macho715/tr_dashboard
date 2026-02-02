@@ -1,7 +1,7 @@
 "use client"
 
 import { AlertTriangle, X } from "lucide-react"
-import type { ScheduleConflict } from "@/lib/ssot/schedule"
+import type { ScheduleConflict, SuggestedAction } from "@/lib/ssot/schedule"
 
 type WhyPanelProps = {
   collision: ScheduleConflict | null
@@ -9,11 +9,12 @@ type WhyPanelProps = {
   onViewInTimeline?: (collision: ScheduleConflict, activityId?: string) => void
   onJumpToEvidence?: (collision: ScheduleConflict) => void
   onRelatedActivityClick?: (activityId: string) => void
+  onApplyAction?: (collision: ScheduleConflict, action: SuggestedAction) => void
 }
 
 /**
- * Why panel (patch.md §4.2)
- * 2-click: Detail "Why" 패널 → Root cause + Evidence
+ * Why panel (patch.md §4.2, Phase 7 T7.7)
+ * 2-click: Detail "Why" 패널 → Root cause + Evidence + suggested_actions
  */
 export function WhyPanel({
   collision,
@@ -21,6 +22,7 @@ export function WhyPanel({
   onViewInTimeline,
   onJumpToEvidence,
   onRelatedActivityClick,
+  onApplyAction,
 }: WhyPanelProps) {
   if (!collision) return null
 
@@ -40,6 +42,8 @@ export function WhyPanel({
     LOCK_VIOLATION: "Lock",
     DEPENDENCY_CYCLE: "Dependency",
   }
+
+  const suggestedActions = collision.suggested_actions ?? []
 
   return (
     <div
@@ -63,6 +67,11 @@ export function WhyPanel({
         </button>
       </div>
       <p className="text-sm font-medium text-foreground">{collision.message}</p>
+      {collision.root_cause_code && (
+        <p className="mt-1 text-[11px] text-slate-400">
+          Root cause: <code className="rounded bg-slate-800/60 px-1">{collision.root_cause_code}</code>
+        </p>
+      )}
       <div className="mt-2 flex flex-wrap items-center gap-2 text-[10px] font-semibold uppercase">
         <span
           className={`rounded-full border px-2 py-0.5 tracking-wide ${severityStyles[collision.severity]}`}
@@ -89,6 +98,24 @@ export function WhyPanel({
           Jump to Evidence
         </button>
       </div>
+      {suggestedActions.length > 0 && (
+        <div className="mt-3">
+          <div className="text-[11px] font-semibold text-slate-300">Suggested actions</div>
+          <ul className="mt-1.5 space-y-1">
+            {suggestedActions.map((action, idx) => (
+              <li key={`${action.kind}-${idx}`}>
+                <button
+                  type="button"
+                  className="rounded border border-emerald-500/40 bg-emerald-500/15 px-2.5 py-1 text-[11px] font-medium text-emerald-200 hover:bg-emerald-500/25"
+                  onClick={() => onApplyAction?.(collision, action)}
+                >
+                  {action.label}
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       {collision.related_activity_ids && collision.related_activity_ids.length > 0 && (
         <div className="mt-3">
           <div className="text-[11px] font-semibold text-slate-300">

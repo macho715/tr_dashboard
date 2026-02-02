@@ -2,6 +2,8 @@
 
 **HVDC TR Transport Dashboard 프로젝트용 Cursor IDE 업데이트 및 롤백 방지 가이드**
 
+**운영 규모**: 1 Trip당 1 TR 운송, 총 7 Trip, SPMT 1기 운영
+
 ---
 
 ## 목차

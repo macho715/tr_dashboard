@@ -53,6 +53,7 @@ export interface ScheduleActivity {
   voyage_id?: string
   milestone_id?: string
   status?: ActivityStatus
+  blocker_code?: string | null
 
   // Actual (patch.md §5.1)
   actual_start?: string
@@ -71,6 +72,12 @@ export interface DateChange {
   delta_days: number
 }
 
+export interface SuggestedAction {
+  kind: string
+  label: string
+  params?: Record<string, unknown>
+}
+
 export interface ScheduleConflict {
   type: "RESOURCE" | "CONSTRAINT" | "LOCK_VIOLATION" | "DEPENDENCY_CYCLE"
   activity_id: string
@@ -82,6 +89,12 @@ export interface ScheduleConflict {
   overlapEnd?: string
   overlapMinutes?: number
   conflictKey?: string
+  /** Root cause code (patch.md §4.2, 2-click UX) */
+  root_cause_code?: string
+  /** Diagnostic details */
+  details?: Record<string, unknown>
+  /** Suggested resolution actions */
+  suggested_actions?: SuggestedAction[]
 }
 
 export interface ImpactReport {

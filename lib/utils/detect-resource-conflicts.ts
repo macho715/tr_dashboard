@@ -63,6 +63,11 @@ export function detectResourceConflicts(
 
         const overlapMinutes = Math.round((overlapEnd - overlapStart) / (1000 * 60))
 
+        const a1Finish = (acts[i].finish || "").split("T")[0]
+        const a2Finish = (acts[j].finish || "").split("T")[0]
+        const newStart1 = aLow === a1.id ? a2Finish : a1Finish
+        const newStart2 = aHigh === a1.id ? a2Finish : a1Finish
+
         conflicts.push({
           type: "RESOURCE",
           activity_id: aLow,
@@ -74,6 +79,18 @@ export function detectResourceConflicts(
           overlapEnd: overlapEndISO,
           overlapMinutes,
           conflictKey,
+          suggested_actions: [
+            {
+              kind: "shift_activity",
+              label: `Shift ${aLow} after ${aHigh}`,
+              params: { activity_id: aLow, new_start: newStart1 },
+            },
+            {
+              kind: "shift_activity",
+              label: `Shift ${aHigh} after ${aLow}`,
+              params: { activity_id: aHigh, new_start: newStart2 },
+            },
+          ],
         })
       }
     }

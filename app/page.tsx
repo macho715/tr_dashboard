@@ -24,7 +24,12 @@ const MapPanelWrapper = dynamic(
   { ssr: false }
 )
 import { WhyPanel } from "@/components/dashboard/WhyPanel"
+import { ReflowPreviewPanel } from "@/components/dashboard/ReflowPreviewPanel"
+import { DetailPanel } from "@/components/detail/DetailPanel"
+import { ApprovalModeBanner } from "@/components/approval/ApprovalModeBanner"
+import { CompareModeBanner } from "@/components/compare/CompareModeBanner"
 import { HistoryEvidencePanel } from "@/components/history/HistoryEvidencePanel"
+import { calculateSlack } from "@/lib/utils/slack-calc"
 import { OverviewSection } from "@/components/dashboard/sections/overview-section"
 import { KPISection } from "@/components/dashboard/sections/kpi-section"
 import { AlertsSection } from "@/components/dashboard/sections/alerts-section"
@@ -39,7 +44,14 @@ import {
 } from "@/lib/ops/agi-schedule/pipeline-runner"
 import { runPipelineCheck } from "@/lib/ops/agi-schedule/pipeline-check"
 import { detectResourceConflicts } from "@/lib/utils/detect-resource-conflicts"
-import type { ImpactReport, ScheduleActivity, ScheduleConflict } from "@/lib/ssot/schedule"
+import { reflowSchedule } from "@/lib/utils/schedule-reflow"
+import { useViewModeOptional } from "@/src/lib/stores/view-mode-store"
+import type {
+  ImpactReport,
+  ScheduleActivity,
+  ScheduleConflict,
+  SuggestedAction,
+} from "@/lib/ssot/schedule"
 
 type SectionItem = {
   id: string
@@ -100,8 +112,13 @@ export default function Page() {
   const [jumpTrigger, setJumpTrigger] = useState(0)
   const [selectedVoyage, setSelectedVoyage] = useState<(typeof voyages)[number] | null>(null)
   const [selectedCollision, setSelectedCollision] = useState<ScheduleConflict | null>(null)
+  const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null)
   const [focusedActivityId, setFocusedActivityId] = useState<string | null>(null)
   const conflicts = useMemo(() => detectResourceConflicts(activities), [activities])
+  const slackMap = useMemo(
+    () => calculateSlack(activities, PROJECT_END_DATE),
+    [activities]
+  )
   const [ops, setOps] = useState(() =>
     createDefaultOpsState({ activities: scheduleActivities, projectEndDate: PROJECT_END_DATE })
   )
@@ -109,6 +126,11 @@ export default function Page() {
   const evidenceRef = useRef<HTMLDivElement>(null)
   const [trips, setTrips] = useState<{ trip_id: string; name: string }[]>([])
   const [trs, setTrs] = useState<{ tr_id: string; name: string }[]>([])
+  const [reflowPreview, setReflowPreview] = useState<{
+    changes: ImpactReport["changes"]
+    conflicts: ImpactReport["conflicts"]
+    nextActivities: ScheduleActivity[]
+  } | null>(null)
 
   useEffect(() => {
     fetch("/api/ssot")
@@ -187,6 +209,7 @@ export default function Page() {
   ]
 
   const handleActivityClick = (activityId: string, start: string) => {
+    setSelectedActivityId(activityId)
     const v = findVoyageByActivityDate(start, voyages)
     if (v) setSelectedVoyage(v)
   }
@@ -227,6 +250,36 @@ export default function Page() {
     evidenceRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
   }
 
+  const viewMode = useViewModeOptional()
+  const canApplyReflow = viewMode?.canApplyReflow ?? true
+
+  const handleApplyAction = (_collision: ScheduleConflict, action: SuggestedAction) => {
+    if (action.kind !== "shift_activity") return
+    const activityId = action.params?.activity_id as string | undefined
+    const newStart = action.params?.new_start as string | undefined
+    if (!activityId || !newStart) return
+
+    try {
+      const result = reflowSchedule(activities, activityId, newStart, {
+        respectLocks: true,
+        checkResourceConflicts: true,
+      })
+      setReflowPreview({
+        changes: result.impact_report.changes,
+        conflicts: result.impact_report.conflicts,
+        nextActivities: result.activities,
+      })
+    } catch {
+      setReflowPreview(null)
+    }
+  }
+
+  const handleApplyPreviewFromWhy = () => {
+    if (!reflowPreview) return
+    setActivities(reflowPreview.nextActivities)
+    setReflowPreview(null)
+  }
+
   return (
     <DateProvider>
       <div className="relative z-10 max-w-[1800px] mx-auto px-4 sm:px-6 py-6">
@@ -243,6 +296,14 @@ export default function Page() {
           trs={trs}
           onReflowPreview={() => setJumpTrigger((n) => n + 1)}
         >
+        <ApprovalModeBanner activities={activities} />
+        <CompareModeBanner
+          compareResult={
+            viewMode?.state.mode === "compare"
+              ? calculateDelta(scheduleActivities, activities, conflicts.length, conflicts.length)
+              : null
+          }
+        />
         <StoryHeader
           trId={selectedVoyage ? String(selectedVoyage.voyage) : null}
           where={
@@ -276,12 +337,12 @@ export default function Page() {
             mapSlot={
               <div className="space-y-3">
                 <MapPanelWrapper
-                  selectedActivityId={selectedCollision?.activity_id ?? null}
+                  selectedActivityId={selectedActivityId ?? selectedCollision?.activity_id ?? null}
                   onTrClick={() => {
                     // Phase 5: TR click → onActivitySelect fires with current activity
                   }}
                   onActivitySelect={(activityId) => {
-                    // Phase 5: Map↔Timeline sync - scroll to activity (works when Timeline uses option_c)
+                    setSelectedActivityId(activityId)
                     ganttRef.current?.scrollToActivity?.(activityId)
                   }}
                 />
@@ -307,22 +368,59 @@ export default function Page() {
                   onJumpRequest={() => setJumpTrigger((n) => n + 1)}
                   onActivityClick={handleActivityClick}
                   conflicts={conflicts}
-                  onCollisionClick={setSelectedCollision}
+                  onCollisionClick={(col) => {
+                    setSelectedCollision(col)
+                    if (col.activity_id) setSelectedActivityId(col.activity_id)
+                  }}
                   focusedActivityId={focusedActivityId}
+                  compareDelta={
+                    viewMode?.state.mode === "compare"
+                      ? calculateDelta(scheduleActivities, activities, conflicts.length, conflicts.length)
+                      : null
+                  }
                 />
               </>
             }
             detailSlot={
               <div className="space-y-3">
+                <DetailPanel
+                  activity={
+                    selectedActivityId
+                      ? activities.find((a) => a.activity_id === selectedActivityId) ?? null
+                      : null
+                  }
+                  slackResult={
+                    selectedActivityId ? slackMap.get(selectedActivityId) ?? null : null
+                  }
+                  conflicts={conflicts}
+                  onClose={() => setSelectedActivityId(null)}
+                  onCollisionClick={(col) => {
+                    setSelectedCollision(col)
+                    if (col.activity_id) setSelectedActivityId(col.activity_id)
+                  }}
+                />
                 <WhyPanel
                   collision={selectedCollision}
                   onClose={() => setSelectedCollision(null)}
                   onViewInTimeline={handleViewInTimeline}
                   onJumpToEvidence={handleJumpToEvidence}
                   onRelatedActivityClick={focusTimelineActivity}
+                  onApplyAction={handleApplyAction}
                 />
+                {reflowPreview && (
+                  <ReflowPreviewPanel
+                    changes={reflowPreview.changes}
+                    conflicts={reflowPreview.conflicts.map((c) => ({
+                      message: c.message,
+                      severity: c.severity,
+                    }))}
+                    onApply={handleApplyPreviewFromWhy}
+                    onCancel={() => setReflowPreview(null)}
+                    canApply={canApplyReflow}
+                  />
+                )}
                 <HistoryEvidencePanel
-                  selectedActivityId={selectedCollision?.activity_id ?? null}
+                  selectedActivityId={selectedActivityId ?? selectedCollision?.activity_id ?? null}
                   onUploadClick={(_activityId, _evidenceType) => {
                     // Phase 8: Evidence upload - TODO: open upload modal
                   }}

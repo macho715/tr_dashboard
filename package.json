@@ -5,14 +5,16 @@
   "scripts": {
     "build": "next build",
     "dev": "next dev",
-    "lint": "eslint . -c config/eslintrc.json",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
     "start": "next start",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",
     "sync:schedule": "python scripts/sync_schedule_to_dashboard.py",
     "sync:tide": "python scripts/sync_tide_to_dashboard.py",
-    "sync:agent": "python scripts/sync_agent_to_dashboard.py"
+    "sync:agent": "python scripts/sync_agent_to_dashboard.py",
+    "validate:ssot": "python scripts/validate_optionc.py tests/fixtures/option_c_baseline.json"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
@@ -70,10 +72,15 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.9",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "@vitest/ui": "^4.0.18",
+    "eslint": "^9.39.2",
+    "eslint-config-next": "^16.1.6",
+    "jsdom": "^28.0.0",
     "postcss": "^8.5",
     "tailwindcss": "^4.1.9",
     "tsx": "^4.21.0",

@@ -1,8 +1,9 @@
 # HVDC TR Transport Dashboard - Layout 문서
 
-> **버전**: 1.0.0  
-> **최종 업데이트**: 2025-01-31  
-> **프로젝트**: HVDC TR Transport Dashboard - AGI Site
+> **버전**: 1.2.0  
+> **최종 업데이트**: 2026-02-02  
+> **프로젝트**: HVDC TR Transport Dashboard - AGI Site  
+> **SSOT**: patch.md, option_c.json (AGENTS.md)
 
 ---
 
@@ -23,9 +24,14 @@
 
 HVDC TR Transport Dashboard는 **Al Ghallan Island (AGI) Site**의 7개 Transformer Units 운송을 관리하는 실시간 물류 대시보드입니다.
 
+**운영 규모**: 1 Trip당 1 TR 운송, 총 7 Trip, SPMT 1기 운영
+
 ### 핵심 특징
 
-- **3-Column Grid 레이아웃**: 좌측 패널(240px) - 메인 콘텐츠(유연) - 우측 패널(240px)
+- **3-Column Layout (patch.md §2.1)**: Map(Where) | Timeline(When/What) | Detail(State/Risk)
+- **단일 시선 흐름**: Where → When/What → Evidence (3초 내 읽기)
+- **2-click Collision UX**: 배지 → Why 패널 → Root cause + Evidence
+- **Compare Mode** (patch.md §2.2): baseline vs compare delta overlay, Gantt ghost bars
 - **Sticky Navigation**: 섹션 간 빠른 이동
 - **Dark Mode**: Deep Ocean 테마 적용
 - **AGI Operations**: 스케줄 업데이트 및 명령 처리
@@ -34,97 +40,63 @@ HVDC TR Transport Dashboard는 **Al Ghallan Island (AGI) Site**의 7개 Transfor
 
 ## 전체 레이아웃 구조
 
-### 레이아웃 다이어그램
+### 레이아웃 다이어그램 (patch.md §2.1)
 
 ```mermaid
 graph TB
-    RootLayout[app/layout.tsx<br/>RootLayout<br/>- HTML 구조<br/>- 폰트 설정<br/>- Analytics]
-    RootLayout --> Page[app/page.tsx<br/>Page Component<br/>- DateProvider<br/>- Container max-w-1800px]
+    RootLayout[app/layout.tsx<br/>RootLayout]
+    RootLayout --> Page[app/page.tsx<br/>DateProvider + DashboardLayout]
     
-    Page --> SkipLink[Skip to Content Link<br/>접근성]
-    Page --> Header[DashboardHeader<br/>- 제목/프로젝트 정보<br/>- DatePicker]
-    Page --> Overview[OverviewSection<br/>id='overview']
-    Page --> SectionNav[SectionNav<br/>Sticky Navigation<br/>z-20]
-    Page --> DashboardShell[DashboardShell<br/>3-Column Grid]
+    Page --> Header[DashboardHeader]
+    Page --> StoryHeader[StoryHeader<br/>WHERE/WHEN/WHAT/EVIDENCE]
+    Page --> Overview[OverviewSection]
+    Page --> SectionNav[SectionNav]
+    Page --> TrLayout[TrThreeColumnLayout<br/>Map | Timeline | Detail]
     Page --> Footer[Footer]
-    Page --> BackToTop[BackToTop Button]
-    Page --> VoyageDrawer[VoyageFocusDrawer<br/>Conditional Render]
+    Page --> VoyageDrawer[VoyageFocusDrawer]
     
-    Overview --> OverviewRibbon[OperationOverviewRibbon<br/>상태 요약]
-    Overview --> MilestoneTracker[MilestoneTracker<br/>마일스톤 추적]
-    Overview --> ContentDiv[Content Div]
-    ContentDiv --> AgiOpsDock[AgiOpsDock<br/>AGI 명령 처리]
-    ContentDiv --> AgiScheduleUpdater[AgiScheduleUpdaterBar<br/>스케줄 업데이트]
+    TrLayout --> MapSlot[mapSlot<br/>MapPanelWrapper + VoyagesSection]
+    TrLayout --> TimelineSlot[timelineSlot<br/>ScheduleSection + GanttSection]
+    TrLayout --> DetailSlot[detailSlot]
     
-    DashboardShell --> LeftPanel[ResourceUtilizationPanel<br/>240px<br/>Sticky top-24]
-    DashboardShell --> MainContent[Main Content<br/>id='main'<br/>Flexible Width]
-    DashboardShell --> RightPanel[NotesDecisions<br/>240px<br/>Sticky top-24]
+    DetailSlot --> DetailPanel[DetailPanel<br/>ActivityHeader, State, PlanVsActual, Resources, Constraints, CollisionTray]
+    DetailSlot --> WhyPanel[WhyPanel<br/>2-click: root cause + suggested_actions]
+    DetailSlot --> ReflowPreview[ReflowPreviewPanel<br/>onApplyAction → reflowSchedule]
+    DetailSlot --> HistoryEvidence[HistoryEvidencePanel]
+    DetailSlot --> NotesDecisions[NotesDecisions]
     
-    MainContent --> KPISection[KPISection<br/>id='kpi']
-    MainContent --> AlertsSection[AlertsSection<br/>id='alerts']
-    MainContent --> VoyagesSection[VoyagesSection<br/>id='voyages']
-    MainContent --> ScheduleSection[ScheduleSection<br/>id='schedule']
-    MainContent --> GanttSection[GanttSection<br/>id='gantt']
-    
-    KPISection --> KPICards[KPICards Component]
-    AlertsSection --> AlertsTriage[AlertsTriage Component]
-    AlertsTriage --> GoNoGoBadge[GoNoGoBadge Component]
-    AlertsTriage --> WeatherBlock[WeatherBlock Component]
-    VoyagesSection --> VoyageCards[VoyageCards Component]
-    VoyageCards --> TideTable[TideTable Component]
-    ScheduleSection --> ScheduleTable[ScheduleTable Component]
-    GanttSection --> GanttChart[GanttChart Component]
-    GanttSection --> TimelineControls[TimelineControls]
-    
-    style RootLayout fill:#0e7490,color:#fff
-    style Page fill:#0ea5e9,color:#fff
-    style DashboardShell fill:#06b6d4,color:#fff
-    style Overview fill:#14b8a6,color:#fff
-    style MainContent fill:#0891b2,color:#fff
+    style TrLayout fill:#06b6d4,color:#fff
+    style DetailSlot fill:#0891b2,color:#fff
 ```
 
 ### 페이지 구조 (위에서 아래로)
 
 ```
 ┌─────────────────────────────────────────────────────────┐
-│ Skip to Content (접근성 링크)                              │
+│ DashboardHeader (제목, DatePicker)                        │
 ├─────────────────────────────────────────────────────────┤
-│ DashboardHeader                                          │
-│ - 제목: "HVDC TR Transport"                              │
-│ - 프로젝트 정보: "AGI Site | 7 Transformer Units"         │
-│ - 상태 배지: "Confirmed"                                  │
-│ - 완료일: "March 22, 2026"                               │
-│ - DatePicker (날짜 선택)                                  │
+│ StoryHeader (WHERE / WHEN/WHAT / EVIDENCE)               │
 ├─────────────────────────────────────────────────────────┤
-│ OverviewSection (id="overview")                         │
-│ ┌─────────────────────────────────────────────────────┐ │
-│ │ OperationOverviewRibbon (상태 요약)                   │ │
-│ │ MilestoneTracker (마일스톤 추적)                     │ │
-│ │ AgiOpsDock (AGI 명령 처리)                           │ │
-│ │ AgiScheduleUpdaterBar (스케줄 업데이트)               │ │
-│ └─────────────────────────────────────────────────────┘ │
+│ OverviewSection (OperationOverviewRibbon, MilestoneTracker, AgiOpsDock, AgiScheduleUpdaterBar) │
 ├─────────────────────────────────────────────────────────┤
-│ SectionNav (Sticky top-0, z-20)                         │
-│ - Overview, KPI, Alerts, Voyages, Schedule, Gantt      │
-│ - 활성 섹션 하이라이트                                    │
-│ - 섹션별 카운트 표시                                      │
+│ SectionNav (Overview, KPI, Alerts, Voyages, Schedule, Gantt) │
 ├─────────────────────────────────────────────────────────┤
-│ DashboardShell (3-Column Grid)                          │
-│ ┌───────────┬──────────────────────────┬───────────┐  │
-│ │ Left      │ Main Content              │ Right     │  │
-│ │ 240px     │ Flexible                  │ 240px     │  │
-│ │ Sticky    │                           │ Sticky    │  │
-│ │           │                           │           │  │
-│ │ Resource  │ KPISection                │ Notes     │  │
-│ │ Panel     │ AlertsSection             │ Decisions │  │
-│ │           │ VoyagesSection            │           │  │
-│ │           │ ScheduleSection           │           │  │
-│ │           │ GanttSection              │           │  │
-│ └───────────┴──────────────────────────┴───────────┘  │
+│ KPISection | AlertsSection                               │
 ├─────────────────────────────────────────────────────────┤
-│ Footer                                                  │
+│ TrThreeColumnLayout (patch.md §2.1)                      │
+│ ┌──────────────┬─────────────────────┬────────────────┐ │
+│ │ Map (Where)  │ Timeline (When/What)│ Detail         │ │
+│ │ min 180px    │ 2fr                  │ min 200px      │ │
+│ │              │                      │                │ │
+│ │ MapPanel     │ ScheduleSection      │ DetailPanel    │ │
+│ │ VoyagesSection│ GanttSection        │ WhyPanel       │ │
+│ │              │ (compareDelta→ghost bars)│ CompareModeBanner (Compare 모드) │ │
+│ │              │                      │ ReflowPreviewPanel │
+│ │              │                      │ HistoryEvidencePanel │
+│ │              │                      │ NotesDecisions │ │
+│ └──────────────┴─────────────────────┴────────────────┘ │
 ├─────────────────────────────────────────────────────────┤
-│ BackToTop Button (스크롤 상단 이동)                      │
+│ Footer | BackToTop                                       │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -154,7 +126,15 @@ graph TB
 </RootLayout>
 ```
 
-### 2. Page Component (`app/page.tsx`)
+### 2. DashboardLayout (`components/layout/DashboardLayout.tsx`)
+
+**역할**: Global Control Bar + ViewModeProvider (patch.md §2.1)
+
+**구성**:
+- GlobalControlBar: Trip/TR 선택, Date Cursor, View Mode, Risk Overlay
+- ViewModeProvider: Live/History/Approval/Compare 모드
+
+### 3. Page Component (`app/page.tsx`)
 
 **역할**: 메인 페이지 컴포넌트 및 상태 관리
 
@@ -163,6 +143,9 @@ graph TB
 - `activeSection`: 현재 활성 섹션 ID
 - `timelineView`: 타임라인 뷰 모드 (Week/Month/Quarter)
 - `selectedVoyage`: 선택된 항차 정보
+- `selectedActivityId`: 선택된 활동 ID (DetailPanel 표시)
+- `selectedCollision`: 선택된 충돌 (WhyPanel 표시)
+- `reflowPreview`: Why 패널 suggested_action → reflowSchedule 결과
 - `changeBatches`: 변경 이력 스택
 - `ops`: AGI Operations 상태
 
@@ -172,7 +155,7 @@ graph TB
 - `px-4 sm:px-6`: 반응형 패딩
 - `py-6`: 세로 패딩
 
-### 3. DashboardHeader (`components/dashboard/header.tsx`)
+### 4. DashboardHeader (`components/dashboard/header.tsx`)
 
 **역할**: 대시보드 헤더 및 프로젝트 정보 표시
 
@@ -189,7 +172,7 @@ graph TB
 - `shadow-glow`: 글로우 그림자
 - 그라데이션 텍스트 (cyan-400 → teal-400)
 
-### 4. OverviewSection (`components/dashboard/sections/overview-section.tsx`)
+### 5. OverviewSection (`components/dashboard/sections/overview-section.tsx`)
 
 **역할**: 운영 개요 및 AGI Operations
 
@@ -207,7 +190,7 @@ graph TB
 - `onOpsCommand`: AGI 명령 실행 핸들러
 - `onFocusActivity`: 활동 포커스 핸들러
 
-### 5. SectionNav (`components/dashboard/section-nav.tsx`)
+### 6. SectionNav (`components/dashboard/section-nav.tsx`)
 
 **역할**: 섹션 간 네비게이션 (Sticky)
 
@@ -225,26 +208,31 @@ graph TB
 5. Schedule (count: 활동 수)
 6. Gantt
 
-### 6. DashboardShell (`components/dashboard/layouts/dashboard-shell.tsx`)
+### 7. TrThreeColumnLayout (`components/dashboard/layouts/tr-three-column-layout.tsx`)
 
-**역할**: 3-Column Grid 레이아웃 컨테이너
+**역할**: 3-Column Layout (patch.md §2.1) — Map(Where) | Timeline(When/What) | Detail
 
 **레이아웃 구조**:
 ```tsx
-<div className="grid gap-6 lg:grid-cols-[240px_minmax(0,1fr)_240px]">
-  <ResourceUtilizationPanel />  {/* Left: 240px */}
-  <main id="main">               {/* Center: Flexible */}
-    {children}
-  </main>
-  <NotesDecisions />             {/* Right: 240px */}
+<div className="grid gap-4 lg:grid-cols-[minmax(180px,1fr)_2fr_minmax(200px,1fr)]">
+  <aside aria-label="WHERE (Map)">{mapSlot}</aside>
+  <main aria-label="WHEN/WHAT (Timeline)">{timelineSlot}</main>
+  <aside aria-label="DETAIL">{detailSlot}</aside>
 </div>
 ```
 
+**detailSlot 구성**:
+- DetailPanel (ActivityHeader, StateSection, PlanVsActualSection, ResourcesSection, ConstraintsSection, CollisionTray)
+- WhyPanel (2-click: root_cause_code, suggested_actions)
+- ReflowPreviewPanel (onApplyAction → reflowSchedule → Preview UI)
+- HistoryEvidencePanel
+- NotesDecisions
+
 **반응형**:
 - `lg:` 브레이크포인트 이상: 3-Column Grid
-- `lg:` 미만: 단일 컬럼 (추정)
+- `lg:` 미만: 단일 컬럼
 
-### 7. ResourceUtilizationPanel (`components/dashboard/resource-utilization-panel.tsx`)
+### 8. ResourceUtilizationPanel (`components/dashboard/resource-utilization-panel.tsx`)
 
 **역할**: 좌측 패널 - 자원 활용도 및 필터링
 
@@ -259,7 +247,7 @@ graph TB
 - `bg-card/80`: 반투명 카드 배경
 - `backdrop-blur-lg`: 블러 효과
 
-### 8. NotesDecisions (`components/dashboard/notes-decisions.tsx`)
+### 9. NotesDecisions (`components/dashboard/notes-decisions.tsx`)
 
 **역할**: 우측 패널 - 노트 및 결정사항
 
@@ -514,6 +502,7 @@ body {
 2. **GanttChart**
    - 타임라인 차트
    - 활동 바 표시
+   - **compareDelta** (Phase 10): Compare 모드 시 ghost bars (changed 활동 노란 점선)
    - 스크롤 및 줌 기능
 
 **Props**:
@@ -566,51 +555,64 @@ app/
 └── globals.css            # 전역 스타일
 
 components/
-├── analytics-wrapper.tsx  # Vercel Analytics
-├── theme-provider.tsx      # 테마 제공자
-└── dashboard/
-    ├── header.tsx         # DashboardHeader
-    ├── section-nav.tsx    # SectionNav
-    ├── footer.tsx         # Footer
-    ├── back-to-top.tsx    # BackToTop
-    ├── voyage-focus-drawer.tsx  # VoyageFocusDrawer
-    ├── layouts/
-    │   └── dashboard-shell.tsx  # DashboardShell
-    ├── sections/
-    │   ├── overview-section.tsx
-    │   ├── kpi-section.tsx
-    │   ├── alerts-section.tsx
-    │   ├── voyages-section.tsx
-    │   ├── schedule-section.tsx
-    │   └── gantt-section.tsx
-    ├── operation-overview.tsx    # OperationOverviewRibbon
-    ├── milestone-tracker.tsx    # MilestoneTracker
-    ├── resource-utilization-panel.tsx  # ResourceUtilizationPanel
-    ├── notes-decisions.tsx       # NotesDecisions
-    ├── kpi-cards.tsx             # KPICards
-    ├── alerts.tsx                # AlertsTriage
-    ├── voyage-cards.tsx          # VoyageCards
-    ├── tide-table.tsx            # TideTable (Voyage Overview 물때 3행)
-    ├── weather-block.tsx         # WeatherBlock (4일치 D~D+3)
-    ├── go-nogo-badge.tsx         # GoNoGoBadge (GO|NO-GO|CONDITIONAL)
-    ├── schedule-table.tsx        # ScheduleTable
-    ├── gantt-chart.tsx           # GanttChart
-    ├── timeline-controls.tsx     # TimelineControls
-    └── date-picker.tsx           # DatePicker
+├── dashboard/
+│   ├── header.tsx         # DashboardHeader
+│   ├── StoryHeader.tsx    # WHERE/WHEN/WHAT/EVIDENCE
+│   ├── section-nav.tsx    # SectionNav
+│   ├── footer.tsx         # Footer
+│   ├── back-to-top.tsx    # BackToTop
+│   ├── voyage-focus-drawer.tsx
+│   ├── layouts/
+│   │   ├── dashboard-shell.tsx
+│   │   └── tr-three-column-layout.tsx  # Map | Timeline | Detail
+│   ├── sections/
+│   │   ├── overview-section.tsx
+│   │   ├── kpi-section.tsx
+│   │   ├── alerts-section.tsx
+│   │   ├── voyages-section.tsx
+│   │   ├── schedule-section.tsx
+│   │   └── gantt-section.tsx
+│   ├── WhyPanel.tsx       # 2-click: root cause + suggested_actions
+│   ├── ReflowPreviewPanel.tsx  # onApplyAction → reflowSchedule
+│   ├── notes-decisions.tsx
+│   ├── gantt-chart.tsx
+│   └── ...
+├── detail/
+│   ├── DetailPanel.tsx    # ActivityHeader, State, PlanVsActual, Resources, Constraints, CollisionTray
+│   ├── CollisionTray.tsx
+│   ├── CollisionCard.tsx
+│   └── sections/
+│       ├── ActivityHeader.tsx
+│       ├── StateSection.tsx
+│       ├── PlanVsActualSection.tsx
+│       ├── ResourcesSection.tsx
+│       └── ConstraintsSection.tsx
+├── history/
+│   ├── HistoryEvidencePanel.tsx
+│   ├── HistoryTab.tsx
+│   └── ...
+├── map/
+│   ├── MapPanelWrapper.tsx
+│   └── MapPanel.tsx
+├── approval/
+│   └── ApprovalModeBanner.tsx
+└── compare/
+    └── CompareModeBanner.tsx  # Compare 모드: +X added, −Y removed, Z shifted, W collisions
 
 lib/
-├── contexts/
-│   └── date-context.tsx          # DateProvider
-├── data/
-│   ├── schedule-data.ts           # scheduleActivities
-│   ├── tide-data.ts               # getTideForVoyage (tide.json)
-│   ├── weather-data.ts            # weatherForecast (weather.json)
-│   └── go-nogo-data.ts            # goNoGoDecision (go_nogo.json)
-├── dashboard-data.ts             # voyages
 ├── ssot/
-│   └── schedule.ts                # 타입 정의
-└── utils/
-    └── schedule-reflow.ts            # 스케줄 리플로우
+│   └── schedule.ts        # ScheduleActivity, ScheduleConflict, SuggestedAction
+├── utils/
+│   ├── schedule-reflow.ts  # reflowSchedule
+│   ├── slack-calc.ts       # calculateSlack (ES/EF/LS/LF)
+│   └── detect-resource-conflicts.ts
+├── baseline/              # Baseline/Approval mode
+│   ├── baseline-loader.ts
+│   └── freeze-policy.ts
+└── compare/               # Compare Mode (Phase 10, 완료)
+    ├── compare-loader.ts   # calculateDelta(baseline, compare)
+    ├── types.ts
+    └── __tests__/compare-loader.test.ts
 ```
 
 ---
@@ -721,5 +723,6 @@ lib/
 ---
 
 **문서 작성일**: 2025-01-31  
-**작성자**: MACHO-GPT v3.4-mini  
-**프로젝트**: HVDC TR Transport Dashboard
+**최종 업데이트**: 2026-02-02  
+**프로젝트**: HVDC TR Transport Dashboard  
+**참조**: patch.md §2.1, §2.2, AGENTS.md

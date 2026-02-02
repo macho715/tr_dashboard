@@ -1,9 +1,14 @@
 # Contract v0.8.0 Migration Plan
 
 **Generated**: 2026-02-01  
+**Last Updated**: 2026-02-02  
 **Source**: option_c.json (AGI Schedule format)  
 **Target**: option_c.json (Contract v0.8.0 format)  
 **Reference**: contract-optionc-v0.8.0.md, runbook-state-reflow-collision.md
+
+**현재 상태**: `scripts/migrate-to-v0.8.0.ts` 존재, 실행/검증 대기. Phase 7 (DetailPanel, WhyPanel, ReflowPreviewPanel) 완료.
+
+**운영 규모**: 1 Trip당 1 TR 운송, 총 7 Trip, SPMT 1기 운영
 
 ---
 
@@ -349,17 +354,15 @@ AGI: (implicit from voyage data)
 
 ## Next Action
 
-**Start Phase 1: Create migration script**
+**Phase 1: Migration script 실행 및 검증**
 
 ```bash
-# Create migration script
-touch scripts/migrate-to-v0.8.0.ts
-
-# Run migration
+# Run migration (스크립트 존재 시)
 pnpm tsx scripts/migrate-to-v0.8.0.ts
 
 # Validate output
-VALIDATION_MODE=CONTRACT python .cursor/skills/tr-dashboard-ssot-guard/scripts/validate_optionc.py
+python scripts/validate_optionc.py tests/fixtures/option_c_baseline.json
+# 또는 CONTRACT 모드: VALIDATION_MODE=CONTRACT python scripts/validate_optionc.py <output_path>
 ```
 
 ---

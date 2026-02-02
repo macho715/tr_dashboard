@@ -198,6 +198,29 @@ describe('State Machine', () => {
       expect(result.blocker_code).toBeDefined();
     });
 
+    it('T7.8: State transition button disabled when evidence gate fails', () => {
+      const activity = createMockActivity({
+        state: 'ready',
+        evidence_required: [
+          {
+            evidence_type: 'ptw_approval',
+            stage: 'before_start',
+            min_count: 1,
+            required: true,
+            validity_min: null,
+            tags: []
+          }
+        ],
+        evidence_ids: []
+      });
+
+      const result = checkEvidenceGate(activity, 'in_progress');
+
+      expect(result.allowed).toBe(false);
+      expect(result.missing.length).toBeGreaterThan(0);
+      // UI should disable transition button when allowed=false
+    });
+
     it('should allow when evidence_ids satisfy min_count', () => {
       const activity = createMockActivity({
         state: 'ready',

@@ -2,16 +2,19 @@
  * Schedule Data Loader
  *
  * option_c.json -> ScheduleActivity[]
+ * Dependencies inferred from level2 + chronological order (FS).
  */
 
 import type { Activity, ActivityType, GanttRow } from "@/lib/dashboard-data"
 import type { AnchorType, ScheduleActivity } from "@/lib/ssot/schedule"
 import { mapOptionCJsonToScheduleActivities } from "@/lib/ssot/utils/schedule-mapper"
+import { inferDependencies } from "@/lib/utils/infer-dependencies"
 import optionCDataRaw from "../../data/schedule/option_c.json"
 
-export const scheduleActivities: ScheduleActivity[] = mapOptionCJsonToScheduleActivities(
+const mapped = mapOptionCJsonToScheduleActivities(
   optionCDataRaw as { activities: Record<string, unknown>[] }
 )
+export const scheduleActivities: ScheduleActivity[] = inferDependencies(mapped)
 
 function mapAnchorTypeToActivityType(anchorType: AnchorType | undefined): ActivityType {
   switch (anchorType) {

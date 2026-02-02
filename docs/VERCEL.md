@@ -1,5 +1,7 @@
 # Vercel 배포 설정
 
+**운영 규모**: 1 Trip당 1 TR 운송, 총 7 Trip, SPMT 1기 운영
+
 Next.js 앱이 **루트**에 있습니다. Root Directory를 **반드시 비워야** 합니다.
 (flatten 이후 `hvdc-tr-dashboard-lc-main` 경로는 삭제되었으므로, Root Directory가 해당 값이면 빌드 실패합니다.)
 

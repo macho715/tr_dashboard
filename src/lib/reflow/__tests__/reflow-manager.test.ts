@@ -65,6 +65,30 @@ describe('Reflow Manager', () => {
       expect(result.proposed_changes).toEqual([]);
       expect(result.collision_summary).toEqual({ blocking: 0, warning: 0, info: 0 });
     });
+
+    it('Phase 0-3: reflow produces identical results for same input (10 runs)', () => {
+      const ssot = loadSSOTSync('tests/fixtures/option_c_baseline.json');
+      const seed = {
+        reason: 'determinism_test',
+        cursor_ts: '2026-02-05T08:00:00+04:00',
+        focus_trip_id: 'TRIP_2026_02A'
+      };
+
+      const results = Array.from({ length: 10 }, () =>
+        reflowPreview(JSON.parse(JSON.stringify(ssot)), seed)
+      );
+
+      const hashes = results.map((r) =>
+        JSON.stringify(
+          r.proposed_changes
+            .slice()
+            .sort((a, b) =>
+              (a.activity_id + a.path).localeCompare(b.activity_id + b.path)
+            )
+        )
+      );
+      expect(new Set(hashes).size).toBe(1);
+    });
   });
 
   describe('reflowApply', () => {

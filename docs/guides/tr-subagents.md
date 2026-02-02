@@ -2,6 +2,8 @@
 
 TR 이동 대시보드 개발을 위한 3개 subagent: **tr-planner**, **tr-implementer**, **tr-verifier**.
 
+**운영 규모**: 1 Trip당 1 TR 운송, 총 7 Trip, SPMT 1기 운영
+
 ## 개요
 
 | Subagent | 역할 | 출력 |

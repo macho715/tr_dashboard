@@ -1,8 +1,14 @@
 # TR 이동 대시보드 Implementation Plan (Patch4 Contract v0.8.0)
 
 **Generated**: 2026-02-01  
+**Last Updated**: 2026-02-02  
 **Source**: patch4.md + AGENTS.md Contract v0.8.0  
 **SSOT**: `option_c.json` (entities.activities dict + lowercase enums)
+
+**Phase 7 완료**: T7.1~T7.8 (DetailPanel, WhyPanel suggested_actions→reflowSchedule, ReflowPreviewPanel, 테스트)  
+**Phase 10 완료**: T10.1~T10.3 (compare-loader, CompareModeBanner, Gantt ghost bars)
+
+**운영 규모**: 1 Trip당 1 TR 운송, 총 7 Trip, SPMT 1기 운영
 
 ---
 
@@ -52,7 +58,7 @@ Single-view TR movement dashboard where **Where → When/What → Evidence** ans
 **Goal**: Establish SSOT contract validation + core data structures
 
 #### Tasks
-- [ ] **T0.1** Create `option_c.json` schema validator (`validate_optionc.py`)
+- [x] **T0.1** Create `option_c.json` schema validator (`validate_optionc.py`)
   - Contract v0.8.0 rules: `entities.activities` dict, lowercase enums
   - Enum validation: `state`, `lock_level`, `dependency_type`, `constraint_hardness`, `evidence_stage`, `collision_severity`
   - Mandatory fields check: `activity_id`, `type_id`, `trip_id`, `tr_ids`, `title`, `state`, `lock_level`, `blocker_code`, `evidence_required`, `reflow_pins`, `plan`, `actual`, `calc`
@@ -365,47 +371,47 @@ Single-view TR movement dashboard where **Where → When/What → Evidence** ans
 **Goal**: Horizontal schedule view with dependencies + collisions
 
 #### Tasks
-- [ ] **T6.1** Gantt component structure (`src/components/timeline/GanttChart.tsx`)
+- [x] **T6.1** Gantt component structure (`src/components/timeline/GanttChart.tsx`)
   - Row hierarchy: Trip → TR → Activity
   - X-axis: Date/time with timezone labels
   - Y-axis: Activity rows with grouping
 
-- [ ] **T6.2** Activity bar rendering
+- [x] **T6.2** Activity bar rendering
   - Plan: `plan.start_ts` to `plan.end_ts` (solid bar)
   - Actual: `actual.start_ts` to `actual.end_ts` (overlay with different pattern)
   - Calc: `calc.es_ts` to `calc.ef_ts` (ghost bar for preview)
   - Color by state (semantic tokens)
   - Width by duration_min
 
-- [ ] **T6.3** Dependency lines
+- [x] **T6.3** Dependency lines
   - FS: Arrow from pred end to succ start
   - SS: Arrow from pred start to succ start
   - FF: Arrow from pred end to succ end
   - SF: Arrow from pred start to succ end
   - Lag: Label on arrow with `lag_min` value
 
-- [ ] **T6.4** Constraint icons
+- [x] **T6.4** Constraint icons
   - WX: 🌬 icon on activity bar
   - LINKSPAN: ⛴ icon
   - BARGE: 🚢 icon
   - PTW: 🧾 icon
   - Show constraint evaluation status (met/violated)
 
-- [ ] **T6.5** Collision badges
+- [x] **T6.5** Collision badges
   - Badge with count: `calc.collision_ids.length`
   - Color by severity: blocking=red, warning=yellow, info=blue
   - Click → open Detail panel Why section
 
-- [ ] **T6.6** Slack display
+- [x] **T6.6** Slack display
   - Label at end of bar: "+120m" for 120 minutes slack
   - Bold outline if `calc.critical_path=true`
 
-- [ ] **T6.7** Date cursor interaction
+- [x] **T6.7** Date cursor interaction
   - Vertical line at cursor position
   - Drag to change cursor → trigger reflow preview
   - Preview result: Ghost bars showing proposed_changes
 
-- [ ] **T6.8** Gantt interaction tests
+- [x] **T6.8** Gantt interaction tests
   - Test: Dependency line connects correct activities
   - Test: Collision badge opens Detail panel
   - Test: Date cursor drag generates preview
@@ -424,7 +430,7 @@ Single-view TR movement dashboard where **Where → When/What → Evidence** ans
 **Goal**: Activity inspector with collision details
 
 #### Tasks
-- [ ] **T7.1** Detail panel structure (`src/components/detail/DetailPanel.tsx`)
+- [x] **T7.1** Detail panel structure (`src/components/detail/DetailPanel.tsx`)
   ```tsx
   <DetailPanel>
     <ActivityHeader activity={selected} />
@@ -436,28 +442,28 @@ Single-view TR movement dashboard where **Where → When/What → Evidence** ans
   </DetailPanel>
   ```
 
-- [ ] **T7.2** State section
+- [x] **T7.2** State section
   - Current state badge
   - Lock level indicator
   - Blocker code display (if blocked)
   - State transition buttons (with guard validation)
 
-- [ ] **T7.3** Plan vs Actual vs Calc comparison
+- [x] **T7.3** Plan vs Actual vs Calc comparison
   - Side-by-side table: Plan Start/End | Actual Start/End | Calc ES/EF/LS/LF
   - Slack display: `calc.slack_min`
   - Predicted end: `calc.predicted_end_ts` (if delayed)
 
-- [ ] **T7.4** Resources section
+- [x] **T7.4** Resources section
   - Planned resources from `plan.resources[]`
   - Actual assignments from `actual.resource_assignments[]`
   - Highlight mismatches (planned vs actual)
 
-- [ ] **T7.5** Constraints evaluation
+- [x] **T7.5** Constraints evaluation
   - List `plan.constraints[]`
   - Show evaluation status (met/violated)
   - Link to constraint_rules (WX limits, LINKSPAN capacity, etc.)
 
-- [ ] **T7.6** Collision tray (2-click UX)
+- [x] **T7.6** Collision tray (2-click UX)
   ```tsx
   <CollisionTray>
     {collisions.map(col => (
@@ -470,15 +476,15 @@ Single-view TR movement dashboard where **Where → When/What → Evidence** ans
   </CollisionTray>
   ```
 
-- [ ] **T7.7** Why panel expansion
+- [x] **T7.7** Why panel expansion
   - Click collision badge → expand Why panel
   - Display: `message`, `details`, `suggested_actions[]`
-  - Action buttons: Apply action → generate preview
+  - Action buttons: Apply action → generate preview (reflowSchedule + ReflowPreviewPanel)
 
-- [ ] **T7.8** Detail panel tests
-  - Test: State transition button disabled if evidence gate fails
-  - Test: Collision card click expands Why panel
-  - Test: Suggested action button generates preview
+- [x] **T7.8** Detail panel tests
+  - Test: State transition button disabled if evidence gate fails (state-machine.test.ts)
+  - Test: Collision card click expands Why panel (detail-panel.test.tsx)
+  - Test: Suggested action button generates preview (why-panel.test.tsx)
 
 #### Acceptance Criteria
 - [x] Detail panel shows selected activity data
@@ -526,7 +532,7 @@ Single-view TR movement dashboard where **Where → When/What → Evidence** ans
 **Goal**: Frozen snapshot with read-only enforcement
 
 #### Tasks
-- [ ] **T9.1** Baseline snapshot loader (`src/lib/baseline/baseline-loader.ts`)
+- [x] **T9.1** Baseline snapshot loader (`src/lib/baseline/baseline-loader.ts`)
   ```typescript
   export function loadBaseline(baseline_id: string): Baseline {
     const baseline = ssot.baselines.items[baseline_id];
@@ -538,7 +544,7 @@ Single-view TR movement dashboard where **Where → When/What → Evidence** ans
   }
   ```
 
-- [ ] **T9.2** Frozen field enforcement (`src/lib/baseline/freeze-policy.ts`)
+- [x] **T9.2** Frozen field enforcement (`src/lib/baseline/freeze-policy.ts`)
   ```typescript
   export function isFrozen(field: string, freeze_policy: FreezePolicy): boolean {
     return freeze_policy.frozen_fields.some(pattern => 
@@ -547,21 +553,21 @@ Single-view TR movement dashboard where **Where → When/What → Evidence** ans
   }
   ```
 
-- [ ] **T9.3** Approval mode UI
+- [x] **T9.3** Approval mode UI
   - Display baseline name + created_at
   - Show frozen_fields list
   - Disable Apply button
   - Show snapshot hash for verification
 
-- [ ] **T9.4** Baseline comparison
+- [x] **T9.4** Baseline comparison
   - Compare current plan vs baseline.snapshot
   - Highlight drifts (plan changed after approval)
   - Show override_roles (who can unfreeze)
 
-- [ ] **T9.5** Baseline tests
-  - Test: Frozen fields cannot be edited
-  - Test: Apply throws error in Approval mode
-  - Test: Snapshot hash validates integrity
+- [x] **T9.5** Baseline tests
+  - Test: Frozen fields cannot be edited (assertEditAllowed in freeze-policy)
+  - Test: Apply throws error in Approval mode (reflow-manager.test.ts)
+  - Test: Snapshot hash validates integrity (snapshot-hash.ts)
 
 #### Acceptance Criteria
 - [x] Approval mode enforces read-only on frozen fields
@@ -575,19 +581,19 @@ Single-view TR movement dashboard where **Where → When/What → Evidence** ans
 **Goal**: Delta overlay for scenario comparison
 
 #### Tasks
-- [ ] **T10.1** Compare source loader (`src/lib/compare/compare-loader.ts`)
+- [x] **T10.1** Compare source loader (`lib/compare/compare-loader.ts`)
   - Load baseline (option_c) as reference
   - Load compare source (scenario A/B/C)
   - Calculate delta: added/removed/changed activities
 
-- [ ] **T10.2** Delta visualization
-  - Ghost bars for scenario overlay
+- [x] **T10.2** Delta visualization
+  - Ghost bars for scenario overlay (changed: yellow dashed)
   - Color coding: green=added, red=removed, yellow=changed
-  - Show diff summary: X activities shifted, Y collisions new
+  - Show diff summary: X activities shifted, Y collisions new (CompareModeBanner)
 
-- [ ] **T10.3** Compare mode tests
-  - Test: Delta calculated correctly
-  - Test: Ghost bars rendered on Gantt
+- [x] **T10.3** Compare mode tests
+  - Test: Delta calculated correctly (compare-loader.test.ts)
+  - Test: Ghost bars rendered on Gantt (GanttChart compareDelta prop)
   - Test: Diff summary matches expected changes
 
 #### Acceptance Criteria
@@ -601,7 +607,7 @@ Single-view TR movement dashboard where **Where → When/What → Evidence** ans
 **Goal**: Full workflow validation
 
 #### Tasks
-- [ ] **T11.1** Reflow determinism test (10 runs)
+- [x] **T11.1** Reflow determinism test (10 runs) (reflow-manager.test.ts)
   ```typescript
   test('reflow produces identical results for same input', async () => {
     const results = await Promise.all(

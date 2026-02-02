@@ -3,6 +3,8 @@
 **Generated**: 2026-02-01  
 **SSOT**: patch.md (레이아웃/UX), option_c.json (데이터), AGENTS.md (프로젝트 룰)
 
+**운영 규모**: 1 Trip당 1 TR 운송, 총 7 Trip, SPMT 1기 운영
+
 ---
 
 ## 0) SSOT/Contract 최상단 고정

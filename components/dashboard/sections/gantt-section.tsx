@@ -4,6 +4,7 @@ import type { Ref } from "react"
 import { GanttChart, type GanttChartHandle } from "@/components/dashboard/gantt-chart"
 import type { HighlightFlags, TimelineView } from "@/components/dashboard/timeline-controls"
 import type { ScheduleActivity, ScheduleConflict } from "@/lib/ssot/schedule"
+import type { CompareResult } from "@/lib/compare/types"
 
 type GanttSectionProps = {
   ganttRef: Ref<GanttChartHandle>
@@ -20,6 +21,7 @@ type GanttSectionProps = {
   conflicts?: ScheduleConflict[]
   onCollisionClick?: (conflict: ScheduleConflict) => void
   focusedActivityId?: string | null
+  compareDelta?: CompareResult | null
 }
 
 export function GanttSection({
@@ -37,6 +39,7 @@ export function GanttSection({
   conflicts,
   onCollisionClick,
   focusedActivityId,
+  compareDelta,
 }: GanttSectionProps) {
   return (
     <section id="gantt" aria-label="Gantt Chart">
@@ -55,6 +58,7 @@ export function GanttSection({
         conflicts={conflicts}
         onCollisionClick={onCollisionClick}
         focusedActivityId={focusedActivityId}
+        compareDelta={compareDelta}
       />
     </section>
   )

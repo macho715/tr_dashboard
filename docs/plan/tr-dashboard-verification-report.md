@@ -4,6 +4,8 @@
 **Plan**: tr-dashboard-plan.md  
 **Contract**: option_c.json (AGI Schedule format, v0.8.0 마이그레이션 예정)
 
+**운영 규모**: 1 Trip당 1 TR 운송, 총 7 Trip, SPMT 1기 운영
+
 ---
 
 ## Executive Summary

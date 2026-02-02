@@ -4,6 +4,8 @@
 
 **레이아웃 매핑**: `docs/AGENT_DASHBOARD_INTEGRATION.md` — 각 출력 항목이 `docs/LAYOUT.md`의 어느 섹션에 표시되는지 정의.
 
+**운영 규모**: 1 Trip당 1 TR 운송, 총 7 Trip, SPMT 1기 운영
+
 ---
 
 ## 기본 출력 원칙 (Baseline Output)

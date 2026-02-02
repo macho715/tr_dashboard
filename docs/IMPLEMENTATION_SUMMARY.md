@@ -10,6 +10,8 @@
 
 Successfully implemented TR 이동 대시보드 UI/UX/layout per `patch.md` specification. All 9 planned tasks completed with full `pnpm build` verification. SSOT validator shows expected failures due to `option_c.json` being in AGI schedule format rather than Contract v0.8.0 structure.
 
+**운영 규모**: 1 Trip당 1 TR 운송, 총 7 Trip, SPMT 1기 운영
+
 ---
 
 ## Tasks Completed (1-9)
