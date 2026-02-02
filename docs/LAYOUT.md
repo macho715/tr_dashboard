@@ -138,16 +138,17 @@ graph TB
 
 **역할**: 메인 페이지 컴포넌트 및 상태 관리
 
-**주요 상태**:
-- `activities`: 스케줄 활동 배열
+### 주요 상태**:
+- `activities`: 스케줄 활동 배열 (ScheduleActivity[])
 - `activeSection`: 현재 활성 섹션 ID
 - `timelineView`: 타임라인 뷰 모드 (Week/Month/Quarter)
 - `selectedVoyage`: 선택된 항차 정보
 - `selectedActivityId`: 선택된 활동 ID (DetailPanel 표시)
 - `selectedCollision`: 선택된 충돌 (WhyPanel 표시)
 - `reflowPreview`: Why 패널 suggested_action → reflowSchedule 결과
-- `changeBatches`: 변경 이력 스택
+- `changeBatches`: 변경 이력 스택 (Undo 지원)
 - `ops`: AGI Operations 상태
+- `viewMode`: Live/History/Approval/Compare (ViewModeStore)
 
 **컨테이너 설정**:
 - `max-w-[1800px]`: 최대 너비 1800px
@@ -629,17 +630,54 @@ lib/
 - **VoyageCard 클릭** → VoyageFocusDrawer 열림
 - **Drawer 닫기** → `setSelectedVoyage(null)`
 
-### 3. 스케줄 업데이트
+### 3. Activity 선택 (Phase 7)
+
+- **Timeline Activity 클릭** → `selectedActivityId` 설정
+- **DetailPanel 표시** → ActivityHeader, State, Plan vs Actual, Resources, Constraints, Collision Tray
+- **Map 마커 클릭** → 동일한 Activity 선택 (상호 하이라이트)
+
+### 4. Collision 2-Click UX (Phase 7)
+
+**1클릭: Collision 배지**
+- **CollisionTray** 또는 **Timeline 배지** 클릭
+- WhyPanel 표시 (root_cause_code, description, suggested_actions)
+
+**2클릭: Suggested Action**
+- WhyPanel에서 suggested_action 클릭
+- `onApplyAction` 핸들러 실행 → reflowSchedule 호출
+- ReflowPreviewPanel 표시 (변경 사항 + 새로운 충돌)
+
+### 5. Reflow Preview → Apply (Phase 7)
+
+```mermaid
+sequenceDiagram
+    User->>WhyPanel: suggested_action 클릭
+    WhyPanel->>reflowSchedule: shift_date 또는 lock_activity
+    reflowSchedule->>ReflowPreviewPanel: ReflowResult 반환
+    ReflowPreviewPanel->>User: Preview (변경 사항 표시)
+    User->>ReflowPreviewPanel: Apply 버튼 클릭
+    ReflowPreviewPanel->>Activities: setActivities(newActivities)
+    Activities->>Gantt: 자동 리렌더링
+```
+
+### 6. 스케줄 업데이트
 
 - **AgiScheduleUpdaterBar** → 명령 입력
 - **미리보기** → 변경사항 확인
 - **적용** → `handleApplyPreview` 실행
 - **변경 이력** → `changeBatches`에 추가
 
-### 4. 변경 취소
+### 7. 변경 취소 (Undo)
 
 - **GanttSection** → `onUndoChangeImpact` 호출
 - **이전 상태 복원** → `lastBatch.previousActivities` 적용
+- **최대 스택**: MAX_CHANGE_STACK (기본 20개)
+
+### 8. View Mode 전환 (Phase 4)
+
+- **Global Control Bar** → View Mode 버튼 (Live/History/Approval/Compare)
+- **ViewModeStore** → 전역 상태 업데이트
+- **조건부 렌더링**: Approval 모드 → Apply 버튼 비활성화, Compare 모드 → ghost bars 표시
 
 ---
 
@@ -725,4 +763,4 @@ lib/
 **문서 작성일**: 2025-01-31  
 **최종 업데이트**: 2026-02-02  
 **프로젝트**: HVDC TR Transport Dashboard  
-**참조**: patch.md §2.1, §2.2, AGENTS.md
+**참조**: patch.md §2.1, §2.2, §4.2, AGENTS.md, WORK_LOG_20260202.md

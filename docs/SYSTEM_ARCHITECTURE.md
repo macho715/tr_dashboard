@@ -146,10 +146,12 @@ function GanttChart() {
 - **역할**: 비즈니스 로직 및 데이터 변환
 - **구성요소**:
   - `lib/utils/schedule-reflow.ts`: 스케줄 재계산 엔진 (reflowSchedule)
+  - `lib/reflow/`: Forward pass, Backward pass, Collision detection, Reflow manager
+  - `lib/state-machine/`: State transitions, Evidence gates
   - `lib/utils/slack-calc.ts`: ES/EF/LS/LF, critical path
   - `lib/utils/detect-resource-conflicts.ts`: 충돌 감지
-  - `lib/baseline/`: Baseline/Approval 모드 (baseline-loader, freeze-policy)
-  - `lib/compare/`: Compare Mode (compare-loader, types) — Phase 10 완료
+  - `lib/baseline/`: Baseline/Approval 모드
+  - `lib/compare/`: Compare Mode (Phase 10 완료)
 - **특징**: 순수 함수, 사이드 이펙트 없음
 
 #### 3. Data Layer
@@ -271,11 +273,41 @@ ScheduleActivity[]
 - **적용/취소**: Preview 적용 시 상태 업데이트
 - **연결**: `onApplyAction` → `reflowSchedule` → ReflowPreviewPanel 표시
 
-### 4. DetailPanel + WhyPanel (2-click Collision UX)
+### 5. DetailPanel + WhyPanel + ReflowPreview (Phase 7)
 
-**책임**: Activity inspector, Collision root cause, suggested_actions (patch.md §4.2)
+**책임**: Activity inspector, 2-click Collision UX, Reflow preview (patch.md §4.2)
 
-**흐름**: Collision 배지 클릭 → WhyPanel → suggested_action 클릭 → reflowSchedule → ReflowPreviewPanel
+**주요 컴포넌트**:
+1. **DetailPanel**: ActivityHeader, StateSection, PlanVsActualSection, ResourcesSection, ConstraintsSection, CollisionTray
+2. **WhyPanel**: root_cause_code, suggested_actions (2-click: 배지 → Why 패널)
+3. **ReflowPreviewPanel**: onApplyAction → reflowSchedule → Preview UI → Apply
+
+**흐름**: 
+```
+Collision 배지 클릭 
+  → WhyPanel 표시 (root cause + suggested_actions)
+  → suggested_action 클릭 
+  → reflowSchedule 실행
+  → ReflowPreviewPanel 표시 (변경 사항 + 충돌)
+  → Apply 버튼 
+  → Activities 상태 업데이트
+```
+
+### 6. State Machine & Evidence Gates (Phase 3)
+
+**책임**: Activity 상태 전이 및 증빙 검증
+
+**구성요소**:
+- `src/lib/state-machine/states.ts`: ALLOWED_TRANSITIONS, EVIDENCE_GATE_BY_TRANSITION
+- `src/lib/state-machine/evidence-gate.ts`: checkEvidenceGate (stage, required_types 검증)
+- `src/lib/state-machine/transition.ts`: transitionState (adjacency + evidence gate + guards)
+
+**Evidence Gates**:
+- `before_ready`: PTW, Risk Assessment 필수
+- `before_start`: Start checklist 필수
+- `after_end`: Completion photos 필수
+
+**테스트**: 22 tests passed (state transitions, evidence gates, blocker codes)
 
 ---
 
@@ -456,13 +488,4 @@ const changeImpactItems = useMemo(() => {
 ---
 
 **Last Updated**: 2026-02-02  
-**참조**: patch.md, AGENTS.md, tr-dashboard-plan-patch4.md
-
-### 5. Compare Mode (Phase 10 완료)
-
-**책임**: baseline vs compare delta overlay (patch.md §2.2)
-
-**구성요소**:
-- `lib/compare/compare-loader.ts`: `calculateDelta(baseline, compare)` → added/removed/changed
-- `components/compare/CompareModeBanner.tsx`: +X added, −Y removed, Z shifted, W collisions new
-- `components/dashboard/gantt-chart.tsx`: `compareDelta` prop → ghost bars (changed 활동 노란 점선)
+**참조**: patch.md, AGENTS.md, tr-dashboard-plan-patch4.md, WORK_LOG_20260202.md

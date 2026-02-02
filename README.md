@@ -462,7 +462,7 @@ Private project - Samsung C&T × Mammoet
 
 ---
 
-**Last Updated**: 2026-01-22
+**Last Updated**: 2026-02-02
 
 ---
 
@@ -501,22 +501,44 @@ Private project - Samsung C&T × Mammoet
 
 ---
 
-## 📝 최근 업데이트 (2026-01-22)
+## 📝 최근 업데이트
 
-### 완료된 기능
+### Phase 4: UI Foundation (2026-02-02)
 
-#### P0-P2 구현 (이전)
-- ✅ **`scheduleActivitiesToGanttRows()` 함수 구현**: ScheduleActivity[] → GanttRow[] 변환 완료
-- ✅ **`currentActivities` 상태 관리**: 동적 스케줄 데이터 관리 및 실시간 업데이트
-- ✅ **`handleApplyPreview()` 완전 구현**: Preview 적용 시 실제 데이터 반영 및 Gantt 차트 자동 리렌더링
-- ✅ **동적 Gantt 차트 렌더링**: `currentActivities` 상태 변경 시 자동으로 `ganttRows` 재계산 및 리렌더링
+#### 신규 컴포넌트 (28개 파일)
+- ✅ **Global Control Bar**: Trip/TR 선택, Date Cursor, View Mode(Live/History/Approval/Compare), Risk Overlay 토글
+- ✅ **DashboardLayout**: ViewModeProvider, 3-column layout orchestration
+- ✅ **MapPanel**: Leaflet 기반 지도 + TR 마커 + 상호 하이라이트
+- ✅ **TimelinePanel**: Gantt 차트 통합, Activity 선택
+- ✅ **DetailPanel**: Activity Inspector (Header, State, Plan vs Actual, Resources, Constraints, Collision Tray)
+- ✅ **WhyPanel**: 2-click Collision UX (Root cause + suggested_actions)
+- ✅ **ReflowPreviewPanel**: suggested_action → reflowSchedule → Preview UI
+- ✅ **HistoryEvidencePanel**: History/Evidence 탭 통합
+- ✅ **EvidenceTab/HistoryTab**: 증빙 업로드 및 이력 추적
 
-#### 최근 추가 기능 (2026-01-22)
+#### State Machine & Evidence (Phase 3)
+- ✅ **State Machine**: `src/lib/state-machine/` - Activity 상태 전이 (ALLOWED_TRANSITIONS, Evidence Gates)
+- ✅ **Evidence Gate**: before_start, after_end 증빙 검증
+- ✅ **테스트**: 124 tests passed (state-machine, evidence-gate, reflow, collision 등)
+
+#### 스케줄 엔진 고도화
+- ✅ **Forward Pass**: 의존성 기반 일정 재계산 + Constraint snapping + Resource 교집합
+- ✅ **Backward Pass**: Slack 계산 (ES/EF/LS/LF) + Critical path 식별
+- ✅ **Collision Detection**: 자원 충돌, 시간 충돌, 의존성 사이클 탐지
+- ✅ **Reflow Manager**: Preview → Apply 2단계 워크플로우
+
+#### API & 데이터 통합
+- ✅ **SSOT API**: `/api/ssot` route - option_c.json 제공
+- ✅ **Map Status Colors**: Activity 상태별 색상 매핑
+- ✅ **View Mode Store**: Zustand 기반 Live/History/Approval/Compare 상태 관리
+
+#### 문서 & 자동화
+- ✅ **WORK_LOG_20260202.md**: Phase 4-11 상세 작업 이력
+- ✅ **pipeline-git-autocommit 서브에이전트**: 파이프라인 통과 후 자동 Git commit/push
+- ✅ **StoryHeader 개선**: Empty state에 WHERE/WHEN/WHAT/EVIDENCE 가이드 추가
+
+### 이전 릴리즈 (2026-01-22)
 - ✅ **Activity 스크롤 기능**: Activity 클릭 시 Gantt 차트로 자동 스크롤
-- ✅ **페이지 구조 개선**: `SectionNav` (sticky 네비게이션), `BackToTop` 버튼, 접근성 개선
-- ✅ **Analytics 안전 처리**: `AnalyticsWrapper` 컴포넌트로 localStorage 접근 오류 해결
-- ✅ **Next.js 16 호환성**: `themeColor`를 `viewport` export로 이동하여 Next.js 16 권장사항 준수
-- ✅ **실제 데이터 로딩**: `data/schedule/option_c.json`에서 139개 활동 로드 및 동적 변환
-- ✅ **로컬 설정 시스템 완성**: ESLint, Prettier, .nvmrc, config/env.example 설정 파일 추가
-- ✅ **시스템 아키텍처 문서**: `docs/SYSTEM_ARCHITECTURE.md` 작성 (레이어 구조, 데이터 흐름, 핵심 컴포넌트)
+- ✅ **페이지 구조 개선**: `SectionNav` (sticky 네비게이션), `BackToTop` 버튼
+- ✅ **실제 데이터 로딩**: `data/schedule/option_c.json`에서 139개 활동 로드
 ```
