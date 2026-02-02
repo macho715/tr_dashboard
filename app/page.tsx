@@ -44,6 +44,7 @@ import {
 } from "@/lib/ops/agi-schedule/pipeline-runner"
 import { runPipelineCheck } from "@/lib/ops/agi-schedule/pipeline-check"
 import { detectResourceConflicts } from "@/lib/utils/detect-resource-conflicts"
+import { calculateDelta } from "@/lib/compare/compare-loader"
 import { reflowSchedule } from "@/lib/utils/schedule-reflow"
 import { useViewModeOptional } from "@/src/lib/stores/view-mode-store"
 import type {
@@ -115,6 +116,10 @@ export default function Page() {
   const [selectedActivityId, setSelectedActivityId] = useState<string | null>(null)
   const [focusedActivityId, setFocusedActivityId] = useState<string | null>(null)
   const conflicts = useMemo(() => detectResourceConflicts(activities), [activities])
+  const baselineConflicts = useMemo(
+    () => detectResourceConflicts(scheduleActivities).length,
+    []
+  )
   const slackMap = useMemo(
     () => calculateSlack(activities, PROJECT_END_DATE),
     [activities]
@@ -300,7 +305,7 @@ export default function Page() {
         <CompareModeBanner
           compareResult={
             viewMode?.state.mode === "compare"
-              ? calculateDelta(scheduleActivities, activities, conflicts.length, conflicts.length)
+              ? calculateDelta(scheduleActivities, activities, baselineConflicts, conflicts.length)
               : null
           }
         />
@@ -373,9 +378,10 @@ export default function Page() {
                     if (col.activity_id) setSelectedActivityId(col.activity_id)
                   }}
                   focusedActivityId={focusedActivityId}
+                  projectEndDate={PROJECT_END_DATE}
                   compareDelta={
                     viewMode?.state.mode === "compare"
-                      ? calculateDelta(scheduleActivities, activities, conflicts.length, conflicts.length)
+                      ? calculateDelta(scheduleActivities, activities, baselineConflicts, conflicts.length)
                       : null
                   }
                 />
@@ -421,9 +427,6 @@ export default function Page() {
                 )}
                 <HistoryEvidencePanel
                   selectedActivityId={selectedActivityId ?? selectedCollision?.activity_id ?? null}
-                  onUploadClick={(_activityId, _evidenceType) => {
-                    // Phase 8: Evidence upload - TODO: open upload modal
-                  }}
                 />
                 <div ref={evidenceRef}>
                   <NotesDecisions />

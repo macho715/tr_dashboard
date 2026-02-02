@@ -1,9 +1,12 @@
 # TR Dashboard Plan (patch.md + AGENTS.md + Contract v0.8.0)
 
 **Generated**: 2026-02-01  
+**Last Updated**: 2026-02-02  
 **SSOT**: patch.md (레이아웃/UX), option_c.json (데이터), AGENTS.md (프로젝트 룰)
 
 **운영 규모**: 1 Trip당 1 TR 운송, 총 7 Trip, SPMT 1기 운영
+
+**상세 계획**: `docs/plan/tr-dashboard-plan-patch4.md` (Phase 0~11, Task breakdown)
 
 ---
 
@@ -179,7 +182,7 @@ python .cursor/skills/tr-dashboard-autopilot/scripts/validate_optionc.py
 
 ## 7) DoD (Definition of Done)
 
-- ⏸️ **Contract validator PASS** (validate_optionc.py CONTRACT) - EXPECTED FAIL: option_c.json은 현재 AGI schedule 형식이며 Contract v0.8.0 마이그레이션 필요
+- ⏸️ **Contract validator PASS** (validate_optionc.py CONTRACT) - option_c.json AGI 형식 유지(마이그레이션 취소). tests/fixtures/option_c_baseline.json은 Contract v0.8.0
 - ✅ **reflow_runs[] 기록** (Apply 시) - reflow-engine.ts, reflow-runs.ts 구현 완료
 - ✅ **collisions{} 레지스트리** + calc.collision_ids 동기화 - timeline-badges.ts, detect-resource-conflicts.ts 구현 완료
 - ✅ **baseline_conflict 차단** (Approval 모드) - view-mode-permissions.ts에서 Approval 모드 Apply 금지 구현

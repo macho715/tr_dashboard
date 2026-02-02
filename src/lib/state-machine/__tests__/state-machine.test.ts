@@ -280,6 +280,28 @@ describe('State Machine', () => {
       expect(result.blocker_code).toBeDefined();
     });
 
+    it('T11.3: READY→IN_PROGRESS blocked without before_start evidence', () => {
+      const activity = createMockActivity({
+        state: 'ready',
+        evidence_required: [
+          {
+            evidence_type: 'ptw_approval',
+            stage: 'before_start',
+            min_count: 1,
+            required: true,
+            validity_min: null,
+            tags: []
+          }
+        ],
+        evidence_ids: []
+      });
+
+      const result = transitionState(activity, 'in_progress', 'user:ops');
+
+      expect(result.success).toBe(false);
+      expect(result.blocker_code).toMatch(/EVIDENCE_MISSING/);
+    });
+
     it('should allow PLANNED->CANCELED when no actual.start_ts', () => {
       const activity = createMockActivity({ state: 'planned' });
       const result = transitionState(activity, 'canceled', 'user:ops');

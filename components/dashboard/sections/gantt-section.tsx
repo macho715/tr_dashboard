@@ -22,6 +22,7 @@ type GanttSectionProps = {
   onCollisionClick?: (conflict: ScheduleConflict) => void
   focusedActivityId?: string | null
   compareDelta?: CompareResult | null
+  projectEndDate: string
 }
 
 export function GanttSection({
@@ -40,6 +41,7 @@ export function GanttSection({
   onCollisionClick,
   focusedActivityId,
   compareDelta,
+  projectEndDate,
 }: GanttSectionProps) {
   return (
     <section id="gantt" aria-label="Gantt Chart">
@@ -59,6 +61,7 @@ export function GanttSection({
         onCollisionClick={onCollisionClick}
         focusedActivityId={focusedActivityId}
         compareDelta={compareDelta}
+        projectEndDate={projectEndDate}
       />
     </section>
   )

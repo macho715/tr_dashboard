@@ -5,22 +5,36 @@ import type { OptionC, Activity, EvidenceRequired } from '@/src/types/ssot'
 import { checkEvidenceGate } from '@/src/lib/state-machine/evidence-gate'
 import { getActivitiesArray } from '@/src/lib/ssot-queries'
 
+/** Overlay: client-side evidence added before SSOT persist */
+export type EvidenceOverlayItem = {
+  activityId: string
+  evidenceType: string
+  evidenceId: string
+}
+
 type EvidenceTabProps = {
   ssot: OptionC | null
   selectedActivityId?: string | null
   onUploadClick?: (activityId: string, evidenceType: string) => void
   canUpload?: boolean
+  evidenceOverlay?: EvidenceOverlayItem[]
 }
 
 function countMatchingEvidence(
   activity: Activity,
   evidenceType: string,
-  ssot: OptionC
+  ssot: OptionC,
+  overlay?: EvidenceOverlayItem[]
 ): number {
   let count = 0
   for (const id of activity.evidence_ids) {
     const item = ssot.entities.evidence_items[id]
     if (item && item.evidence_type === evidenceType) count++
+  }
+  if (overlay) {
+    count += overlay.filter(
+      (o) => o.activityId === activity.activity_id && o.evidenceType === evidenceType
+    ).length
   }
   return count
 }
@@ -30,6 +44,7 @@ export function EvidenceTab({
   selectedActivityId = null,
   onUploadClick,
   canUpload = true,
+  evidenceOverlay = [],
 }: EvidenceTabProps) {
   const checklist = useMemo(() => {
     if (!ssot) return []
@@ -49,7 +64,7 @@ export function EvidenceTab({
     }> = []
     for (const act of activities) {
       for (const req of act.evidence_required) {
-        const attached = countMatchingEvidence(act, req.evidence_type, ssot)
+        const attached = countMatchingEvidence(act, req.evidence_type, ssot, evidenceOverlay)
         const missing = attached < req.min_count
         const gateResult = checkEvidenceGate(act, act.state, undefined, ssot)
         items.push({
@@ -66,7 +81,7 @@ export function EvidenceTab({
       }
     }
     return items
-  }, [ssot, selectedActivityId])
+  }, [ssot, selectedActivityId, evidenceOverlay])
 
   const missingCount = useMemo(
     () => checklist.filter((c) => c.missing && c.required).length,

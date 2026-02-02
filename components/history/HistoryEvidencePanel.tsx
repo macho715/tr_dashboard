@@ -1,9 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { HistoryTab } from './HistoryTab'
-import { EvidenceTab } from '@/components/evidence/EvidenceTab'
-import type { OptionC } from '@/src/types/ssot'
+import { EvidenceTab, type EvidenceOverlayItem } from '@/components/evidence/EvidenceTab'
+import { EvidenceUploadModal } from '@/components/evidence/EvidenceUploadModal'
+import type { OptionC, EvidenceItem } from '@/src/types/ssot'
 import { useViewModeOptional } from '@/src/lib/stores/view-mode-store'
 
 type HistoryEvidencePanelProps = {
@@ -15,12 +16,44 @@ type HistoryEvidencePanelProps = {
 export function HistoryEvidencePanel({
   selectedActivityId = null,
   filterEventType = null,
-  onUploadClick,
+  onUploadClick: onUploadClickProp,
 }: HistoryEvidencePanelProps) {
   const [ssot, setSsot] = useState<OptionC | null>(null)
   const [activeTab, setActiveTab] = useState<'history' | 'evidence'>('history')
+  const [evidenceOverlay, setEvidenceOverlay] = useState<EvidenceOverlayItem[]>([])
+  const [modalOpen, setModalOpen] = useState(false)
+  const [modalActivityId, setModalActivityId] = useState('')
+  const [modalActivityTitle, setModalActivityTitle] = useState('')
+  const [modalEvidenceType, setModalEvidenceType] = useState('')
   const viewMode = useViewModeOptional()
   const canUpload = viewMode?.canUploadEvidence ?? true
+
+  const handleUploadClick = useCallback(
+    (activityId: string, evidenceType: string) => {
+      if (onUploadClickProp) {
+        onUploadClickProp(activityId, evidenceType)
+        return
+      }
+      const act = ssot?.entities?.activities?.[activityId]
+      setModalActivityId(activityId)
+      setModalActivityTitle(act?.title ?? activityId)
+      setModalEvidenceType(evidenceType)
+      setModalOpen(true)
+    },
+    [onUploadClickProp, ssot]
+  )
+
+  const handleEvidenceConfirm = useCallback((item: EvidenceItem) => {
+    setEvidenceOverlay((prev) => [
+      ...prev,
+      {
+        activityId: modalActivityId,
+        evidenceType: item.evidence_type,
+        evidenceId: item.evidence_id,
+      },
+    ])
+    setModalOpen(false)
+  }, [modalActivityId])
 
   useEffect(() => {
     fetch('/api/ssot')
@@ -71,8 +104,18 @@ export function HistoryEvidencePanel({
         <EvidenceTab
           ssot={ssot}
           selectedActivityId={selectedActivityId}
-          onUploadClick={onUploadClick}
+          onUploadClick={handleUploadClick}
           canUpload={canUpload}
+          evidenceOverlay={evidenceOverlay}
+        />
+      )}
+      {modalOpen && (
+        <EvidenceUploadModal
+          activityId={modalActivityId}
+          activityTitle={modalActivityTitle}
+          evidenceType={modalEvidenceType}
+          onConfirm={handleEvidenceConfirm}
+          onCancel={() => setModalOpen(false)}
         />
       )}
     </div>

@@ -132,6 +132,8 @@ interface GanttChartProps {
   focusedActivityId?: string | null
   /** Phase 10: Compare mode delta for ghost bars */
   compareDelta?: CompareResult | null
+  /** Project end date for slack calculation (must match page.tsx for consistent DetailPanel/Gantt values) */
+  projectEndDate: string
 }
 
 export const GanttChart = forwardRef<GanttChartHandle, GanttChartProps>(function GanttChart(
@@ -150,6 +152,7 @@ export const GanttChart = forwardRef<GanttChartHandle, GanttChartProps>(function
     onCollisionClick,
     focusedActivityId,
     compareDelta,
+    projectEndDate,
   },
   ref
 ) {
@@ -167,7 +170,10 @@ export const GanttChart = forwardRef<GanttChartHandle, GanttChartProps>(function
   })
   const ganttContainerRef = useRef<HTMLDivElement>(null)
   const activityRefs = useRef<Map<string, HTMLDivElement>>(new Map())
-  const ganttRows = scheduleActivitiesToGanttRows(activities)
+  const ganttRows = useMemo(
+    () => scheduleActivitiesToGanttRows(activities),
+    [activities]
+  )
   const totalWeeks = Math.ceil(TOTAL_DAYS / DAYS_PER_WEEK)
   const totalUnits = view === "Day" ? TOTAL_DAYS : totalWeeks
   const unitWidth = view === "Day" ? 22 : 120
@@ -183,10 +189,9 @@ export const GanttChart = forwardRef<GanttChartHandle, GanttChartProps>(function
     return map
   }, [activities])
 
-  const PROJECT_END_STR = "2026-03-22"
   const slackMap = useMemo(
-    () => calculateSlack(activities, PROJECT_END_STR),
-    [activities]
+    () => calculateSlack(activities, projectEndDate),
+    [activities, projectEndDate]
   )
 
   const { barPositions, dependencyEdges } = useMemo(() => {
@@ -212,7 +217,7 @@ export const GanttChart = forwardRef<GanttChartHandle, GanttChartProps>(function
       (e) => positions.has(e.predId) && positions.has(e.succId)
     )
     return { barPositions: positions, dependencyEdges: validEdges }
-  }, [ganttRows, view, totalUnits, activityMeta])
+  }, [activities, view, totalUnits, activityMeta])
 
   const dateMarks = useMemo(() => {
     const marks: string[] = []
@@ -484,7 +489,7 @@ export const GanttChart = forwardRef<GanttChartHandle, GanttChartProps>(function
                 {/* Phase 10: Ghost bars for compare mode (changed) */}
                 {compareDelta?.changed
                   ?.filter((d) => barPositions.get(d.activity_id)?.rowIndex === index)
-                  .map((d) => {
+                  ?.map((d) => {
                     if (!d.compare) return null
                     const ghostPos = calcPosition(
                       d.compare.planned_start,
