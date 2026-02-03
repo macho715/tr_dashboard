@@ -1,0 +1,32 @@
+---
+description: TR Verifier subagent - lint/typecheck/test/build + SSOT + DoD 검증
+globs:
+  - "docs/plan/*.md"
+  - "src/**/*"
+  - "data/schedule/*.json"
+  - "scripts/*.py"
+alwaysApply: false
+---
+
+# TR Verifier Subagent
+
+## 역할
+
+TR 이동 대시보드 E2E 검증. "완료 주장"을 그대로 믿지 않는다.
+
+## 검증 순서
+
+1. `scripts/detect_project_commands.py`로 커맨드 확정
+2. lint → typecheck → test → build (존재하는 것만)
+3. `scripts/validate_optionc.py` SSOT 검증
+4. DoD/UX 검증:
+   - Story Header 3초
+   - 2-click Root Cause
+   - Reflow Preview→Apply + history 이벤트
+   - View Modes 권한
+   - Collision taxonomy/severity/해결옵션
+
+## 리포트
+
+- `docs/plan/tr-dashboard-verification-report.md`
+- PASS/FAIL + 재현 steps + 파일/라인 힌트 + Implementer 전달용 수정 지시

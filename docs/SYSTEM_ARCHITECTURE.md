@@ -1,8 +1,16 @@
+---
+doc_id: system-architecture
+refs: [../patch.md, ../AGENTS.md, LAYOUT.md]
+updated: 2026-02-03
+---
+
 # HVDC TR Transport Dashboard - 시스템 아키텍처
 
-**버전**: 1.0  
-**최종 업데이트**: 2026-01-22  
-**프로젝트**: HVDC TR Transport - AGI Site Logistics Dashboard
+**버전**: 1.3  
+**최종 업데이트**: 2026-02-02 (Phase 6: Bugfix + Phase 5: SSOT Upgrade v1.0)  
+**최신 작업 반영**: 2026-02-03 — [WORK_LOG_20260202](WORK_LOG_20260202.md), [BUGFIX_APPLIED_20260202](BUGFIX_APPLIED_20260202.md) (Phase 6 #1~5,#7, Phase 7/10/11 반영)  
+**프로젝트**: HVDC TR Transport - AGI Site Logistics Dashboard  
+**SSOT**: patch.md, option_c.json (AGENTS.md)
 
 ---
 
@@ -26,12 +34,27 @@
 
 HVDC TR Transport Dashboard는 **7개의 Transformer Unit**을 **LCT BUSHRA**로 운송하는 프로젝트의 실시간 물류 대시보드입니다. 복잡한 스케줄 의존성을 관리하고, 일정 변경의 영향을 실시간으로 시각화합니다.
 
+**운영 규모**: 1 Trip당 1 TR 운송, 총 7 Trip, SPMT 1기 운영
+
 ### 핵심 요구사항
 
 - **실시간 스케줄 관리**: 139개 활동의 의존성 기반 자동 재계산
 - **시각적 일정 표시**: Gantt 차트를 통한 7개 항차 타임라인
 - **변경 영향 분석**: 일정 변경 시 영향받는 작업 자동 계산
 - **불변성 보장**: 원본 데이터 보호 및 안전한 상태 업데이트
+
+### 최근 반영 (Phase 6/7/10/11) — 본문 반영
+
+| Phase | 반영 내용 (본문과 일치하도록 유지) |
+|-------|-----------------------------------|
+| **Phase 6 Bug #1** | Selected Date UTC 정렬: `lib/ssot/schedule.ts`의 `dateToIsoUtc`, `toUtcNoon`. Gantt/DatePicker는 UTC 기준(YYYY-MM-DD)으로 축과 정렬. |
+| **Phase 6 Bug #2** | Trip/TR 필터: API 실패/7개 미만 시 voyages 기반 fallback. `selectedVoyage` ↔ `selectedTripId`/`selectedTrIds` 동기화. schedule-table 0개 시 7개 fallback. |
+| **Phase 6 Bug #3** | GlobalControlBar View 버튼: 클릭 시 `id="schedule"` Detailed Voyage Schedule로 스크롤. |
+| **Phase 6 Bug #4** | StoryHeader·3열: WHERE/WHEN/WHAT/EVIDENCE 제거 → Location/Schedule/Verification, Map/Timeline. |
+| **Phase 6 Bug #5** | CompareDiffPanel: 상단에 "Baseline snapshot: (created_at) (immutable)", "Compare as-of: Live (current state)" 표시. |
+| **Phase 7** | DetailPanel 구조화, CollisionTray, Why 패널 suggested_actions → reflowSchedule 연결. ReflowPreviewPanel 연동. |
+| **Phase 10** | Compare Mode: compare-loader, CompareModeBanner, Gantt ghost bars (compareDelta). |
+| **Phase 11** | T11.2 Cycle detection, T11.3 Evidence gate, T11.4 E2E workflow 테스트 완료. |
 
 ---
 
@@ -142,16 +165,25 @@ function GanttChart() {
 #### 2. Business Logic Layer
 - **역할**: 비즈니스 로직 및 데이터 변환
 - **구성요소**:
-  - `lib/utils/schedule-reflow.ts`: 스케줄 재계산 엔진
-  - `lib/data/schedule-data.ts`: 데이터 로딩 및 변환
+  - `lib/utils/schedule-reflow.ts`: 스케줄 재계산 엔진 (reflowSchedule)
+  - `lib/reflow/`: Forward pass, Backward pass, Collision detection, Reflow manager
+  - `lib/state-machine/`: State transitions, Evidence gates
+  - `lib/utils/slack-calc.ts`: ES/EF/LS/LF, critical path
+  - `lib/utils/detect-resource-conflicts.ts`: 충돌 감지
+  - `lib/baseline/`: Baseline/Approval 모드, baseline-compare.ts (computeActivityDiff)
+  - `lib/compare/`: Compare Mode (Phase 10 완료)
+  - `lib/store/trip-store.ts`: History/Evidence localStorage (append-only)
+  - `lib/reports/trip-report.ts`: Trip Report 생성 + MD/JSON Export
 - **특징**: 순수 함수, 사이드 이펙트 없음
 
 #### 3. Data Layer
 - **역할**: 데이터 정의 및 저장
 - **구성요소**:
-  - `lib/ssot/schedule.ts`: 타입 정의
+  - `lib/ssot/schedule.ts`: ScheduleActivity, ScheduleConflict, SuggestedAction
+  - `src/types/ssot.ts`: Contract v0.8.0 Activity, Collision, Baseline, TripCloseout, TripReport
   - `data/schedule/option_c.json`: 마스터 스케줄 데이터
-- **특징**: SSOT 원칙 준수
+  - `lib/store/trip-store.ts`: History/Evidence 클라이언트 저장 (localStorage)
+- **특징**: SSOT 원칙 준수, History append-only
 
 ---
 
@@ -254,14 +286,51 @@ ScheduleActivity[]
   → GanttRow[] (렌더링용)
 ```
 
-### 3. Preview 패널 (`components/gantt/SchedulePreviewPanel.tsx`)
+### 3. ReflowPreviewPanel (`components/dashboard/ReflowPreviewPanel.tsx`)
 
-**책임**: 변경 사항 미리보기 및 충돌 경고
+**책임**: Why 패널 suggested_action → reflowSchedule 결과 미리보기 (Phase 7 T7.7)
 
 **주요 기능**:
 - **변경 사항 목록**: 영향받은 작업의 이전/이후 날짜
 - **충돌 경고**: 의존성 사이클, 잠금 위반, 제약 조건 위반
 - **적용/취소**: Preview 적용 시 상태 업데이트
+- **연결**: `onApplyAction` → `reflowSchedule` → ReflowPreviewPanel 표시
+
+### 5. DetailPanel + WhyPanel + ReflowPreview (Phase 7)
+
+**책임**: Activity inspector, 2-click Collision UX, Reflow preview (patch.md §4.2)
+
+**주요 컴포넌트**:
+1. **DetailPanel**: ActivityHeader, StateSection, PlanVsActualSection, ResourcesSection, ConstraintsSection, CollisionTray
+2. **WhyPanel**: root_cause_code, suggested_actions (2-click: 배지 → Why 패널)
+3. **ReflowPreviewPanel**: onApplyAction → reflowSchedule → Preview UI → Apply
+
+**흐름**: 
+```
+Collision 배지 클릭 
+  → WhyPanel 표시 (root cause + suggested_actions)
+  → suggested_action 클릭 
+  → reflowSchedule 실행
+  → ReflowPreviewPanel 표시 (변경 사항 + 충돌)
+  → Apply 버튼 
+  → Activities 상태 업데이트
+```
+
+### 6. State Machine & Evidence Gates (Phase 3)
+
+**책임**: Activity 상태 전이 및 증빙 검증
+
+**구성요소**:
+- `src/lib/state-machine/states.ts`: ALLOWED_TRANSITIONS, EVIDENCE_GATE_BY_TRANSITION
+- `src/lib/state-machine/evidence-gate.ts`: checkEvidenceGate (stage, required_types 검증)
+- `src/lib/state-machine/transition.ts`: transitionState (adjacency + evidence gate + guards)
+
+**Evidence Gates**:
+- `before_ready`: PTW, Risk Assessment 필수
+- `before_start`: Start checklist 필수
+- `after_end`: Completion photos 필수
+
+**테스트**: 22 tests passed (state transitions, evidence gates, blocker codes)
 
 ---
 
@@ -435,10 +504,19 @@ const changeImpactItems = useMemo(() => {
 
 ## 참고 문서
 
-- [README.md](./README.md) - 프로젝트 개요 및 사용 가이드
+- [README.md](../README.md) - 프로젝트 개요 및 사용 가이드 (루트)
+- [BUGFIX_APPLIED_20260202.md](./BUGFIX_APPLIED_20260202.md) - Phase 6 Bugfix 적용 보고서
 - [VERCEL.md](./VERCEL.md) - 배포 설정
-- [.cursor/rules/](./.cursor/rules/) - Cursor IDE 규칙
+- [.cursor/rules/](../.cursor/rules/) - Cursor IDE 규칙
 
 ---
 
-**Last Updated**: 2026-01-22
+**Last Updated**: 2026-02-02  
+
+## Refs
+
+- [patch.md](../patch.md)
+- [AGENTS.md](../AGENTS.md)
+- [LAYOUT.md](LAYOUT.md)
+- [WORK_LOG_20260202.md](WORK_LOG_20260202.md), [BUGFIX_APPLIED_20260202.md](BUGFIX_APPLIED_20260202.md) — 최신 작업 반영
+- [plan_patchm1_m5.md](plan/plan_patchm1_m5.md)

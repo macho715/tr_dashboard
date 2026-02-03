@@ -1,14 +1,10 @@
 "use client"
 
 import { useEffect, useMemo, useState } from "react"
-import { AlertTriangle, CalendarClock, Gauge, ShieldAlert } from "lucide-react"
+import { AlertTriangle, CalendarClock, Gauge } from "lucide-react"
 import { scheduleActivities } from "@/lib/data/schedule-data"
 import { voyages } from "@/lib/dashboard-data"
 import { useDate } from "@/lib/contexts/date-context"
-
-interface OperationOverviewRibbonProps {
-  conflictCount: number
-}
 
 function parseDateString(dateStr: string): Date {
   const monthMap: Record<string, number> = {
@@ -21,7 +17,7 @@ function parseDateString(dateStr: string): Date {
   return new Date(2026, month, day)
 }
 
-export function OperationOverviewRibbon({ conflictCount }: OperationOverviewRibbonProps) {
+export function OperationOverviewRibbon() {
   const { selectedDate } = useDate()
   const [isCompact, setIsCompact] = useState(false)
 
@@ -59,7 +55,7 @@ export function OperationOverviewRibbon({ conflictCount }: OperationOverviewRibb
           <Gauge className="h-6 w-6 text-cyan-400" />
           <div>
             <div className="text-sm font-semibold text-foreground">Operation Overview</div>
-            <div className="text-[11px] text-slate-400">
+            <div className="text-xs text-slate-400">
               Daily pulse · {selectedDate.toLocaleDateString("en-US", { month: "short", day: "numeric" })}
             </div>
           </div>
@@ -69,17 +65,13 @@ export function OperationOverviewRibbon({ conflictCount }: OperationOverviewRibb
             <AlertTriangle className="h-3.5 w-3.5 text-amber-400" />
             {delayedVoyages} delayed voyages
           </div>
-          <div className="flex items-center gap-2 rounded-full border border-rose-500/40 bg-rose-500/10 px-3 py-1">
-            <ShieldAlert className="h-3.5 w-3.5 text-rose-400" />
-            {conflictCount} active conflicts
-          </div>
           <div className="flex items-center gap-2 rounded-full border border-cyan-500/40 bg-cyan-500/10 px-3 py-1">
             <CalendarClock className="h-3.5 w-3.5 text-cyan-300" />
             {criticalCount} critical tasks in 48h
           </div>
         </div>
         {!isCompact && (
-          <div className="ml-auto flex items-center gap-3 text-[11px] text-slate-400">
+          <div className="ml-auto flex items-center gap-3 text-xs text-slate-400">
             <span className="rounded-full border border-slate-600/40 bg-slate-900/60 px-2.5 py-1">
               Focus: Load-out & Sail-away readiness
             </span>

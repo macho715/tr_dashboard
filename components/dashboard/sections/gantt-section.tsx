@@ -3,14 +3,12 @@
 import type { Ref } from "react"
 import { GanttChart, type GanttChartHandle } from "@/components/dashboard/gantt-chart"
 import type { HighlightFlags, TimelineView } from "@/components/dashboard/timeline-controls"
-import type { DateChange, ScheduleActivity, ScheduleConflict } from "@/lib/ssot/schedule"
+import type { ScheduleActivity, ScheduleConflict } from "@/lib/ssot/schedule"
+import type { CompareResult } from "@/lib/compare/types"
 
 type GanttSectionProps = {
   ganttRef: Ref<GanttChartHandle>
   activities: ScheduleActivity[]
-  conflicts: ScheduleConflict[]
-  resourceFilter: string
-  onResourceFilterChange: (resource: string) => void
   view: TimelineView
   onViewChange: (view: TimelineView) => void
   highlightFlags: HighlightFlags
@@ -19,16 +17,18 @@ type GanttSectionProps = {
   onJumpDateChange: (value: string) => void
   jumpTrigger: number
   onJumpRequest: () => void
-  changeImpactItems: Array<DateChange & { appliedAt: string }>
-  onUndoChangeImpact: () => void
+  onActivityClick?: (activityId: string, start: string) => void
+  onActivityDeselect?: () => void
+  conflicts?: ScheduleConflict[]
+  onCollisionClick?: (conflict: ScheduleConflict) => void
+  focusedActivityId?: string | null
+  compareDelta?: CompareResult | null
+  projectEndDate: string
 }
 
 export function GanttSection({
   ganttRef,
   activities,
-  conflicts,
-  resourceFilter,
-  onResourceFilterChange,
   view,
   onViewChange,
   highlightFlags,
@@ -37,17 +37,19 @@ export function GanttSection({
   onJumpDateChange,
   jumpTrigger,
   onJumpRequest,
-  changeImpactItems,
-  onUndoChangeImpact,
+  onActivityClick,
+  onActivityDeselect,
+  conflicts,
+  onCollisionClick,
+  focusedActivityId,
+  compareDelta,
+  projectEndDate,
 }: GanttSectionProps) {
   return (
-    <section id="gantt" aria-label="Gantt Chart">
+    <section id="gantt" aria-label="Gantt Chart" className="flex flex-1 flex-col min-h-0">
       <GanttChart
         ref={ganttRef}
         activities={activities}
-        conflicts={conflicts}
-        resourceFilter={resourceFilter}
-        onResourceFilterChange={onResourceFilterChange}
         view={view}
         onViewChange={onViewChange}
         highlightFlags={highlightFlags}
@@ -56,8 +58,13 @@ export function GanttSection({
         onJumpDateChange={onJumpDateChange}
         jumpTrigger={jumpTrigger}
         onJumpRequest={onJumpRequest}
-        changeImpactItems={changeImpactItems}
-        onUndoChangeImpact={onUndoChangeImpact}
+        onActivityClick={onActivityClick}
+        onActivityDeselect={onActivityDeselect}
+        conflicts={conflicts}
+        onCollisionClick={onCollisionClick}
+        focusedActivityId={focusedActivityId}
+        compareDelta={compareDelta}
+        projectEndDate={projectEndDate}
       />
     </section>
   )

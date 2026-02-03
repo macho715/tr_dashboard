@@ -1,0 +1,11 @@
+{
+  "include_roots": ["docs", ".cursor", "."],
+  "exclude_dirs": [".git", "node_modules", ".next", "dist", "build", ".vercel"],
+  "canonical_docs_root": "docs",
+  "require_frontmatter_doc_id": true,
+  "auto_apply": false,
+  "ref_policy": {
+    "min_refs_for_core_docs": 1,
+    "auto_add_refs_section": true
+  }
+}

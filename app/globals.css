@@ -48,6 +48,13 @@
   --chart-5: oklch(0.60 0.18 260);
   
   --radius: 0.625rem;
+
+  /* Dashboard typography scale (unified) */
+  --text-caption: 0.75rem;   /* 12px - labels, muted */
+  --text-body: 0.875rem;    /* 14px - default body */
+  --text-subhead: 1rem;     /* 16px - section titles */
+  --text-title: 1.125rem;   /* 18px - card titles */
+  --text-display: 1.5rem;   /* 24px - page title */
   
   /* Sidebar */
   --sidebar: oklch(0.15 0.02 250);
@@ -106,7 +113,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans text-sm antialiased;
     background: linear-gradient(145deg, #0a0f1a 0%, #0c1929 40%, #0f172a 100%);
     min-height: 100vh;
   }
@@ -166,4 +173,106 @@ body::before {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #06b6d4;
+}
+
+/* vis-timeline Compare Mode ghost bars (Task 8) */
+.vis-timeline .vis-item.baseline-ghost {
+  border: 2px dashed rgba(251, 191, 36, 0.7) !important;
+  background: rgba(245, 158, 11, 0.25) !important;
+  opacity: 0.9;
+}
+
+/* Task 10: vis-timeline Deep Ocean Theme overrides */
+.gantt-vis-wrapper .vis-timeline {
+  border-color: rgba(6, 182, 212, 0.2) !important;
+  background: rgba(15, 23, 42, 0.6) !important;
+}
+
+.gantt-vis-wrapper .vis-panel.vis-center,
+.gantt-vis-wrapper .vis-panel.vis-left,
+.gantt-vis-wrapper .vis-panel.vis-right,
+.gantt-vis-wrapper .vis-panel.vis-top,
+.gantt-vis-wrapper .vis-panel.vis-bottom {
+  border-color: rgba(6, 182, 212, 0.15) !important;
+  background: rgba(15, 23, 42, 0.5) !important;
+}
+
+.gantt-vis-wrapper .vis-labelset .vis-label {
+  color: #94a3b8 !important;
+  border-color: rgba(6, 182, 212, 0.15) !important;
+  background: rgba(30, 41, 59, 0.5) !important;
+}
+
+.gantt-vis-wrapper .vis-foreground .vis-group {
+  border-color: rgba(6, 182, 212, 0.12) !important;
+}
+
+.gantt-vis-wrapper .vis-item.vis-selected {
+  background-color: rgba(6, 182, 212, 0.35) !important;
+  border-color: rgba(34, 211, 238, 0.8) !important;
+  box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.4);
+}
+
+.gantt-vis-wrapper .vis-custom-time {
+  background-color: #fbbf24 !important;
+}
+
+.gantt-vis-wrapper .vis-custom-time > .vis-custom-time-marker {
+  background-color: #fbbf24 !important;
+  color: #0f172a !important;
+}
+
+.gantt-vis-wrapper .vis-time-axis .vis-text {
+  color: #22d3ee !important;
+}
+
+.gantt-vis-wrapper .vis-time-axis .vis-grid.vis-minor {
+  border-color: rgba(6, 182, 212, 0.08) !important;
+}
+
+.gantt-vis-wrapper .vis-time-axis .vis-grid.vis-major {
+  border-color: rgba(6, 182, 212, 0.2) !important;
+}
+
+.gantt-vis-wrapper .vis-panel.vis-background .vis-grid.vis-minor {
+  border-color: rgba(6, 182, 212, 0.08) !important;
+}
+
+.gantt-vis-wrapper .vis-panel.vis-background .vis-grid.vis-major {
+  border-color: rgba(6, 182, 212, 0.2) !important;
+}
+
+/* Activity type colors (match legacy legend) */
+.gantt-vis-wrapper .vis-item.gantt-type-mobilization {
+  background: linear-gradient(to right, rgba(192, 132, 252, 0.6), rgba(139, 92, 246, 0.6)) !important;
+  border-color: rgba(167, 139, 250, 0.7) !important;
+}
+.gantt-vis-wrapper .vis-item.gantt-type-loadout {
+  background: linear-gradient(to right, rgba(103, 232, 249, 0.6), rgba(6, 182, 212, 0.6)) !important;
+  border-color: rgba(34, 211, 238, 0.7) !important;
+}
+.gantt-vis-wrapper .vis-item.gantt-type-transport {
+  background: linear-gradient(to right, rgba(253, 186, 116, 0.6), rgba(245, 158, 11, 0.6)) !important;
+  border-color: rgba(251, 191, 36, 0.7) !important;
+}
+.gantt-vis-wrapper .vis-item.gantt-type-loadin {
+  background: linear-gradient(to right, rgba(110, 231, 183, 0.6), rgba(16, 185, 129, 0.6)) !important;
+  border-color: rgba(52, 211, 153, 0.7) !important;
+}
+.gantt-vis-wrapper .vis-item.gantt-type-turning {
+  background: linear-gradient(to right, rgba(244, 114, 182, 0.6), rgba(236, 72, 153, 0.6)) !important;
+  border-color: rgba(244, 114, 182, 0.7) !important;
+}
+.gantt-vis-wrapper .vis-item.gantt-type-jackdown {
+  background: linear-gradient(to right, rgba(96, 165, 250, 0.6), rgba(59, 130, 246, 0.6)) !important;
+  border-color: rgba(96, 165, 250, 0.7) !important;
+}
+.gantt-vis-wrapper .vis-item.vis-range:not(.baseline-ghost):not([class*="gantt-type-"]) {
+  background-color: rgba(6, 182, 212, 0.2) !important;
+  border-color: rgba(34, 211, 238, 0.4) !important;
+}
+
+.gantt-vis-wrapper .vis-item .vis-item-content {
+  color: #0f172a !important;
+  font-weight: 600;
 }

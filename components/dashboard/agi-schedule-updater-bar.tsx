@@ -3,6 +3,7 @@
 import * as React from "react";
 import { reflowSchedule } from "@/lib/utils/schedule-reflow";
 import type { ImpactReport, ScheduleActivity } from "@/lib/ssot/schedule";
+import { useViewModeOptional } from "@/src/lib/stores/view-mode-store";
 
 type ChangeRow = {
   id: string;
@@ -99,6 +100,8 @@ export function AgiScheduleUpdaterBar({
   onFocusActivity,
   className,
 }: Props) {
+  const viewMode = useViewModeOptional();
+  const canApplyReflow = viewMode?.canApplyReflow ?? true; // default: allow when no provider
   const inputRef = React.useRef<HTMLInputElement>(null);
 
   const [mode, setMode] = React.useState<"single" | "bulk">("single");
@@ -395,6 +398,7 @@ export function AgiScheduleUpdaterBar({
                 onChange={(e) => setNewStart(e.target.value)}
               />
 
+              {canApplyReflow && (
               <button
                 type="button"
                 className="rounded-lg border border-cyan-400/30 bg-cyan-500/20 px-3 py-2 text-sm text-cyan-100 hover:bg-cyan-500/30 disabled:opacity-50"
@@ -406,6 +410,7 @@ export function AgiScheduleUpdaterBar({
               >
                 {isWorking ? "계산중…" : "Preview"}
               </button>
+              )}
             </div>
           </div>
         ) : (
@@ -472,6 +477,7 @@ ACT-023=2026-02-18`}
                   Full JSON
                 </button>
 
+                {canApplyReflow && (
                 <button
                   type="button"
                   className="rounded-lg border border-emerald-400/30 bg-emerald-500/20 px-3 py-2 text-sm text-emerald-50 hover:bg-emerald-500/30"
@@ -479,6 +485,7 @@ ACT-023=2026-02-18`}
                 >
                   적용(Apply)
                 </button>
+                )}
 
                 <button
                   type="button"

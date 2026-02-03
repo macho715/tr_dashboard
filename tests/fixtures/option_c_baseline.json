@@ -1,0 +1,1629 @@
+{
+  "contract": {
+    "name": "tr-move-ssot",
+    "version": "0.8.0",
+    "timezone": "Asia/Dubai",
+    "generated_at": "2026-02-01T12:00:00+04:00",
+    "ssot": {
+      "activity_is_source_of_truth": true,
+      "derived_fields_read_only": true
+    }
+  },
+
+  "constraint_rules": {
+    "wx": {
+      "profiles": {
+        "wx_profile_spmt_move": {
+          "wind_sustained_max_mps": 12.0,
+          "wind_gust_max_mps": 16.0,
+          "visibility_min_m": 800,
+          "precip_max_mmph": 5.0,
+          "lightning_exclusion_km": 10,
+          "wave_height_max_m": 0.8,
+          "temperature_min_c": -5,
+          "temperature_max_c": 45,
+          "window_min_duration_min": 120
+        },
+        "wx_profile_crane_lift": {
+          "wind_sustained_max_mps": 10.0,
+          "wind_gust_max_mps": 14.0,
+          "visibility_min_m": 1000,
+          "precip_max_mmph": 2.0,
+          "lightning_exclusion_km": 15,
+          "wave_height_max_m": 0.5,
+          "temperature_min_c": 0,
+          "temperature_max_c": 40,
+          "window_min_duration_min": 90
+        },
+        "wx_profile_barge_transit": {
+          "wind_sustained_max_mps": 13.0,
+          "wind_gust_max_mps": 18.0,
+          "visibility_min_m": 1200,
+          "precip_max_mmph": 8.0,
+          "lightning_exclusion_km": 15,
+          "wave_height_max_m": 1.2,
+          "temperature_min_c": 0,
+          "temperature_max_c": 45,
+          "window_min_duration_min": 240
+        }
+      },
+      "data_sources": {
+        "primary": "metocean_feed_a",
+        "fallback": "manual_observation"
+      }
+    },
+
+    "linkspan": {
+      "assets": {
+        "LINKSPAN_01": {
+          "max_gross_load_t": 520,
+          "max_axle_line_load_t": 40,
+          "max_slope_deg": 3.0,
+          "min_deck_width_m": 8.0,
+          "slot_granularity_min": 30,
+          "requires_slot_booking": true
+        }
+      }
+    },
+
+    "barge": {
+      "assets": {
+        "BARGE_01": {
+          "max_payload_t": 900,
+          "max_deck_point_load_t_per_m2": 20,
+          "draft_max_m": 4.5,
+          "trim_max_deg": 2.0,
+          "heel_max_deg": 3.0,
+          "requires_stability_calc": true,
+          "requires_mooring_plan": true
+        }
+      }
+    },
+
+    "ptw": {
+      "permit_types": {
+        "ptw_hot_work": { "validity_min": 480, "lead_time_min": 240 },
+        "ptw_lifting": { "validity_min": 480, "lead_time_min": 720 },
+        "ptw_transport_road": { "validity_min": 1440, "lead_time_min": 2880 },
+        "ptw_marine": { "validity_min": 1440, "lead_time_min": 2880 }
+      },
+      "certificate_types": {
+        "cert_rigging": { "validity_min": 525600 },
+        "cert_spmt_operator": { "validity_min": 525600 },
+        "cert_crane": { "validity_min": 525600 }
+      }
+    }
+  },
+
+  "activity_types": {
+    "route_survey": {
+      "type_id": "route_survey",
+      "display_name": "Route Survey",
+      "category": "engineering",
+      "default_duration_min": 480,
+      "default_resources": [
+        { "resource_kind": "crew", "pool_id": "POOL_SURVEY_CREW", "qty": 1 }
+      ],
+      "default_constraints": [],
+      "default_evidence_required": [
+        {
+          "evidence_type": "route_survey_report",
+          "stage": "after_end",
+          "min_count": 1,
+          "required": true,
+          "validity_min": null,
+          "tags": ["engineering", "route"]
+        }
+      ]
+    },
+
+    "ptw_bundle_approval": {
+      "type_id": "ptw_bundle_approval",
+      "display_name": "PTW / Certificates Gate",
+      "category": "permit",
+      "default_duration_min": 240,
+      "default_resources": [
+        { "resource_kind": "office", "pool_id": "POOL_PERMIT_TEAM", "qty": 1 }
+      ],
+      "default_constraints": [
+        {
+          "kind": "ptw_gate",
+          "hardness": "hard",
+          "rule_ref": "ptw.permit_types",
+          "params": { "required_permits": ["ptw_lifting", "ptw_transport_road", "ptw_marine"] }
+        }
+      ],
+      "default_evidence_required": [
+        {
+          "evidence_type": "ptw_approval",
+          "stage": "before_ready",
+          "min_count": 1,
+          "required": true,
+          "validity_min": 1440,
+          "tags": ["permit"]
+        },
+        {
+          "evidence_type": "certificate_bundle",
+          "stage": "before_ready",
+          "min_count": 1,
+          "required": true,
+          "validity_min": null,
+          "tags": ["certificate"]
+        }
+      ]
+    },
+
+    "spmt_setup": {
+      "type_id": "spmt_setup",
+      "display_name": "SPMT Setup & Pre-check",
+      "category": "ops",
+      "default_duration_min": 360,
+      "default_resources": [
+        { "resource_kind": "spmt", "pool_id": "POOL_SPMT", "qty": 1 },
+        { "resource_kind": "crew", "pool_id": "POOL_SPMT_CREW", "qty": 1 }
+      ],
+      "default_constraints": [],
+      "default_evidence_required": [
+        {
+          "evidence_type": "spmt_checklist",
+          "stage": "after_end",
+          "min_count": 1,
+          "required": true,
+          "validity_min": null,
+          "tags": ["spmt", "safety"]
+        }
+      ]
+    },
+
+    "crane_lift": {
+      "type_id": "crane_lift",
+      "display_name": "Crane Lift / Load-out",
+      "category": "ops",
+      "default_duration_min": 240,
+      "default_resources": [
+        { "resource_kind": "crane", "pool_id": "POOL_CRANE", "qty": 1 },
+        { "resource_kind": "crew", "pool_id": "POOL_LIFT_CREW", "qty": 1 }
+      ],
+      "default_constraints": [
+        {
+          "kind": "wx_window",
+          "hardness": "hard",
+          "rule_ref": "wx.profiles.wx_profile_crane_lift",
+          "params": {}
+        }
+      ],
+      "default_evidence_required": [
+        {
+          "evidence_type": "lift_plan",
+          "stage": "before_ready",
+          "min_count": 1,
+          "required": true,
+          "validity_min": 10080,
+          "tags": ["lift"]
+        },
+        {
+          "evidence_type": "toolbox_talk",
+          "stage": "before_start",
+          "min_count": 1,
+          "required": true,
+          "validity_min": 720,
+          "tags": ["safety"]
+        }
+      ]
+    },
+
+    "road_move": {
+      "type_id": "road_move",
+      "display_name": "Road Move (SPMT)",
+      "category": "transport",
+      "default_duration_min": 360,
+      "default_resources": [
+        { "resource_kind": "spmt", "pool_id": "POOL_SPMT", "qty": 1 },
+        { "resource_kind": "escort", "pool_id": "POOL_ESCORT", "qty": 1 },
+        { "resource_kind": "crew", "pool_id": "POOL_SPMT_CREW", "qty": 1 }
+      ],
+      "default_constraints": [
+        {
+          "kind": "wx_window",
+          "hardness": "hard",
+          "rule_ref": "wx.profiles.wx_profile_spmt_move",
+          "params": {}
+        }
+      ],
+      "default_evidence_required": [
+        {
+          "evidence_type": "gps_track",
+          "stage": "during",
+          "min_count": 1,
+          "required": true,
+          "validity_min": null,
+          "tags": ["tracking"]
+        }
+      ]
+    },
+
+    "linkspan_crossing": {
+      "type_id": "linkspan_crossing",
+      "display_name": "Linkspan Crossing",
+      "category": "marine_interface",
+      "default_duration_min": 90,
+      "default_resources": [
+        { "resource_kind": "linkspan", "resource_id": "LINKSPAN_01", "qty": 1 },
+        { "resource_kind": "crew", "pool_id": "POOL_MARINE_CREW", "qty": 1 }
+      ],
+      "default_constraints": [
+        {
+          "kind": "linkspan_capacity",
+          "hardness": "hard",
+          "rule_ref": "linkspan.assets.LINKSPAN_01",
+          "params": {}
+        }
+      ],
+      "default_evidence_required": [
+        {
+          "evidence_type": "linkspan_slot_confirmation",
+          "stage": "before_ready",
+          "min_count": 1,
+          "required": true,
+          "validity_min": 1440,
+          "tags": ["slot"]
+        }
+      ]
+    },
+
+    "barge_transit": {
+      "type_id": "barge_transit",
+      "display_name": "Barge Transit",
+      "category": "marine",
+      "default_duration_min": 480,
+      "default_resources": [
+        { "resource_kind": "barge", "resource_id": "BARGE_01", "qty": 1 },
+        { "resource_kind": "tug", "pool_id": "POOL_TUG", "qty": 1 },
+        { "resource_kind": "crew", "pool_id": "POOL_MARINE_CREW", "qty": 1 }
+      ],
+      "default_constraints": [
+        {
+          "kind": "wx_window",
+          "hardness": "hard",
+          "rule_ref": "wx.profiles.wx_profile_barge_transit",
+          "params": {}
+        },
+        {
+          "kind": "barge_limits",
+          "hardness": "hard",
+          "rule_ref": "barge.assets.BARGE_01",
+          "params": {}
+        }
+      ],
+      "default_evidence_required": [
+        {
+          "evidence_type": "barge_stability_calc",
+          "stage": "before_ready",
+          "min_count": 1,
+          "required": true,
+          "validity_min": 10080,
+          "tags": ["marine", "stability"]
+        }
+      ]
+    }
+  },
+
+  "entities": {
+    "locations": {
+      "LOC_YARD_A": { "location_id": "LOC_YARD_A", "name": "Yard A", "lat": 25.0501, "lon": 55.1202 },
+      "LOC_JETTY_A": { "location_id": "LOC_JETTY_A", "name": "Jetty A", "lat": 25.0611, "lon": 55.1404 },
+      "LOC_ISLAND_PORT": { "location_id": "LOC_ISLAND_PORT", "name": "Island Port", "lat": 25.0902, "lon": 55.2109 },
+      "LOC_SUBSTATION_1": { "location_id": "LOC_SUBSTATION_1", "name": "Substation 1", "lat": 25.1020, "lon": 55.2501 },
+      "LOC_MZP": { "location_id": "LOC_MZP", "name": "Mina Zayed Port", "lat": 24.52489, "lon": 54.37798 },
+      "LOC_AGI": { "location_id": "LOC_AGI", "name": "AGI Jetty", "lat": 24.841096, "lon": 53.658619 }
+    },
+
+    "resource_pools": {
+      "POOL_SPMT": {
+        "pool_id": "POOL_SPMT",
+        "kind": "spmt",
+        "members": ["SPMT_01", "SPMT_02"],
+        "capacity_rule": { "mode": "one_of", "qty_limit": 1 }
+      },
+      "POOL_SPMT_CREW": {
+        "pool_id": "POOL_SPMT_CREW",
+        "kind": "crew",
+        "members": ["CREW_SPMT_A", "CREW_SPMT_B"],
+        "capacity_rule": { "mode": "one_of", "qty_limit": 1 }
+      },
+      "POOL_CRANE": {
+        "pool_id": "POOL_CRANE",
+        "kind": "crane",
+        "members": ["CRANE_600T_01"],
+        "capacity_rule": { "mode": "one_of", "qty_limit": 1 }
+      },
+      "POOL_ESCORT": {
+        "pool_id": "POOL_ESCORT",
+        "kind": "escort",
+        "members": ["ESCORT_01", "ESCORT_02"],
+        "capacity_rule": { "mode": "many", "qty_limit": 2 }
+      },
+      "POOL_MARINE_CREW": {
+        "pool_id": "POOL_MARINE_CREW",
+        "kind": "crew",
+        "members": ["CREW_MARINE_A"],
+        "capacity_rule": { "mode": "one_of", "qty_limit": 1 }
+      },
+      "POOL_TUG": {
+        "pool_id": "POOL_TUG",
+        "kind": "tug",
+        "members": ["TUG_01"],
+        "capacity_rule": { "mode": "one_of", "qty_limit": 1 }
+      },
+      "POOL_SURVEY_CREW": {
+        "pool_id": "POOL_SURVEY_CREW",
+        "kind": "crew",
+        "members": ["CREW_SURVEY_01"],
+        "capacity_rule": { "mode": "one_of", "qty_limit": 1 }
+      },
+      "POOL_PERMIT_TEAM": {
+        "pool_id": "POOL_PERMIT_TEAM",
+        "kind": "office",
+        "members": ["TEAM_PERMIT_01"],
+        "capacity_rule": { "mode": "one_of", "qty_limit": 1 }
+      },
+      "POOL_LIFT_CREW": {
+        "pool_id": "POOL_LIFT_CREW",
+        "kind": "crew",
+        "members": ["CREW_LIFT_01"],
+        "capacity_rule": { "mode": "one_of", "qty_limit": 1 }
+      }
+    },
+
+    "resources": {
+      "SPMT_01": {
+        "resource_id": "SPMT_01",
+        "kind": "spmt",
+        "name": "SPMT Set 01 (12 axle lines)",
+        "attributes": { "axle_lines": 12, "max_axle_line_load_t": 36 },
+        "calendar": {
+          "timezone": "Asia/Dubai",
+          "work_shifts": [
+            { "days": ["mon","tue","wed","thu","fri","sat"], "start_hhmm": "07:00", "end_hhmm": "19:00" }
+          ],
+          "blackouts": [
+            { "start_ts": "2026-02-06T00:00:00+04:00", "end_ts": "2026-02-06T06:00:00+04:00", "reason": "maintenance" }
+          ]
+        }
+      },
+      "SPMT_02": {
+        "resource_id": "SPMT_02",
+        "kind": "spmt",
+        "name": "SPMT Set 02 (10 axle lines)",
+        "attributes": { "axle_lines": 10, "max_axle_line_load_t": 34 },
+        "calendar": {
+          "timezone": "Asia/Dubai",
+          "work_shifts": [
+            { "days": ["mon","tue","wed","thu","fri","sat"], "start_hhmm": "07:00", "end_hhmm": "19:00" }
+          ],
+          "blackouts": []
+        }
+      },
+      "CRANE_600T_01": {
+        "resource_id": "CRANE_600T_01",
+        "kind": "crane",
+        "name": "Crane 600T",
+        "attributes": { "max_lift_t": 600 },
+        "calendar": { "timezone": "Asia/Dubai", "work_shifts": [], "blackouts": [] }
+      },
+      "LINKSPAN_01": {
+        "resource_id": "LINKSPAN_01",
+        "kind": "linkspan",
+        "name": "Linkspan 01",
+        "attributes": { "asset_ref": "LINKSPAN_01" },
+        "calendar": { "timezone": "Asia/Dubai", "work_shifts": [], "blackouts": [] }
+      },
+      "BARGE_01": {
+        "resource_id": "BARGE_01",
+        "kind": "barge",
+        "name": "Barge 01",
+        "attributes": { "asset_ref": "BARGE_01" },
+        "calendar": { "timezone": "Asia/Dubai", "work_shifts": [], "blackouts": [] }
+      },
+      "TUG_01": {
+        "resource_id": "TUG_01",
+        "kind": "tug",
+        "name": "Tug 01",
+        "attributes": {},
+        "calendar": { "timezone": "Asia/Dubai", "work_shifts": [], "blackouts": [] }
+      },
+      "CREW_SPMT_A": { "resource_id": "CREW_SPMT_A", "kind": "crew", "name": "SPMT Crew A", "attributes": {}, "calendar": { "timezone": "Asia/Dubai", "work_shifts": [], "blackouts": [] } },
+      "CREW_SPMT_B": { "resource_id": "CREW_SPMT_B", "kind": "crew", "name": "SPMT Crew B", "attributes": {}, "calendar": { "timezone": "Asia/Dubai", "work_shifts": [], "blackouts": [] } },
+      "CREW_MARINE_A": { "resource_id": "CREW_MARINE_A", "kind": "crew", "name": "Marine Crew A", "attributes": {}, "calendar": { "timezone": "Asia/Dubai", "work_shifts": [], "blackouts": [] } },
+      "CREW_SURVEY_01": { "resource_id": "CREW_SURVEY_01", "kind": "crew", "name": "Survey Crew", "attributes": {}, "calendar": { "timezone": "Asia/Dubai", "work_shifts": [], "blackouts": [] } },
+      "CREW_LIFT_01": { "resource_id": "CREW_LIFT_01", "kind": "crew", "name": "Lift Crew", "attributes": {}, "calendar": { "timezone": "Asia/Dubai", "work_shifts": [], "blackouts": [] } },
+      "TEAM_PERMIT_01": { "resource_id": "TEAM_PERMIT_01", "kind": "office", "name": "Permit Team", "attributes": {}, "calendar": { "timezone": "Asia/Dubai", "work_shifts": [], "blackouts": [] } },
+      "ESCORT_01": { "resource_id": "ESCORT_01", "kind": "escort", "name": "Escort 01", "attributes": {}, "calendar": { "timezone": "Asia/Dubai", "work_shifts": [], "blackouts": [] } },
+      "ESCORT_02": { "resource_id": "ESCORT_02", "kind": "escort", "name": "Escort 02", "attributes": {}, "calendar": { "timezone": "Asia/Dubai", "work_shifts": [], "blackouts": [] } }
+    },
+
+    "trs": {
+      "TR_001": {
+        "tr_id": "TR_001",
+        "name": "Transformer TR-001",
+        "spec": {
+          "weight_t": 310.0,
+          "cog_mm": { "x": 0, "y": 0, "z": 2100 },
+          "dimensions_mm": { "l": 8200, "w": 3200, "h": 3800 }
+        },
+        "calc": {
+          "current_activity_id": "A1120",
+          "current_location_id": "LOC_JETTY_A",
+          "risk_score": 0.42
+        }
+      },
+      "TR_002": {
+        "tr_id": "TR_002",
+        "name": "Transformer TR-002",
+        "spec": {
+          "weight_t": 295.0,
+          "cog_mm": { "x": 50, "y": -20, "z": 2050 },
+          "dimensions_mm": { "l": 8000, "w": 3100, "h": 3700 }
+        },
+        "calc": {
+          "current_activity_id": null,
+          "current_location_id": "LOC_YARD_A",
+          "risk_score": 0.35
+        }
+      },
+      "TR_003": {
+        "tr_id": "TR_003",
+        "name": "Transformer TR-003",
+        "spec": {
+          "weight_t": 330.0,
+          "cog_mm": { "x": -30, "y": 10, "z": 2200 },
+          "dimensions_mm": { "l": 8500, "w": 3300, "h": 3900 }
+        },
+        "calc": {
+          "current_activity_id": null,
+          "current_location_id": "LOC_YARD_A",
+          "risk_score": 0.50
+        }
+      }
+    },
+
+    "trips": {
+      "TRIP_2026_02A": {
+        "trip_id": "TRIP_2026_02A",
+        "name": "Trip Alpha: Yard A → Island Port → Substation 1",
+        "tr_ids": ["TR_001", "TR_002"],
+        "activity_ids": [
+          "A1000", "A1010", "A1020",
+          "A1100", "A1110", "A1120", "A1130", "A1140",
+          "A1200", "A1210", "A1220", "A1230", "A1240"
+        ],
+        "calc": { "collision_ids": ["COL_001", "COL_002"], "risk_score": 0.55 }
+      },
+      "TRIP_2026_02B": {
+        "trip_id": "TRIP_2026_02B",
+        "name": "Trip Beta: Yard A → Substation 1 (Road)",
+        "tr_ids": ["TR_003"],
+        "activity_ids": ["B1000", "B1100", "B1110", "B1120"],
+        "calc": { "collision_ids": [], "risk_score": 0.28 }
+      }
+    },
+
+    "evidence_items": {
+      "EVI_0001": {
+        "evidence_id": "EVI_0001",
+        "evidence_type": "ptw_approval",
+        "title": "PTW Bundle Approval (Trip Alpha)",
+        "uri": "dms://permits/TRIP_2026_02A/ptw_bundle.pdf",
+        "captured_at": "2026-02-03T09:15:00+04:00",
+        "captured_by": "user:permit_team",
+        "tags": ["permit"]
+      },
+      "EVI_0002": {
+        "evidence_id": "EVI_0002",
+        "evidence_type": "route_survey_report",
+        "title": "Route Survey Report Rev1",
+        "uri": "dms://engineering/TRIP_2026_02A/route_survey_rev1.pdf",
+        "captured_at": "2026-02-02T18:10:00+04:00",
+        "captured_by": "user:survey",
+        "tags": ["engineering"]
+      }
+    },
+
+    "activities": {
+      "A1000": {
+        "activity_id": "A1000",
+        "type_id": "route_survey",
+        "trip_id": "TRIP_2026_02A",
+        "tr_ids": ["TR_001", "TR_002"],
+        "title": "Route Survey (shared)",
+        "state": "completed",
+        "lock_level": "baseline",
+        "blocker_code": null,
+        "blocker_detail": {},
+        "evidence_required": [
+          {
+            "evidence_type": "route_survey_report",
+            "stage": "after_end",
+            "min_count": 1,
+            "required": true,
+            "validity_min": null,
+            "tags": ["engineering", "route"]
+          }
+        ],
+        "evidence_ids": ["EVI_0002"],
+        "reflow_pins": [],
+        "plan": {
+          "start_ts": "2026-02-02T09:00:00+04:00",
+          "end_ts": "2026-02-02T17:00:00+04:00",
+          "duration_min": 480,
+          "duration_mode": "work",
+          "location": {
+            "from_location_id": "LOC_YARD_A",
+            "to_location_id": "LOC_JETTY_A",
+            "route_id": "ROUTE_ALPHA",
+            "geo_fence_ids": []
+          },
+          "dependencies": [],
+          "resources": [
+            { "resource_kind": "crew", "pool_id": "POOL_SURVEY_CREW", "qty": 1 }
+          ],
+          "constraints": [],
+          "notes": "Survey completed, no clearance issues."
+        },
+        "actual": {
+          "start_ts": "2026-02-02T09:10:00+04:00",
+          "end_ts": "2026-02-02T16:40:00+04:00",
+          "progress_pct": 100,
+          "location_override": null,
+          "resource_assignments": [
+            { "resource_id": "CREW_SURVEY_01", "qty": 1 }
+          ],
+          "notes": "As planned."
+        },
+        "calc": {
+          "es_ts": "2026-02-02T09:00:00+04:00",
+          "ef_ts": "2026-02-02T17:00:00+04:00",
+          "ls_ts": "2026-02-02T09:00:00+04:00",
+          "lf_ts": "2026-02-02T17:00:00+04:00",
+          "slack_min": 0,
+          "critical_path": true,
+          "collision_ids": [],
+          "collision_severity_max": null,
+          "risk_score": 0.10,
+          "predicted_end_ts": null,
+          "reflow": { "last_preview_run_id": null, "last_apply_run_id": null }
+        }
+      },
+
+      "A1010": {
+        "activity_id": "A1010",
+        "type_id": "spmt_setup",
+        "trip_id": "TRIP_2026_02A",
+        "tr_ids": ["TR_001", "TR_002"],
+        "title": "SPMT Setup (shared prep)",
+        "state": "planned",
+        "lock_level": "soft",
+        "blocker_code": null,
+        "blocker_detail": {},
+        "evidence_required": [
+          {
+            "evidence_type": "spmt_checklist",
+            "stage": "after_end",
+            "min_count": 1,
+            "required": true,
+            "validity_min": null,
+            "tags": ["spmt", "safety"]
+          }
+        ],
+        "evidence_ids": [],
+        "reflow_pins": [],
+        "plan": {
+          "start_ts": "2026-02-03T07:00:00+04:00",
+          "end_ts": "2026-02-03T13:00:00+04:00",
+          "duration_min": 360,
+          "duration_mode": "work",
+          "location": {
+            "from_location_id": "LOC_YARD_A",
+            "to_location_id": "LOC_YARD_A",
+            "route_id": null,
+            "geo_fence_ids": []
+          },
+          "dependencies": [
+            { "pred_activity_id": "A1000", "type": "fs", "lag_min": 0 }
+          ],
+          "resources": [
+            { "resource_kind": "spmt", "pool_id": "POOL_SPMT", "qty": 1 },
+            { "resource_kind": "crew", "pool_id": "POOL_SPMT_CREW", "qty": 1 }
+          ],
+          "constraints": [],
+          "notes": "Shared SPMT prep."
+        },
+        "actual": {
+          "start_ts": null,
+          "end_ts": null,
+          "progress_pct": 0,
+          "location_override": null,
+          "resource_assignments": [],
+          "notes": ""
+        },
+        "calc": {
+          "es_ts": "2026-02-03T07:00:00+04:00",
+          "ef_ts": "2026-02-03T13:00:00+04:00",
+          "ls_ts": "2026-02-03T09:00:00+04:00",
+          "lf_ts": "2026-02-03T15:00:00+04:00",
+          "slack_min": 120,
+          "critical_path": false,
+          "collision_ids": [],
+          "collision_severity_max": null,
+          "risk_score": 0.25,
+          "predicted_end_ts": null,
+          "reflow": { "last_preview_run_id": "RUN_001", "last_apply_run_id": null }
+        }
+      },
+
+      "A1020": {
+        "activity_id": "A1020",
+        "type_id": "ptw_bundle_approval",
+        "trip_id": "TRIP_2026_02A",
+        "tr_ids": ["TR_001", "TR_002"],
+        "title": "PTW/Certificates Gate (shared)",
+        "state": "ready",
+        "lock_level": "hard",
+        "blocker_code": null,
+        "blocker_detail": {},
+        "evidence_required": [
+          {
+            "evidence_type": "ptw_approval",
+            "stage": "before_ready",
+            "min_count": 1,
+            "required": true,
+            "validity_min": 1440,
+            "tags": ["permit"]
+          },
+          {
+            "evidence_type": "certificate_bundle",
+            "stage": "before_ready",
+            "min_count": 1,
+            "required": true,
+            "validity_min": null,
+            "tags": ["certificate"]
+          }
+        ],
+        "evidence_ids": ["EVI_0001"],
+        "reflow_pins": [
+          {
+            "path": "plan.start_ts",
+            "pin_kind": "fixed",
+            "value": "2026-02-03T08:00:00+04:00",
+            "hardness": "hard",
+            "reason_code": "permit_submission_window"
+          }
+        ],
+        "plan": {
+          "start_ts": "2026-02-03T08:00:00+04:00",
+          "end_ts": "2026-02-03T12:00:00+04:00",
+          "duration_min": 240,
+          "duration_mode": "work",
+          "location": {
+            "from_location_id": "LOC_YARD_A",
+            "to_location_id": "LOC_YARD_A",
+            "route_id": null,
+            "geo_fence_ids": []
+          },
+          "dependencies": [
+            { "pred_activity_id": "A1000", "type": "fs", "lag_min": 0 }
+          ],
+          "resources": [
+            { "resource_kind": "office", "pool_id": "POOL_PERMIT_TEAM", "qty": 1 }
+          ],
+          "constraints": [
+            {
+              "kind": "ptw_gate",
+              "hardness": "hard",
+              "rule_ref": "ptw.permit_types",
+              "params": { "required_permits": ["ptw_lifting", "ptw_transport_road", "ptw_marine"] }
+            }
+          ],
+          "notes": "Gate activity: must be ready before ops start."
+        },
+        "actual": {
+          "start_ts": "2026-02-03T08:10:00+04:00",
+          "end_ts": null,
+          "progress_pct": 50,
+          "location_override": null,
+          "resource_assignments": [{ "resource_id": "TEAM_PERMIT_01", "qty": 1 }],
+          "notes": "PTW approved; cert bundle pending upload."
+        },
+        "calc": {
+          "es_ts": "2026-02-03T08:00:00+04:00",
+          "ef_ts": "2026-02-03T12:00:00+04:00",
+          "ls_ts": "2026-02-03T08:00:00+04:00",
+          "lf_ts": "2026-02-03T12:00:00+04:00",
+          "slack_min": 0,
+          "critical_path": true,
+          "collision_ids": [],
+          "collision_severity_max": null,
+          "risk_score": 0.40,
+          "predicted_end_ts": "2026-02-03T13:00:00+04:00",
+          "reflow": { "last_preview_run_id": null, "last_apply_run_id": null }
+        }
+      },
+
+      "A1100": {
+        "activity_id": "A1100",
+        "type_id": "crane_lift",
+        "trip_id": "TRIP_2026_02A",
+        "tr_ids": ["TR_001"],
+        "title": "Load-out TR_001",
+        "state": "planned",
+        "lock_level": "none",
+        "blocker_code": null,
+        "blocker_detail": {},
+        "evidence_required": [
+          {
+            "evidence_type": "lift_plan",
+            "stage": "before_ready",
+            "min_count": 1,
+            "required": true,
+            "validity_min": 10080,
+            "tags": ["lift"]
+          },
+          {
+            "evidence_type": "toolbox_talk",
+            "stage": "before_start",
+            "min_count": 1,
+            "required": true,
+            "validity_min": 720,
+            "tags": ["safety"]
+          }
+        ],
+        "evidence_ids": [],
+        "reflow_pins": [],
+        "plan": {
+          "start_ts": "2026-02-04T07:00:00+04:00",
+          "end_ts": "2026-02-04T11:00:00+04:00",
+          "duration_min": 240,
+          "duration_mode": "work",
+          "location": {
+            "from_location_id": "LOC_YARD_A",
+            "to_location_id": "LOC_YARD_A",
+            "route_id": null,
+            "geo_fence_ids": []
+          },
+          "dependencies": [
+            { "pred_activity_id": "A1020", "type": "fs", "lag_min": 0 },
+            { "pred_activity_id": "A1010", "type": "fs", "lag_min": 0 }
+          ],
+          "resources": [
+            { "resource_kind": "crane", "pool_id": "POOL_CRANE", "qty": 1 },
+            { "resource_kind": "crew", "pool_id": "POOL_LIFT_CREW", "qty": 1 }
+          ],
+          "constraints": [
+            { "kind": "wx_window", "hardness": "hard", "rule_ref": "wx.profiles.wx_profile_crane_lift", "params": {} }
+          ],
+          "notes": ""
+        },
+        "actual": {
+          "start_ts": null,
+          "end_ts": null,
+          "progress_pct": 0,
+          "location_override": null,
+          "resource_assignments": [],
+          "notes": ""
+        },
+        "calc": {
+          "es_ts": "2026-02-04T07:00:00+04:00",
+          "ef_ts": "2026-02-04T11:00:00+04:00",
+          "ls_ts": "2026-02-04T07:00:00+04:00",
+          "lf_ts": "2026-02-04T11:00:00+04:00",
+          "slack_min": 0,
+          "critical_path": true,
+          "collision_ids": [],
+          "collision_severity_max": null,
+          "risk_score": 0.30,
+          "predicted_end_ts": null,
+          "reflow": { "last_preview_run_id": "RUN_001", "last_apply_run_id": null }
+        }
+      },
+
+      "A1110": {
+        "activity_id": "A1110",
+        "type_id": "road_move",
+        "trip_id": "TRIP_2026_02A",
+        "tr_ids": ["TR_001"],
+        "title": "Road Move TR_001 (Yard → Jetty)",
+        "state": "ready",
+        "lock_level": "hard",
+        "blocker_code": null,
+        "blocker_detail": {},
+        "evidence_required": [
+          { "evidence_type": "gps_track", "stage": "during", "min_count": 1, "required": true, "validity_min": null, "tags": ["tracking"] }
+        ],
+        "evidence_ids": [],
+        "reflow_pins": [
+          {
+            "path": "plan.start_ts",
+            "pin_kind": "fixed",
+            "value": "2026-02-04T12:00:00+04:00",
+            "hardness": "hard",
+            "reason_code": "road_curfew_slot"
+          }
+        ],
+        "plan": {
+          "start_ts": "2026-02-04T12:00:00+04:00",
+          "end_ts": "2026-02-04T18:00:00+04:00",
+          "duration_min": 360,
+          "duration_mode": "elapsed",
+          "location": {
+            "from_location_id": "LOC_YARD_A",
+            "to_location_id": "LOC_JETTY_A",
+            "route_id": "ROUTE_ALPHA_ROAD",
+            "geo_fence_ids": []
+          },
+          "dependencies": [
+            { "pred_activity_id": "A1100", "type": "fs", "lag_min": 0 }
+          ],
+          "resources": [
+            { "resource_kind": "spmt", "pool_id": "POOL_SPMT", "qty": 1 },
+            { "resource_kind": "escort", "pool_id": "POOL_ESCORT", "qty": 1 },
+            { "resource_kind": "crew", "pool_id": "POOL_SPMT_CREW", "qty": 1 }
+          ],
+          "constraints": [
+            { "kind": "wx_window", "hardness": "hard", "rule_ref": "wx.profiles.wx_profile_spmt_move", "params": {} }
+          ],
+          "notes": "Pinned due to curfew/escort booking."
+        },
+        "actual": {
+          "start_ts": "2026-02-04T12:10:00+04:00",
+          "end_ts": null,
+          "progress_pct": 60,
+          "location_override": null,
+          "resource_assignments": [
+            { "resource_id": "SPMT_01", "qty": 1 },
+            { "resource_id": "ESCORT_01", "qty": 1 },
+            { "resource_id": "CREW_SPMT_A", "qty": 1 }
+          ],
+          "notes": "On route."
+        },
+        "calc": {
+          "es_ts": "2026-02-04T12:00:00+04:00",
+          "ef_ts": "2026-02-04T18:00:00+04:00",
+          "ls_ts": "2026-02-04T12:00:00+04:00",
+          "lf_ts": "2026-02-04T18:00:00+04:00",
+          "slack_min": 0,
+          "critical_path": true,
+          "collision_ids": ["COL_002"],
+          "collision_severity_max": "warning",
+          "risk_score": 0.55,
+          "predicted_end_ts": "2026-02-04T18:30:00+04:00",
+          "reflow": { "last_preview_run_id": "RUN_001", "last_apply_run_id": null }
+        }
+      },
+
+      "A1120": {
+        "activity_id": "A1120",
+        "type_id": "linkspan_crossing",
+        "trip_id": "TRIP_2026_02A",
+        "tr_ids": ["TR_001"],
+        "title": "Linkspan Crossing TR_001",
+        "state": "planned",
+        "lock_level": "hard",
+        "blocker_code": null,
+        "blocker_detail": {},
+        "evidence_required": [
+          { "evidence_type": "linkspan_slot_confirmation", "stage": "before_ready", "min_count": 1, "required": true, "validity_min": 1440, "tags": ["slot"] }
+        ],
+        "evidence_ids": [],
+        "reflow_pins": [
+          { "path": "plan.start_ts", "pin_kind": "fixed", "value": "2026-02-05T02:00:00+04:00", "hardness": "hard", "reason_code": "tide_window" }
+        ],
+        "plan": {
+          "start_ts": "2026-02-05T02:00:00+04:00",
+          "end_ts": "2026-02-05T03:30:00+04:00",
+          "duration_min": 90,
+          "duration_mode": "elapsed",
+          "location": {
+            "from_location_id": "LOC_JETTY_A",
+            "to_location_id": "LOC_JETTY_A",
+            "route_id": null,
+            "geo_fence_ids": []
+          },
+          "dependencies": [
+            { "pred_activity_id": "A1110", "type": "fs", "lag_min": 0 }
+          ],
+          "resources": [
+            { "resource_kind": "linkspan", "resource_id": "LINKSPAN_01", "qty": 1 },
+            { "resource_kind": "crew", "pool_id": "POOL_MARINE_CREW", "qty": 1 }
+          ],
+          "constraints": [
+            { "kind": "linkspan_capacity", "hardness": "hard", "rule_ref": "linkspan.assets.LINKSPAN_01", "params": {} }
+          ],
+          "notes": "Pinned to tide window slot."
+        },
+        "actual": {
+          "start_ts": null,
+          "end_ts": null,
+          "progress_pct": 0,
+          "location_override": null,
+          "resource_assignments": [],
+          "notes": ""
+        },
+        "calc": {
+          "es_ts": "2026-02-05T02:00:00+04:00",
+          "ef_ts": "2026-02-05T03:30:00+04:00",
+          "ls_ts": "2026-02-05T02:00:00+04:00",
+          "lf_ts": "2026-02-05T03:30:00+04:00",
+          "slack_min": 0,
+          "critical_path": true,
+          "collision_ids": [],
+          "collision_severity_max": null,
+          "risk_score": 0.35,
+          "predicted_end_ts": null,
+          "reflow": { "last_preview_run_id": "RUN_001", "last_apply_run_id": null }
+        }
+      },
+
+      "A1130": {
+        "activity_id": "A1130",
+        "type_id": "barge_transit",
+        "trip_id": "TRIP_2026_02A",
+        "tr_ids": ["TR_001"],
+        "title": "Barge Transit TR_001 (Jetty → Island Port)",
+        "state": "planned",
+        "lock_level": "soft",
+        "blocker_code": "WX_WINDOW",
+        "blocker_detail": { "owner_role": "ops", "eta_to_clear": "2026-02-05T10:00:00+04:00" },
+        "evidence_required": [
+          { "evidence_type": "barge_stability_calc", "stage": "before_ready", "min_count": 1, "required": true, "validity_min": 10080, "tags": ["marine", "stability"] }
+        ],
+        "evidence_ids": [],
+        "reflow_pins": [],
+        "plan": {
+          "start_ts": "2026-02-05T04:00:00+04:00",
+          "end_ts": "2026-02-05T12:00:00+04:00",
+          "duration_min": 480,
+          "duration_mode": "elapsed",
+          "location": {
+            "from_location_id": "LOC_JETTY_A",
+            "to_location_id": "LOC_ISLAND_PORT",
+            "route_id": "ROUTE_ALPHA_MARINE",
+            "geo_fence_ids": []
+          },
+          "dependencies": [
+            { "pred_activity_id": "A1120", "type": "fs", "lag_min": 30 }
+          ],
+          "resources": [
+            { "resource_kind": "barge", "resource_id": "BARGE_01", "qty": 1 },
+            { "resource_kind": "tug", "pool_id": "POOL_TUG", "qty": 1 },
+            { "resource_kind": "crew", "pool_id": "POOL_MARINE_CREW", "qty": 1 }
+          ],
+          "constraints": [
+            { "kind": "wx_window", "hardness": "hard", "rule_ref": "wx.profiles.wx_profile_barge_transit", "params": {} },
+            { "kind": "barge_limits", "hardness": "hard", "rule_ref": "barge.assets.BARGE_01", "params": {} }
+          ],
+          "notes": ""
+        },
+        "actual": {
+          "start_ts": null,
+          "end_ts": null,
+          "progress_pct": 0,
+          "location_override": null,
+          "resource_assignments": [],
+          "notes": "Blocked pending weather window + stability calc."
+        },
+        "calc": {
+          "es_ts": "2026-02-05T10:00:00+04:00",
+          "ef_ts": "2026-02-05T18:00:00+04:00",
+          "ls_ts": "2026-02-05T10:00:00+04:00",
+          "lf_ts": "2026-02-05T18:00:00+04:00",
+          "slack_min": 0,
+          "critical_path": true,
+          "collision_ids": ["COL_002"],
+          "collision_severity_max": "blocking",
+          "risk_score": 0.70,
+          "predicted_end_ts": "2026-02-05T18:00:00+04:00",
+          "reflow": { "last_preview_run_id": "RUN_001", "last_apply_run_id": null }
+        }
+      },
+
+      "A1200": {
+        "activity_id": "A1200",
+        "type_id": "crane_lift",
+        "trip_id": "TRIP_2026_02A",
+        "tr_ids": ["TR_002"],
+        "title": "Load-out TR_002",
+        "state": "planned",
+        "lock_level": "none",
+        "blocker_code": null,
+        "blocker_detail": {},
+        "evidence_required": [
+          { "evidence_type": "lift_plan", "stage": "before_ready", "min_count": 1, "required": true, "validity_min": 10080, "tags": ["lift"] }
+        ],
+        "evidence_ids": [],
+        "reflow_pins": [],
+        "plan": {
+          "start_ts": "2026-02-04T12:00:00+04:00",
+          "end_ts": "2026-02-04T16:00:00+04:00",
+          "duration_min": 240,
+          "duration_mode": "work",
+          "location": { "from_location_id": "LOC_YARD_A", "to_location_id": "LOC_YARD_A", "route_id": null, "geo_fence_ids": [] },
+          "dependencies": [
+            { "pred_activity_id": "A1020", "type": "fs", "lag_min": 0 },
+            { "pred_activity_id": "A1010", "type": "fs", "lag_min": 0 }
+          ],
+          "resources": [
+            { "resource_kind": "crane", "pool_id": "POOL_CRANE", "qty": 1 },
+            { "resource_kind": "crew", "pool_id": "POOL_LIFT_CREW", "qty": 1 }
+          ],
+          "constraints": [
+            { "kind": "wx_window", "hardness": "hard", "rule_ref": "wx.profiles.wx_profile_crane_lift", "params": {} }
+          ],
+          "notes": "Potential overlap with TR_001 lift if not reflowed."
+        },
+        "actual": { "start_ts": null, "end_ts": null, "progress_pct": 0, "location_override": null, "resource_assignments": [], "notes": "" },
+        "calc": {
+          "es_ts": "2026-02-04T11:30:00+04:00",
+          "ef_ts": "2026-02-04T15:30:00+04:00",
+          "ls_ts": "2026-02-04T16:30:00+04:00",
+          "lf_ts": "2026-02-04T20:30:00+04:00",
+          "slack_min": 300,
+          "critical_path": false,
+          "collision_ids": ["COL_001"],
+          "collision_severity_max": "blocking",
+          "risk_score": 0.45,
+          "predicted_end_ts": null,
+          "reflow": { "last_preview_run_id": "RUN_001", "last_apply_run_id": null }
+        }
+      },
+
+      "A1210": {
+        "activity_id": "A1210",
+        "type_id": "road_move",
+        "trip_id": "TRIP_2026_02A",
+        "tr_ids": ["TR_002"],
+        "title": "Road Move TR_002 (Yard → Jetty)",
+        "state": "planned",
+        "lock_level": "none",
+        "blocker_code": null,
+        "blocker_detail": {},
+        "evidence_required": [
+          { "evidence_type": "gps_track", "stage": "during", "min_count": 1, "required": true, "validity_min": null, "tags": ["tracking"] }
+        ],
+        "evidence_ids": [],
+        "reflow_pins": [],
+        "plan": {
+          "start_ts": "2026-02-04T18:00:00+04:00",
+          "end_ts": "2026-02-05T00:00:00+04:00",
+          "duration_min": 360,
+          "duration_mode": "elapsed",
+          "location": { "from_location_id": "LOC_YARD_A", "to_location_id": "LOC_JETTY_A", "route_id": "ROUTE_ALPHA_ROAD", "geo_fence_ids": [] },
+          "dependencies": [
+            { "pred_activity_id": "A1200", "type": "fs", "lag_min": 0 }
+          ],
+          "resources": [
+            { "resource_kind": "spmt", "pool_id": "POOL_SPMT", "qty": 1 },
+            { "resource_kind": "escort", "pool_id": "POOL_ESCORT", "qty": 1 },
+            { "resource_kind": "crew", "pool_id": "POOL_SPMT_CREW", "qty": 1 }
+          ],
+          "constraints": [
+            { "kind": "wx_window", "hardness": "hard", "rule_ref": "wx.profiles.wx_profile_spmt_move", "params": {} }
+          ],
+          "notes": ""
+        },
+        "actual": { "start_ts": null, "end_ts": null, "progress_pct": 0, "location_override": null, "resource_assignments": [], "notes": "" },
+        "calc": {
+          "es_ts": "2026-02-05T07:00:00+04:00",
+          "ef_ts": "2026-02-05T13:00:00+04:00",
+          "ls_ts": "2026-02-05T07:00:00+04:00",
+          "lf_ts": "2026-02-05T13:00:00+04:00",
+          "slack_min": 0,
+          "critical_path": true,
+          "collision_ids": ["COL_001"],
+          "collision_severity_max": "blocking",
+          "risk_score": 0.60,
+          "predicted_end_ts": null,
+          "reflow": { "last_preview_run_id": "RUN_001", "last_apply_run_id": null }
+        }
+      },
+
+      "A1220": {
+        "activity_id": "A1220",
+        "type_id": "linkspan_crossing",
+        "trip_id": "TRIP_2026_02A",
+        "tr_ids": ["TR_002"],
+        "title": "Linkspan Crossing TR_002",
+        "state": "planned",
+        "lock_level": "none",
+        "blocker_code": null,
+        "blocker_detail": {},
+        "evidence_required": [
+          { "evidence_type": "linkspan_slot_confirmation", "stage": "before_ready", "min_count": 1, "required": true, "validity_min": 1440, "tags": ["slot"] }
+        ],
+        "evidence_ids": [],
+        "reflow_pins": [],
+        "plan": {
+          "start_ts": "2026-02-06T02:00:00+04:00",
+          "end_ts": "2026-02-06T03:30:00+04:00",
+          "duration_min": 90,
+          "duration_mode": "elapsed",
+          "location": { "from_location_id": "LOC_JETTY_A", "to_location_id": "LOC_JETTY_A", "route_id": null, "geo_fence_ids": [] },
+          "dependencies": [
+            { "pred_activity_id": "A1210", "type": "fs", "lag_min": 0 }
+          ],
+          "resources": [
+            { "resource_kind": "linkspan", "resource_id": "LINKSPAN_01", "qty": 1 },
+            { "resource_kind": "crew", "pool_id": "POOL_MARINE_CREW", "qty": 1 }
+          ],
+          "constraints": [
+            { "kind": "linkspan_capacity", "hardness": "hard", "rule_ref": "linkspan.assets.LINKSPAN_01", "params": {} }
+          ],
+          "notes": ""
+        },
+        "actual": { "start_ts": null, "end_ts": null, "progress_pct": 0, "location_override": null, "resource_assignments": [], "notes": "" },
+        "calc": {
+          "es_ts": "2026-02-06T02:00:00+04:00",
+          "ef_ts": "2026-02-06T03:30:00+04:00",
+          "ls_ts": "2026-02-06T02:00:00+04:00",
+          "lf_ts": "2026-02-06T03:30:00+04:00",
+          "slack_min": 0,
+          "critical_path": true,
+          "collision_ids": [],
+          "collision_severity_max": null,
+          "risk_score": 0.32,
+          "predicted_end_ts": null,
+          "reflow": { "last_preview_run_id": null, "last_apply_run_id": null }
+        }
+      },
+
+      "A1230": {
+        "activity_id": "A1230",
+        "type_id": "barge_transit",
+        "trip_id": "TRIP_2026_02A",
+        "tr_ids": ["TR_002"],
+        "title": "Barge Transit TR_002 (Jetty → Island Port)",
+        "state": "planned",
+        "lock_level": "soft",
+        "blocker_code": null,
+        "blocker_detail": {},
+        "evidence_required": [
+          { "evidence_type": "barge_stability_calc", "stage": "before_ready", "min_count": 1, "required": true, "validity_min": 10080, "tags": ["marine", "stability"] }
+        ],
+        "evidence_ids": [],
+        "reflow_pins": [],
+        "plan": {
+          "start_ts": "2026-02-06T04:00:00+04:00",
+          "end_ts": "2026-02-06T12:00:00+04:00",
+          "duration_min": 480,
+          "duration_mode": "elapsed",
+          "location": { "from_location_id": "LOC_JETTY_A", "to_location_id": "LOC_ISLAND_PORT", "route_id": "ROUTE_ALPHA_MARINE", "geo_fence_ids": [] },
+          "dependencies": [
+            { "pred_activity_id": "A1220", "type": "fs", "lag_min": 30 }
+          ],
+          "resources": [
+            { "resource_kind": "barge", "resource_id": "BARGE_01", "qty": 1 },
+            { "resource_kind": "tug", "pool_id": "POOL_TUG", "qty": 1 },
+            { "resource_kind": "crew", "pool_id": "POOL_MARINE_CREW", "qty": 1 }
+          ],
+          "constraints": [
+            { "kind": "wx_window", "hardness": "hard", "rule_ref": "wx.profiles.wx_profile_barge_transit", "params": {} },
+            { "kind": "barge_limits", "hardness": "hard", "rule_ref": "barge.assets.BARGE_01", "params": {} }
+          ],
+          "notes": ""
+        },
+        "actual": { "start_ts": null, "end_ts": null, "progress_pct": 0, "location_override": null, "resource_assignments": [], "notes": "" },
+        "calc": {
+          "es_ts": "2026-02-06T04:00:00+04:00",
+          "ef_ts": "2026-02-06T12:00:00+04:00",
+          "ls_ts": "2026-02-06T04:00:00+04:00",
+          "lf_ts": "2026-02-06T12:00:00+04:00",
+          "slack_min": 0,
+          "critical_path": true,
+          "collision_ids": [],
+          "collision_severity_max": null,
+          "risk_score": 0.50,
+          "predicted_end_ts": null,
+          "reflow": { "last_preview_run_id": null, "last_apply_run_id": null }
+        }
+      },
+
+      "A1240": {
+        "activity_id": "A1240",
+        "type_id": "road_move",
+        "trip_id": "TRIP_2026_02A",
+        "tr_ids": ["TR_002"],
+        "title": "Final Road Move TR_002 (Island Port → Substation 1)",
+        "state": "draft",
+        "lock_level": "none",
+        "blocker_code": null,
+        "blocker_detail": {},
+        "evidence_required": [],
+        "evidence_ids": [],
+        "reflow_pins": [],
+        "plan": {
+          "start_ts": null,
+          "end_ts": null,
+          "duration_min": 420,
+          "duration_mode": "elapsed",
+          "location": { "from_location_id": "LOC_ISLAND_PORT", "to_location_id": "LOC_SUBSTATION_1", "route_id": "ROUTE_ISLAND_ROAD", "geo_fence_ids": [] },
+          "dependencies": [
+            { "pred_activity_id": "A1230", "type": "fs", "lag_min": 60 }
+          ],
+          "resources": [
+            { "resource_kind": "spmt", "pool_id": "POOL_SPMT", "qty": 1 },
+            { "resource_kind": "escort", "pool_id": "POOL_ESCORT", "qty": 1 },
+            { "resource_kind": "crew", "pool_id": "POOL_SPMT_CREW", "qty": 1 }
+          ],
+          "constraints": [
+            { "kind": "wx_window", "hardness": "hard", "rule_ref": "wx.profiles.wx_profile_spmt_move", "params": {} }
+          ],
+          "notes": "Draft until island route permit confirmed."
+        },
+        "actual": { "start_ts": null, "end_ts": null, "progress_pct": 0, "location_override": null, "resource_assignments": [], "notes": "" },
+        "calc": {
+          "es_ts": null,
+          "ef_ts": null,
+          "ls_ts": null,
+          "lf_ts": null,
+          "slack_min": null,
+          "critical_path": false,
+          "collision_ids": [],
+          "collision_severity_max": null,
+          "risk_score": 0.20,
+          "predicted_end_ts": null,
+          "reflow": { "last_preview_run_id": null, "last_apply_run_id": null }
+        }
+      },
+
+      "B1000": {
+        "activity_id": "B1000",
+        "type_id": "route_survey",
+        "trip_id": "TRIP_2026_02B",
+        "tr_ids": ["TR_003"],
+        "title": "Route Survey (Trip Beta)",
+        "state": "planned",
+        "lock_level": "none",
+        "blocker_code": null,
+        "blocker_detail": {},
+        "evidence_required": [
+          { "evidence_type": "route_survey_report", "stage": "after_end", "min_count": 1, "required": true, "validity_min": null, "tags": ["engineering"] }
+        ],
+        "evidence_ids": [],
+        "reflow_pins": [],
+        "plan": {
+          "start_ts": "2026-02-10T09:00:00+04:00",
+          "end_ts": "2026-02-10T17:00:00+04:00",
+          "duration_min": 480,
+          "duration_mode": "work",
+          "location": { "from_location_id": "LOC_YARD_A", "to_location_id": "LOC_SUBSTATION_1", "route_id": "ROUTE_BETA_ROAD", "geo_fence_ids": [] },
+          "dependencies": [],
+          "resources": [{ "resource_kind": "crew", "pool_id": "POOL_SURVEY_CREW", "qty": 1 }],
+          "constraints": [],
+          "notes": ""
+        },
+        "actual": { "start_ts": null, "end_ts": null, "progress_pct": 0, "location_override": null, "resource_assignments": [], "notes": "" },
+        "calc": {
+          "es_ts": "2026-02-10T09:00:00+04:00",
+          "ef_ts": "2026-02-10T17:00:00+04:00",
+          "ls_ts": "2026-02-10T09:00:00+04:00",
+          "lf_ts": "2026-02-10T17:00:00+04:00",
+          "slack_min": 0,
+          "critical_path": true,
+          "collision_ids": [],
+          "collision_severity_max": null,
+          "risk_score": 0.22,
+          "predicted_end_ts": null,
+          "reflow": { "last_preview_run_id": null, "last_apply_run_id": null }
+        }
+      },
+
+      "B1100": {
+        "activity_id": "B1100",
+        "type_id": "spmt_setup",
+        "trip_id": "TRIP_2026_02B",
+        "tr_ids": ["TR_003"],
+        "title": "SPMT Setup TR_003",
+        "state": "planned",
+        "lock_level": "none",
+        "blocker_code": null,
+        "blocker_detail": {},
+        "evidence_required": [
+          { "evidence_type": "spmt_checklist", "stage": "after_end", "min_count": 1, "required": true, "validity_min": null, "tags": ["spmt"] }
+        ],
+        "evidence_ids": [],
+        "reflow_pins": [],
+        "plan": {
+          "start_ts": "2026-02-11T07:00:00+04:00",
+          "end_ts": "2026-02-11T13:00:00+04:00",
+          "duration_min": 360,
+          "duration_mode": "work",
+          "location": { "from_location_id": "LOC_YARD_A", "to_location_id": "LOC_YARD_A", "route_id": null, "geo_fence_ids": [] },
+          "dependencies": [{ "pred_activity_id": "B1000", "type": "fs", "lag_min": 0 }],
+          "resources": [
+            { "resource_kind": "spmt", "pool_id": "POOL_SPMT", "qty": 1 },
+            { "resource_kind": "crew", "pool_id": "POOL_SPMT_CREW", "qty": 1 }
+          ],
+          "constraints": [],
+          "notes": ""
+        },
+        "actual": { "start_ts": null, "end_ts": null, "progress_pct": 0, "location_override": null, "resource_assignments": [], "notes": "" },
+        "calc": {
+          "es_ts": "2026-02-11T07:00:00+04:00",
+          "ef_ts": "2026-02-11T13:00:00+04:00",
+          "ls_ts": "2026-02-11T07:00:00+04:00",
+          "lf_ts": "2026-02-11T13:00:00+04:00",
+          "slack_min": 0,
+          "critical_path": true,
+          "collision_ids": [],
+          "collision_severity_max": null,
+          "risk_score": 0.25,
+          "predicted_end_ts": null,
+          "reflow": { "last_preview_run_id": null, "last_apply_run_id": null }
+        }
+      },
+
+      "B1110": {
+        "activity_id": "B1110",
+        "type_id": "crane_lift",
+        "trip_id": "TRIP_2026_02B",
+        "tr_ids": ["TR_003"],
+        "title": "Load-out TR_003",
+        "state": "planned",
+        "lock_level": "none",
+        "blocker_code": null,
+        "blocker_detail": {},
+        "evidence_required": [
+          { "evidence_type": "lift_plan", "stage": "before_ready", "min_count": 1, "required": true, "validity_min": 10080, "tags": ["lift"] }
+        ],
+        "evidence_ids": [],
+        "reflow_pins": [],
+        "plan": {
+          "start_ts": "2026-02-12T07:00:00+04:00",
+          "end_ts": "2026-02-12T11:00:00+04:00",
+          "duration_min": 240,
+          "duration_mode": "work",
+          "location": { "from_location_id": "LOC_YARD_A", "to_location_id": "LOC_YARD_A", "route_id": null, "geo_fence_ids": [] },
+          "dependencies": [{ "pred_activity_id": "B1100", "type": "fs", "lag_min": 0 }],
+          "resources": [
+            { "resource_kind": "crane", "pool_id": "POOL_CRANE", "qty": 1 },
+            { "resource_kind": "crew", "pool_id": "POOL_LIFT_CREW", "qty": 1 }
+          ],
+          "constraints": [{ "kind": "wx_window", "hardness": "hard", "rule_ref": "wx.profiles.wx_profile_crane_lift", "params": {} }],
+          "notes": ""
+        },
+        "actual": { "start_ts": null, "end_ts": null, "progress_pct": 0, "location_override": null, "resource_assignments": [], "notes": "" },
+        "calc": {
+          "es_ts": "2026-02-12T07:00:00+04:00",
+          "ef_ts": "2026-02-12T11:00:00+04:00",
+          "ls_ts": "2026-02-12T07:00:00+04:00",
+          "lf_ts": "2026-02-12T11:00:00+04:00",
+          "slack_min": 0,
+          "critical_path": true,
+          "collision_ids": [],
+          "collision_severity_max": null,
+          "risk_score": 0.30,
+          "predicted_end_ts": null,
+          "reflow": { "last_preview_run_id": null, "last_apply_run_id": null }
+        }
+      },
+
+      "B1120": {
+        "activity_id": "B1120",
+        "type_id": "road_move",
+        "trip_id": "TRIP_2026_02B",
+        "tr_ids": ["TR_003"],
+        "title": "Road Move TR_003 (Yard → Substation 1)",
+        "state": "planned",
+        "lock_level": "none",
+        "blocker_code": null,
+        "blocker_detail": {},
+        "evidence_required": [
+          { "evidence_type": "gps_track", "stage": "during", "min_count": 1, "required": true, "validity_min": null, "tags": ["tracking"] }
+        ],
+        "evidence_ids": [],
+        "reflow_pins": [],
+        "plan": {
+          "start_ts": "2026-02-12T12:00:00+04:00",
+          "end_ts": "2026-02-12T20:00:00+04:00",
+          "duration_min": 480,
+          "duration_mode": "elapsed",
+          "location": { "from_location_id": "LOC_YARD_A", "to_location_id": "LOC_SUBSTATION_1", "route_id": "ROUTE_BETA_ROAD", "geo_fence_ids": [] },
+          "dependencies": [{ "pred_activity_id": "B1110", "type": "fs", "lag_min": 0 }],
+          "resources": [
+            { "resource_kind": "spmt", "pool_id": "POOL_SPMT", "qty": 1 },
+            { "resource_kind": "escort", "pool_id": "POOL_ESCORT", "qty": 1 },
+            { "resource_kind": "crew", "pool_id": "POOL_SPMT_CREW", "qty": 1 }
+          ],
+          "constraints": [{ "kind": "wx_window", "hardness": "hard", "rule_ref": "wx.profiles.wx_profile_spmt_move", "params": {} }],
+          "notes": ""
+        },
+        "actual": { "start_ts": null, "end_ts": null, "progress_pct": 0, "location_override": null, "resource_assignments": [], "notes": "" },
+        "calc": {
+          "es_ts": "2026-02-12T12:00:00+04:00",
+          "ef_ts": "2026-02-12T20:00:00+04:00",
+          "ls_ts": "2026-02-12T12:00:00+04:00",
+          "lf_ts": "2026-02-12T20:00:00+04:00",
+          "slack_min": 0,
+          "critical_path": true,
+          "collision_ids": [],
+          "collision_severity_max": null,
+          "risk_score": 0.40,
+          "predicted_end_ts": null,
+          "reflow": { "last_preview_run_id": null, "last_apply_run_id": null }
+        }
+      }
+    }
+  },
+
+  "collisions": {
+    "COL_001": {
+      "collision_id": "COL_001",
+      "kind": "resource_overallocated",
+      "severity": "blocking",
+      "status": "open",
+      "trip_id": "TRIP_2026_02A",
+      "activity_ids": ["A1100", "A1200", "A1210"],
+      "resource_ids": ["CRANE_600T_01", "SPMT_01"],
+      "rule_refs": [],
+      "message": "Crane/SPMT overlap between TR_001 and TR_002 sequence.",
+      "details": {
+        "overlap": [
+          { "resource_id": "CRANE_600T_01", "from_ts": "2026-02-04T12:00:00+04:00", "to_ts": "2026-02-04T16:00:00+04:00" },
+          { "resource_id": "SPMT_01", "from_ts": "2026-02-04T18:00:00+04:00", "to_ts": "2026-02-05T00:00:00+04:00" }
+        ],
+        "capacity": { "POOL_SPMT": 1, "POOL_CRANE": 1 }
+      },
+      "suggested_actions": [
+        {
+          "action_id": "ACT_001",
+          "kind": "shift_activity",
+          "label": "Shift TR_002 load-out after TR_001 move completes",
+          "params": { "activity_id": "A1200", "shift_min": 240 }
+        },
+        {
+          "action_id": "ACT_002",
+          "kind": "swap_resource",
+          "label": "Use SPMT_02 for TR_002 road move",
+          "params": { "activity_id": "A1210", "assign_resource_id": "SPMT_02" }
+        },
+        {
+          "action_id": "ACT_003",
+          "kind": "add_standby_activity",
+          "label": "Insert standby buffer for TR_002 until SPMT is free",
+          "params": { "trip_id": "TRIP_2026_02A", "after_activity_id": "A1200", "duration_min": 180 }
+        }
+      ]
+    },
+
+    "COL_002": {
+      "collision_id": "COL_002",
+      "kind": "constraint_violation",
+      "severity": "blocking",
+      "status": "open",
+      "trip_id": "TRIP_2026_02A",
+      "activity_ids": ["A1110", "A1130"],
+      "resource_ids": ["BARGE_01"],
+      "rule_refs": ["wx.profiles.wx_profile_barge_transit"],
+      "message": "Weather window insufficient for barge transit; reflow required.",
+      "details": {
+        "profile": "wx_profile_barge_transit",
+        "next_window_start_ts": "2026-02-05T10:00:00+04:00",
+        "min_window_duration_min": 240
+      },
+      "suggested_actions": [
+        {
+          "action_id": "ACT_010",
+          "kind": "shift_activity",
+          "label": "Snap barge transit to next WX window",
+          "params": { "activity_id": "A1130", "snap_to": "next_window" }
+        },
+        {
+          "action_id": "ACT_011",
+          "kind": "add_standby_activity",
+          "label": "Insert weather standby before barge transit",
+          "params": { "trip_id": "TRIP_2026_02A", "after_activity_id": "A1120", "duration_min": 360 }
+        }
+      ]
+    }
+  },
+
+  "reflow_runs": [
+    {
+      "run_id": "RUN_001",
+      "mode": "preview",
+      "requested_at": "2026-02-01T12:30:00+04:00",
+      "requested_by": "user:planner",
+      "baseline_id": "BASELINE_001",
+      "seed": {
+        "reason": "date_cursor_changed",
+        "cursor_ts": "2026-02-01T12:30:00+04:00",
+        "focus_trip_id": "TRIP_2026_02A"
+      },
+      "proposed_changes": [
+        {
+          "activity_id": "A1130",
+          "path": "plan.start_ts",
+          "from": "2026-02-05T04:00:00+04:00",
+          "to": "2026-02-05T10:00:00+04:00",
+          "reason_code": "wx_window_snap"
+        }
+      ],
+      "applied_changes": [],
+      "collision_summary": { "blocking": 2, "warning": 0, "info": 0 }
+    }
+  ],
+
+  "baselines": {
+    "current_baseline_id": "BASELINE_001",
+    "items": {
+      "BASELINE_001": {
+        "baseline_id": "BASELINE_001",
+        "name": "Client Approved Rev1",
+        "status": "active",
+        "created_at": "2026-02-01T10:00:00+04:00",
+        "created_by": "user:pm",
+        "scope": { "trip_ids": ["TRIP_2026_02A"] },
+        "freeze_policy": {
+          "lock_level_on_apply": "baseline",
+          "frozen_fields": [
+            "entities.activities.*.plan.start_ts",
+            "entities.activities.*.plan.end_ts",
+            "entities.activities.*.plan.dependencies",
+            "entities.activities.*.plan.constraints",
+            "entities.trs.*.spec.weight_t",
+            "entities.trs.*.spec.cog_mm"
+          ],
+          "allow_actual_updates": true,
+          "allow_evidence_add": true,
+          "allow_notes_add": true,
+          "override_roles": ["admin", "pm"]
+        },
+        "snapshot": {
+          "captured_at": "2026-02-01T10:00:00+04:00",
+          "entities": {
+            "activities_plan": {
+              "A1000": { "start_ts": "2026-02-02T09:00:00+04:00", "end_ts": "2026-02-02T17:00:00+04:00" },
+              "A1020": { "start_ts": "2026-02-03T08:00:00+04:00", "end_ts": "2026-02-03T12:00:00+04:00" },
+              "A1110": { "start_ts": "2026-02-04T12:00:00+04:00", "end_ts": "2026-02-04T18:00:00+04:00" },
+              "A1120": { "start_ts": "2026-02-05T02:00:00+04:00", "end_ts": "2026-02-05T03:30:00+04:00" },
+              "A1130": { "start_ts": "2026-02-05T04:00:00+04:00", "end_ts": "2026-02-05T12:00:00+04:00" }
+            },
+            "trs_spec": {
+              "TR_001": { "weight_t": 310.0, "cog_mm": { "x": 0, "y": 0, "z": 2100 } },
+              "TR_002": { "weight_t": 295.0, "cog_mm": { "x": 50, "y": -20, "z": 2050 } }
+            }
+          },
+          "hash": {
+            "algo": "sha256",
+            "value": "b3f9d0d0b7a1f2c3d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7"
+          }
+        }
+      }
+    }
+  },
+
+  "history_events": [
+    {
+      "event_id": "HE_0001",
+      "ts": "2026-02-01T10:00:00+04:00",
+      "actor": "user:pm",
+      "event_type": "baseline_activated",
+      "entity_ref": { "entity_type": "baseline", "entity_id": "BASELINE_001" },
+      "details": { "scope_trip_ids": ["TRIP_2026_02A"] }
+    },
+    {
+      "event_id": "HE_0002",
+      "ts": "2026-02-01T12:30:00+04:00",
+      "actor": "user:planner",
+      "event_type": "reflow_previewed",
+      "entity_ref": { "entity_type": "reflow_run", "entity_id": "RUN_001" },
+      "details": { "cursor_ts": "2026-02-01T12:30:00+04:00" }
+    }
+  ],
+
+  "ui_defaults": {
+    "view_mode": "live",
+    "risk_overlay": "all",
+    "map": { "show_route_segments": true, "show_tr_labels": true },
+    "timeline": { "show_dependencies": true, "show_slack": true, "show_collisions": true }
+  }
+}

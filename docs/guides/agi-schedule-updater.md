@@ -1,5 +1,7 @@
 # AGI Schedule Updater (TR Dashboard)
 
+**운영 규모**: 1 Trip당 1 TR 운송, 총 7 Trip, SPMT 1기 운영
+
 ## Quick
 - Search: 그냥 입력 → (레포의 스크롤 훅 연결 시) activity 포커스
 - Commands:

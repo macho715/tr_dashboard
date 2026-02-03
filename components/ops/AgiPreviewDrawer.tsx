@@ -12,6 +12,7 @@ export function AgiPreviewDrawer(props: {
   onApply: () => void;
   onExportPatch: () => void;
   onExportFull: () => void;
+  canApply?: boolean;
 }) {
   const { open, preview } = props;
   if (!open || !preview) return null;
@@ -39,9 +40,11 @@ export function AgiPreviewDrawer(props: {
             <button className="rounded-md border px-3 py-2 text-sm" onClick={props.onExportFull}>
               Export Full
             </button>
+            {(props.canApply ?? true) && (
             <button className="rounded-md bg-emerald-600 px-3 py-2 text-sm text-white" onClick={props.onApply}>
               Apply
             </button>
+            )}
           </div>
 
           <div className="text-xs opacity-60">

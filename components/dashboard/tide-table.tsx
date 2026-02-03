@@ -13,7 +13,7 @@ export function TideTable({ voyageNum, rows, className }: TideTableProps) {
 
   return (
     <div className={className}>
-      <table className="tide-table w-full border-collapse text-[9px] font-mono">
+      <table className="tide-table w-full border-collapse text-xs font-mono">
         <thead>
           <tr>
             <th className="rounded-tl-md bg-cyan-500/10 px-2 py-1.5 text-center font-semibold uppercase text-cyan-400">

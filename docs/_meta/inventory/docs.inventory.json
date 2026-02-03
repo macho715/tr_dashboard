@@ -1,0 +1,1529 @@
+{
+  ".cursor\\agents\\agi-schedule-updater.md": {
+    "path": ".cursor\\agents\\agi-schedule-updater.md",
+    "doc_id": null,
+    "size": 2175,
+    "refs_found": [
+      "LAYOUT.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": true
+  },
+  ".cursor\\agents\\docops-autopilot.md": {
+    "path": ".cursor\\agents\\docops-autopilot.md",
+    "doc_id": null,
+    "size": 936,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  ".cursor\\agents\\docops-scout.md": {
+    "path": ".cursor\\agents\\docops-scout.md",
+    "doc_id": null,
+    "size": 335,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  ".cursor\\agents\\docops-verifier.md": {
+    "path": ".cursor\\agents\\docops-verifier.md",
+    "doc_id": null,
+    "size": 420,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  ".cursor\\agents\\pipeline-git-autocommit.md": {
+    "path": ".cursor\\agents\\pipeline-git-autocommit.md",
+    "doc_id": null,
+    "size": 5988,
+    "refs_found": [
+      "AGENTS.md",
+      "patch.md"
+    ],
+    "has_patch_ref": true,
+    "has_layout_ref": false
+  },
+  ".cursor\\agents\\tr-dashboard-layout-autopilot.md": {
+    "path": ".cursor\\agents\\tr-dashboard-layout-autopilot.md",
+    "doc_id": null,
+    "size": 1296,
+    "refs_found": [
+      "AGENTS.md",
+      "LAYOUT.md",
+      "SYSTEM_ARCHITECTURE.md",
+      "patch.md"
+    ],
+    "has_patch_ref": true,
+    "has_layout_ref": true
+  },
+  ".cursor\\agents\\tr-dashboard-layout-verifier.md": {
+    "path": ".cursor\\agents\\tr-dashboard-layout-verifier.md",
+    "doc_id": null,
+    "size": 623,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  ".cursor\\agents\\tr-dashboard-patch.md": {
+    "path": ".cursor\\agents\\tr-dashboard-patch.md",
+    "doc_id": null,
+    "size": 3097,
+    "refs_found": [
+      "AGENTS.md",
+      "patch.md"
+    ],
+    "has_patch_ref": true,
+    "has_layout_ref": false
+  },
+  ".cursor\\agents\\tr-implementer.md": {
+    "path": ".cursor\\agents\\tr-implementer.md",
+    "doc_id": null,
+    "size": 802,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  ".cursor\\agents\\tr-planner.md": {
+    "path": ".cursor\\agents\\tr-planner.md",
+    "doc_id": null,
+    "size": 888,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  ".cursor\\agents\\tr-verifier.md": {
+    "path": ".cursor\\agents\\tr-verifier.md",
+    "doc_id": null,
+    "size": 733,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  ".cursor\\commands\\agents.md": {
+    "path": ".cursor\\commands\\agents.md",
+    "doc_id": null,
+    "size": 4701,
+    "refs_found": [
+      "AGENTS.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  ".cursor\\skills\\agi-schedule-daily-update\\SKILL.md": {
+    "path": ".cursor\\skills\\agi-schedule-daily-update\\SKILL.md",
+    "doc_id": null,
+    "size": 2308,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  ".cursor\\skills\\agi-schedule-pipeline-check\\SKILL.md": {
+    "path": ".cursor\\skills\\agi-schedule-pipeline-check\\SKILL.md",
+    "doc_id": null,
+    "size": 2273,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  ".cursor\\skills\\agi-schedule-shift\\SKILL.md": {
+    "path": ".cursor\\skills\\agi-schedule-shift\\SKILL.md",
+    "doc_id": null,
+    "size": 1939,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  ".cursor\\skills\\docops-doc-manager\\references\\acceptance-report.md": {
+    "path": ".cursor\\skills\\docops-doc-manager\\references\\acceptance-report.md",
+    "doc_id": null,
+    "size": 270,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  ".cursor\\skills\\docops-doc-manager\\references\\doc-template-pack.md": {
+    "path": ".cursor\\skills\\docops-doc-manager\\references\\doc-template-pack.md",
+    "doc_id": "<고유 식별자>",
+    "size": 421,
+    "refs_found": [
+      "AGENTS.md",
+      "LAYOUT.md",
+      "patch.md"
+    ],
+    "has_patch_ref": true,
+    "has_layout_ref": true
+  },
+  ".cursor\\skills\\docops-doc-manager\\references\\docops-rules.md": {
+    "path": ".cursor\\skills\\docops-doc-manager\\references\\docops-rules.md",
+    "doc_id": null,
+    "size": 574,
+    "refs_found": [
+      "LAYOUT.md",
+      "SYSTEM_ARCHITECTURE.md",
+      "patch.md"
+    ],
+    "has_patch_ref": true,
+    "has_layout_ref": true
+  },
+  ".cursor\\skills\\docops-doc-manager\\references\\move-policy.md": {
+    "path": ".cursor\\skills\\docops-doc-manager\\references\\move-policy.md",
+    "doc_id": null,
+    "size": 366,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  ".cursor\\skills\\docops-doc-manager\\references\\ref-style.md": {
+    "path": ".cursor\\skills\\docops-doc-manager\\references\\ref-style.md",
+    "doc_id": null,
+    "size": 293,
+    "refs_found": [
+      "../LAYOUT.md",
+      "AGENTS.md",
+      "LAYOUT.md",
+      "SYSTEM_ARCHITECTURE.md",
+      "patch.md"
+    ],
+    "has_patch_ref": true,
+    "has_layout_ref": true
+  },
+  ".cursor\\skills\\docops-doc-manager\\SKILL.md": {
+    "path": ".cursor\\skills\\docops-doc-manager\\SKILL.md",
+    "doc_id": null,
+    "size": 1143,
+    "refs_found": [
+      "AGENTS.md",
+      "LAYOUT.md",
+      "SYSTEM_ARCHITECTURE.md",
+      "patch.md"
+    ],
+    "has_patch_ref": true,
+    "has_layout_ref": true
+  },
+  ".cursor\\skills\\tr-dashboard-autopilot\\references\\collision-taxonomy.md": {
+    "path": ".cursor\\skills\\tr-dashboard-autopilot\\references\\collision-taxonomy.md",
+    "doc_id": null,
+    "size": 705,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  ".cursor\\skills\\tr-dashboard-autopilot\\references\\contract-optionc-v0.8.0.md": {
+    "path": ".cursor\\skills\\tr-dashboard-autopilot\\references\\contract-optionc-v0.8.0.md",
+    "doc_id": null,
+    "size": 3194,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  ".cursor\\skills\\tr-dashboard-autopilot\\references\\dod-checklist.md": {
+    "path": ".cursor\\skills\\tr-dashboard-autopilot\\references\\dod-checklist.md",
+    "doc_id": null,
+    "size": 363,
+    "refs_found": [
+      "AGENTS.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  ".cursor\\skills\\tr-dashboard-autopilot\\references\\plan-template.md": {
+    "path": ".cursor\\skills\\tr-dashboard-autopilot\\references\\plan-template.md",
+    "doc_id": null,
+    "size": 1021,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  ".cursor\\skills\\tr-dashboard-autopilot\\references\\runbook-state-reflow-collision.md": {
+    "path": ".cursor\\skills\\tr-dashboard-autopilot\\references\\runbook-state-reflow-collision.md",
+    "doc_id": null,
+    "size": 2148,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  ".cursor\\skills\\tr-dashboard-autopilot\\references\\ssot-api-contract.md": {
+    "path": ".cursor\\skills\\tr-dashboard-autopilot\\references\\ssot-api-contract.md",
+    "doc_id": null,
+    "size": 1349,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  ".cursor\\skills\\tr-dashboard-autopilot\\references\\ssot-rules.md": {
+    "path": ".cursor\\skills\\tr-dashboard-autopilot\\references\\ssot-rules.md",
+    "doc_id": null,
+    "size": 906,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  ".cursor\\skills\\tr-dashboard-autopilot\\SKILL.md": {
+    "path": ".cursor\\skills\\tr-dashboard-autopilot\\SKILL.md",
+    "doc_id": null,
+    "size": 1526,
+    "refs_found": [
+      "AGENTS.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  ".cursor\\skills\\tr-dashboard-layout-optimizer\\references\\acceptance-report-template.md": {
+    "path": ".cursor\\skills\\tr-dashboard-layout-optimizer\\references\\acceptance-report-template.md",
+    "doc_id": null,
+    "size": 481,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  ".cursor\\skills\\tr-dashboard-layout-optimizer\\references\\layout-audit-checklist.md": {
+    "path": ".cursor\\skills\\tr-dashboard-layout-optimizer\\references\\layout-audit-checklist.md",
+    "doc_id": null,
+    "size": 1063,
+    "refs_found": [
+      "LAYOUT.md",
+      "SYSTEM_ARCHITECTURE.md",
+      "patch.md"
+    ],
+    "has_patch_ref": true,
+    "has_layout_ref": true
+  },
+  ".cursor\\skills\\tr-dashboard-layout-optimizer\\references\\mobile-responsive-patterns.md": {
+    "path": ".cursor\\skills\\tr-dashboard-layout-optimizer\\references\\mobile-responsive-patterns.md",
+    "doc_id": null,
+    "size": 552,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  ".cursor\\skills\\tr-dashboard-layout-optimizer\\SKILL.md": {
+    "path": ".cursor\\skills\\tr-dashboard-layout-optimizer\\SKILL.md",
+    "doc_id": null,
+    "size": 2754,
+    "refs_found": [
+      "AGENTS.md",
+      "LAYOUT.md",
+      "SYSTEM_ARCHITECTURE.md",
+      "patch.md"
+    ],
+    "has_patch_ref": true,
+    "has_layout_ref": true
+  },
+  ".cursor\\skills\\tr-dashboard-patch\\references\\patch-rules.md": {
+    "path": ".cursor\\skills\\tr-dashboard-patch\\references\\patch-rules.md",
+    "doc_id": null,
+    "size": 1651,
+    "refs_found": [
+      "patch.md"
+    ],
+    "has_patch_ref": true,
+    "has_layout_ref": false
+  },
+  ".cursor\\skills\\tr-dashboard-patch\\SKILL.md": {
+    "path": ".cursor\\skills\\tr-dashboard-patch\\SKILL.md",
+    "doc_id": null,
+    "size": 3197,
+    "refs_found": [
+      "../../../patch.md",
+      "AGENTS.md",
+      "patch.md",
+      "references/patch-rules.md"
+    ],
+    "has_patch_ref": true,
+    "has_layout_ref": false
+  },
+  ".cursor\\skills\\tr-dashboard-pipeline\\SKILL.md": {
+    "path": ".cursor\\skills\\tr-dashboard-pipeline\\SKILL.md",
+    "doc_id": null,
+    "size": 2412,
+    "refs_found": [
+      "AGENTS.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  ".cursor\\skills\\tr-dashboard-ssot-guard\\references\\ssot-rules.md": {
+    "path": ".cursor\\skills\\tr-dashboard-ssot-guard\\references\\ssot-rules.md",
+    "doc_id": null,
+    "size": 476,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  ".cursor\\skills\\tr-dashboard-ssot-guard\\SKILL.md": {
+    "path": ".cursor\\skills\\tr-dashboard-ssot-guard\\SKILL.md",
+    "doc_id": null,
+    "size": 786,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  ".cursor\\skills\\water-tide-voyage\\SKILL.md": {
+    "path": ".cursor\\skills\\water-tide-voyage\\SKILL.md",
+    "doc_id": null,
+    "size": 1785,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  ".cursor\\skills\\weather-go-nogo\\reference.md": {
+    "path": ".cursor\\skills\\weather-go-nogo\\reference.md",
+    "doc_id": null,
+    "size": 1816,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  ".cursor\\skills\\weather-go-nogo\\SKILL.md": {
+    "path": ".cursor\\skills\\weather-go-nogo\\SKILL.md",
+    "doc_id": null,
+    "size": 2574,
+    "refs_found": [
+      "reference.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "AGENTS.md": {
+    "path": "AGENTS.md",
+    "doc_id": "agents",
+    "size": 4947,
+    "refs_found": [
+      "AGENTS.md",
+      "LAYOUT.md",
+      "docs/LAYOUT.md",
+      "patch.md"
+    ],
+    "has_patch_ref": true,
+    "has_layout_ref": true
+  },
+  "agentskillguide\\agents\\agi-schedule-updater.md": {
+    "path": "agentskillguide\\agents\\agi-schedule-updater.md",
+    "doc_id": null,
+    "size": 9405,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "agentskillguide\\DASHBOARD_OUTPUT_SCHEMA.md": {
+    "path": "agentskillguide\\DASHBOARD_OUTPUT_SCHEMA.md",
+    "doc_id": null,
+    "size": 4166,
+    "refs_found": [
+      "LAYOUT.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": true
+  },
+  "agentskillguide\\skills\\agi-schedule-daily-update\\SKILL.md": {
+    "path": "agentskillguide\\skills\\agi-schedule-daily-update\\SKILL.md",
+    "doc_id": null,
+    "size": 6323,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "agentskillguide\\skills\\agi-schedule-pipeline-check\\SKILL.md": {
+    "path": "agentskillguide\\skills\\agi-schedule-pipeline-check\\SKILL.md",
+    "doc_id": null,
+    "size": 8444,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "agentskillguide\\skills\\agi-schedule-shift\\SKILL.md": {
+    "path": "agentskillguide\\skills\\agi-schedule-shift\\SKILL.md",
+    "doc_id": null,
+    "size": 3593,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "agentskillguide\\skills\\water-tide-voyage\\SKILL.md": {
+    "path": "agentskillguide\\skills\\water-tide-voyage\\SKILL.md",
+    "doc_id": null,
+    "size": 2903,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "agentskillguide\\skills\\weather-go-nogo\\reference.md": {
+    "path": "agentskillguide\\skills\\weather-go-nogo\\reference.md",
+    "doc_id": null,
+    "size": 5455,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "agentskillguide\\skills\\weather-go-nogo\\SKILL.md": {
+    "path": "agentskillguide\\skills\\weather-go-nogo\\SKILL.md",
+    "doc_id": null,
+    "size": 2995,
+    "refs_found": [
+      "reference.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "docs\\00_INBOX\\chat\\README.md": {
+    "path": "docs\\00_INBOX\\chat\\README.md",
+    "doc_id": null,
+    "size": 261,
+    "refs_found": [
+      ".cursor/skills/docops-doc-manager/references/docops-rules.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "docs\\_meta\\reports\\docops.report.md": {
+    "path": "docs\\_meta\\reports\\docops.report.md",
+    "doc_id": null,
+    "size": 52,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "docs\\AGENT_DASHBOARD_INTEGRATION.md": {
+    "path": "docs\\AGENT_DASHBOARD_INTEGRATION.md",
+    "doc_id": null,
+    "size": 4943,
+    "refs_found": [
+      "../.cursor/agents/agi-schedule-updater.md",
+      "../agentskillguide/DASHBOARD_OUTPUT_SCHEMA.md",
+      "./IMPLEMENTATION_SUMMARY.md",
+      "./LAYOUT.md",
+      "./SYSTEM_ARCHITECTURE.md",
+      "LAYOUT.md",
+      "SYSTEM_ARCHITECTURE.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": true
+  },
+  "docs\\BUGFIX_APPLIED_20260202.md": {
+    "path": "docs\\BUGFIX_APPLIED_20260202.md",
+    "doc_id": null,
+    "size": 3733,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "docs\\CURSOR_UPDATE_GUIDE.md": {
+    "path": "docs\\CURSOR_UPDATE_GUIDE.md",
+    "doc_id": null,
+    "size": 6380,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "docs\\guides\\agi-schedule-updater.md": {
+    "path": "docs\\guides\\agi-schedule-updater.md",
+    "doc_id": null,
+    "size": 530,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "docs\\guides\\patch-guide.md": {
+    "path": "docs\\guides\\patch-guide.md",
+    "doc_id": null,
+    "size": 26973,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "docs\\guides\\termux-ssh-cursor.md": {
+    "path": "docs\\guides\\termux-ssh-cursor.md",
+    "doc_id": null,
+    "size": 2816,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "docs\\guides\\tr-subagents.md": {
+    "path": "docs\\guides\\tr-subagents.md",
+    "doc_id": null,
+    "size": 1218,
+    "refs_found": [
+      "AGENTS.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "docs\\IMPLEMENTATION_SUMMARY.md": {
+    "path": "docs\\IMPLEMENTATION_SUMMARY.md",
+    "doc_id": null,
+    "size": 10326,
+    "refs_found": [
+      "../README.md",
+      "./AGENT_DASHBOARD_INTEGRATION.md",
+      "./BUGFIX_APPLIED_20260202.md",
+      "./LAYOUT.md",
+      "./SYSTEM_ARCHITECTURE.md",
+      "./WORK_LOG_20260202.md",
+      "AGENTS.md",
+      "LAYOUT.md",
+      "SYSTEM_ARCHITECTURE.md",
+      "patch.md"
+    ],
+    "has_patch_ref": true,
+    "has_layout_ref": true
+  },
+  "docs\\INDEX.md": {
+    "path": "docs\\INDEX.md",
+    "doc_id": "docs-index",
+    "size": 2079,
+    "refs_found": [
+      "../AGENTS.md",
+      "../patch.md",
+      "../patch4.md",
+      "00_INBOX/chat/README.md",
+      "AGENTS.md",
+      "AGENT_DASHBOARD_INTEGRATION.md",
+      "BUGFIX_APPLIED_20260202.md",
+      "CURSOR_UPDATE_GUIDE.md",
+      "IMPLEMENTATION_SUMMARY.md",
+      "LAYOUT.md",
+      "SYSTEM_ARCHITECTURE.md",
+      "VERCEL.md",
+      "WORK_LOG_20260202.md",
+      "guides/agi-schedule-updater.md",
+      "guides/patch-guide.md",
+      "guides/termux-ssh-cursor.md",
+      "guides/tr-subagents.md",
+      "patch.md",
+      "plan/tr-dashboard-plan-patch4.md",
+      "plan/tr-dashboard-plan.md",
+      "plan/tr-dashboard-verification-report.md",
+      "plan/vis-timeline-gantt-integration-plan.md"
+    ],
+    "has_patch_ref": true,
+    "has_layout_ref": true
+  },
+  "docs\\LAYOUT.md": {
+    "path": "docs\\LAYOUT.md",
+    "doc_id": "layout",
+    "size": 20540,
+    "refs_found": [
+      "../AGENTS.md",
+      "../patch.md",
+      "AGENTS.md",
+      "BUGFIX_APPLIED_20260202.md",
+      "SYSTEM_ARCHITECTURE.md",
+      "WORK_LOG_20260202.md",
+      "patch.md"
+    ],
+    "has_patch_ref": true,
+    "has_layout_ref": false
+  },
+  "docs\\plan\\contract-v0.8.0-migration-plan.md": {
+    "path": "docs\\plan\\contract-v0.8.0-migration-plan.md",
+    "doc_id": null,
+    "size": 9925,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "docs\\plan\\layout-size-balance-verification.md": {
+    "path": "docs\\plan\\layout-size-balance-verification.md",
+    "doc_id": null,
+    "size": 1616,
+    "refs_found": [
+      "AGENTS.md",
+      "patch.md"
+    ],
+    "has_patch_ref": true,
+    "has_layout_ref": false
+  },
+  "docs\\plan\\plan_patchm1.md": {
+    "path": "docs\\plan\\plan_patchm1.md",
+    "doc_id": null,
+    "size": 6047,
+    "refs_found": [
+      "AGENTS.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "docs\\plan\\plan_patchm1_m2.md": {
+    "path": "docs\\plan\\plan_patchm1_m2.md",
+    "doc_id": null,
+    "size": 7786,
+    "refs_found": [
+      "AGENTS.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "docs\\plan\\plan_patchm1_m5.md": {
+    "path": "docs\\plan\\plan_patchm1_m5.md",
+    "doc_id": null,
+    "size": 7346,
+    "refs_found": [
+      "AGENTS.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "docs\\plan\\tr-dashboard-plan-patch4.md": {
+    "path": "docs\\plan\\tr-dashboard-plan-patch4.md",
+    "doc_id": null,
+    "size": 50891,
+    "refs_found": [
+      "AGENTS.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "docs\\plan\\tr-dashboard-plan.md": {
+    "path": "docs\\plan\\tr-dashboard-plan.md",
+    "doc_id": null,
+    "size": 14636,
+    "refs_found": [
+      "AGENTS.md",
+      "LAYOUT.md",
+      "patch.md"
+    ],
+    "has_patch_ref": true,
+    "has_layout_ref": true
+  },
+  "docs\\plan\\tr-dashboard-verification-report.md": {
+    "path": "docs\\plan\\tr-dashboard-verification-report.md",
+    "doc_id": null,
+    "size": 2738,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "docs\\plan\\vis-timeline-gantt-integration-plan.md": {
+    "path": "docs\\plan\\vis-timeline-gantt-integration-plan.md",
+    "doc_id": null,
+    "size": 5729,
+    "refs_found": [
+      "AGENTS.md",
+      "patch.md"
+    ],
+    "has_patch_ref": true,
+    "has_layout_ref": false
+  },
+  "docs\\SYSTEM_ARCHITECTURE.md": {
+    "path": "docs\\SYSTEM_ARCHITECTURE.md",
+    "doc_id": "system-architecture",
+    "size": 12729,
+    "refs_found": [
+      "../AGENTS.md",
+      "../README.md",
+      "../patch.md",
+      "./BUGFIX_APPLIED_20260202.md",
+      "./VERCEL.md",
+      "AGENTS.md",
+      "BUGFIX_APPLIED_20260202.md",
+      "LAYOUT.md",
+      "WORK_LOG_20260202.md",
+      "patch.md",
+      "plan/plan_patchm1_m5.md"
+    ],
+    "has_patch_ref": true,
+    "has_layout_ref": true
+  },
+  "docs\\VERCEL.md": {
+    "path": "docs\\VERCEL.md",
+    "doc_id": null,
+    "size": 932,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "docs\\WORK_LOG_20260202.md": {
+    "path": "docs\\WORK_LOG_20260202.md",
+    "doc_id": null,
+    "size": 23022,
+    "refs_found": [
+      "./BUGFIX_APPLIED_20260202.md",
+      "AGENTS.md",
+      "LAYOUT.md",
+      "SYSTEM_ARCHITECTURE.md",
+      "patch.md"
+    ],
+    "has_patch_ref": true,
+    "has_layout_ref": true
+  },
+  "files\\PHASE4_IMPLEMENTATION.md": {
+    "path": "files\\PHASE4_IMPLEMENTATION.md",
+    "doc_id": null,
+    "size": 9875,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "files\\PHASE5_PLANNING.md": {
+    "path": "files\\PHASE5_PLANNING.md",
+    "doc_id": null,
+    "size": 22802,
+    "refs_found": [
+      "AGENTS.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "files\\PHASE5_SUMMARY.md": {
+    "path": "files\\PHASE5_SUMMARY.md",
+    "doc_id": null,
+    "size": 8557,
+    "refs_found": [
+      "AGENTS.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "files\\README_PHASE4.md": {
+    "path": "files\\README_PHASE4.md",
+    "doc_id": null,
+    "size": 10403,
+    "refs_found": [
+      "AGENTS.md",
+      "LAYOUT.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": true
+  },
+  "GANTTPATCH.MD": {
+    "path": "GANTTPATCH.MD",
+    "doc_id": null,
+    "size": 7352,
+    "refs_found": [
+      "LAYOUT.md",
+      "SYSTEM_ARCHITECTURE.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": true
+  },
+  "GANTTPATCH1.MD": {
+    "path": "GANTTPATCH1.MD",
+    "doc_id": null,
+    "size": 9648,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "GANTTPATCH2.MD": {
+    "path": "GANTTPATCH2.MD",
+    "doc_id": null,
+    "size": 17671,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "GANTTPATCH4.MD": {
+    "path": "GANTTPATCH4.MD",
+    "doc_id": null,
+    "size": 7035,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "patch.md": {
+    "path": "patch.md",
+    "doc_id": "patch",
+    "size": 93216,
+    "refs_found": [
+      "AGENTS.md",
+      "LAYOUT.md",
+      "SYSTEM_ARCHITECTURE.md",
+      "docs/LAYOUT.md",
+      "docs/SYSTEM_ARCHITECTURE.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": true
+  },
+  "patch4.md": {
+    "path": "patch4.md",
+    "doc_id": null,
+    "size": 82750,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "PATCHBUG.MD": {
+    "path": "PATCHBUG.MD",
+    "doc_id": null,
+    "size": 12685,
+    "refs_found": [
+      "./docs/BUGFIX_APPLIED_20260202.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "patchm1.md": {
+    "path": "patchm1.md",
+    "doc_id": null,
+    "size": 16436,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "patchm2.md": {
+    "path": "patchm2.md",
+    "doc_id": null,
+    "size": 7287,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "patchm3.md": {
+    "path": "patchm3.md",
+    "doc_id": null,
+    "size": 16436,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "patchm4.md": {
+    "path": "patchm4.md",
+    "doc_id": null,
+    "size": 8919,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "patchm5.md": {
+    "path": "patchm5.md",
+    "doc_id": null,
+    "size": 4528,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "README.md": {
+    "path": "README.md",
+    "doc_id": null,
+    "size": 14036,
+    "refs_found": [
+      "./docs/BUGFIX_APPLIED_20260202.md",
+      "./docs/SYSTEM_ARCHITECTURE.md",
+      "./docs/VERCEL.md",
+      "./docs/guides/termux-ssh-cursor.md",
+      "SYSTEM_ARCHITECTURE.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\.cursor\\agents\\agi-schedule-updater.md": {
+    "path": "tr_dashboard-main\\.cursor\\agents\\agi-schedule-updater.md",
+    "doc_id": null,
+    "size": 2175,
+    "refs_found": [
+      "LAYOUT.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": true
+  },
+  "tr_dashboard-main\\.cursor\\agents\\pipeline-git-autocommit.md": {
+    "path": "tr_dashboard-main\\.cursor\\agents\\pipeline-git-autocommit.md",
+    "doc_id": null,
+    "size": 5988,
+    "refs_found": [
+      "AGENTS.md",
+      "patch.md"
+    ],
+    "has_patch_ref": true,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\.cursor\\agents\\tr-dashboard-patch.md": {
+    "path": "tr_dashboard-main\\.cursor\\agents\\tr-dashboard-patch.md",
+    "doc_id": null,
+    "size": 3097,
+    "refs_found": [
+      "AGENTS.md",
+      "patch.md"
+    ],
+    "has_patch_ref": true,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\.cursor\\agents\\tr-implementer.md": {
+    "path": "tr_dashboard-main\\.cursor\\agents\\tr-implementer.md",
+    "doc_id": null,
+    "size": 802,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\.cursor\\agents\\tr-planner.md": {
+    "path": "tr_dashboard-main\\.cursor\\agents\\tr-planner.md",
+    "doc_id": null,
+    "size": 888,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\.cursor\\agents\\tr-verifier.md": {
+    "path": "tr_dashboard-main\\.cursor\\agents\\tr-verifier.md",
+    "doc_id": null,
+    "size": 733,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\.cursor\\commands\\agents.md": {
+    "path": "tr_dashboard-main\\.cursor\\commands\\agents.md",
+    "doc_id": null,
+    "size": 4701,
+    "refs_found": [
+      "AGENTS.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\.cursor\\skills\\agi-schedule-daily-update\\SKILL.md": {
+    "path": "tr_dashboard-main\\.cursor\\skills\\agi-schedule-daily-update\\SKILL.md",
+    "doc_id": null,
+    "size": 2308,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\.cursor\\skills\\agi-schedule-pipeline-check\\SKILL.md": {
+    "path": "tr_dashboard-main\\.cursor\\skills\\agi-schedule-pipeline-check\\SKILL.md",
+    "doc_id": null,
+    "size": 2273,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\.cursor\\skills\\agi-schedule-shift\\SKILL.md": {
+    "path": "tr_dashboard-main\\.cursor\\skills\\agi-schedule-shift\\SKILL.md",
+    "doc_id": null,
+    "size": 1939,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\.cursor\\skills\\tr-dashboard-autopilot\\references\\collision-taxonomy.md": {
+    "path": "tr_dashboard-main\\.cursor\\skills\\tr-dashboard-autopilot\\references\\collision-taxonomy.md",
+    "doc_id": null,
+    "size": 705,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\.cursor\\skills\\tr-dashboard-autopilot\\references\\contract-optionc-v0.8.0.md": {
+    "path": "tr_dashboard-main\\.cursor\\skills\\tr-dashboard-autopilot\\references\\contract-optionc-v0.8.0.md",
+    "doc_id": null,
+    "size": 3194,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\.cursor\\skills\\tr-dashboard-autopilot\\references\\dod-checklist.md": {
+    "path": "tr_dashboard-main\\.cursor\\skills\\tr-dashboard-autopilot\\references\\dod-checklist.md",
+    "doc_id": null,
+    "size": 363,
+    "refs_found": [
+      "AGENTS.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\.cursor\\skills\\tr-dashboard-autopilot\\references\\plan-template.md": {
+    "path": "tr_dashboard-main\\.cursor\\skills\\tr-dashboard-autopilot\\references\\plan-template.md",
+    "doc_id": null,
+    "size": 1021,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\.cursor\\skills\\tr-dashboard-autopilot\\references\\runbook-state-reflow-collision.md": {
+    "path": "tr_dashboard-main\\.cursor\\skills\\tr-dashboard-autopilot\\references\\runbook-state-reflow-collision.md",
+    "doc_id": null,
+    "size": 2148,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\.cursor\\skills\\tr-dashboard-autopilot\\references\\ssot-api-contract.md": {
+    "path": "tr_dashboard-main\\.cursor\\skills\\tr-dashboard-autopilot\\references\\ssot-api-contract.md",
+    "doc_id": null,
+    "size": 1349,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\.cursor\\skills\\tr-dashboard-autopilot\\references\\ssot-rules.md": {
+    "path": "tr_dashboard-main\\.cursor\\skills\\tr-dashboard-autopilot\\references\\ssot-rules.md",
+    "doc_id": null,
+    "size": 906,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\.cursor\\skills\\tr-dashboard-autopilot\\SKILL.md": {
+    "path": "tr_dashboard-main\\.cursor\\skills\\tr-dashboard-autopilot\\SKILL.md",
+    "doc_id": null,
+    "size": 1526,
+    "refs_found": [
+      "AGENTS.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\.cursor\\skills\\tr-dashboard-patch\\references\\patch-rules.md": {
+    "path": "tr_dashboard-main\\.cursor\\skills\\tr-dashboard-patch\\references\\patch-rules.md",
+    "doc_id": null,
+    "size": 1651,
+    "refs_found": [
+      "patch.md"
+    ],
+    "has_patch_ref": true,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\.cursor\\skills\\tr-dashboard-patch\\SKILL.md": {
+    "path": "tr_dashboard-main\\.cursor\\skills\\tr-dashboard-patch\\SKILL.md",
+    "doc_id": null,
+    "size": 3197,
+    "refs_found": [
+      "../../../patch.md",
+      "AGENTS.md",
+      "patch.md",
+      "references/patch-rules.md"
+    ],
+    "has_patch_ref": true,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\.cursor\\skills\\tr-dashboard-pipeline\\SKILL.md": {
+    "path": "tr_dashboard-main\\.cursor\\skills\\tr-dashboard-pipeline\\SKILL.md",
+    "doc_id": null,
+    "size": 2412,
+    "refs_found": [
+      "AGENTS.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\.cursor\\skills\\tr-dashboard-ssot-guard\\references\\ssot-rules.md": {
+    "path": "tr_dashboard-main\\.cursor\\skills\\tr-dashboard-ssot-guard\\references\\ssot-rules.md",
+    "doc_id": null,
+    "size": 476,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\.cursor\\skills\\tr-dashboard-ssot-guard\\SKILL.md": {
+    "path": "tr_dashboard-main\\.cursor\\skills\\tr-dashboard-ssot-guard\\SKILL.md",
+    "doc_id": null,
+    "size": 786,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\.cursor\\skills\\water-tide-voyage\\SKILL.md": {
+    "path": "tr_dashboard-main\\.cursor\\skills\\water-tide-voyage\\SKILL.md",
+    "doc_id": null,
+    "size": 1785,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\.cursor\\skills\\weather-go-nogo\\reference.md": {
+    "path": "tr_dashboard-main\\.cursor\\skills\\weather-go-nogo\\reference.md",
+    "doc_id": null,
+    "size": 1816,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\.cursor\\skills\\weather-go-nogo\\SKILL.md": {
+    "path": "tr_dashboard-main\\.cursor\\skills\\weather-go-nogo\\SKILL.md",
+    "doc_id": null,
+    "size": 2574,
+    "refs_found": [
+      "reference.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\AGENTS.md": {
+    "path": "tr_dashboard-main\\AGENTS.md",
+    "doc_id": null,
+    "size": 4749,
+    "refs_found": [
+      "AGENTS.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\agentskillguide\\agents\\agi-schedule-updater.md": {
+    "path": "tr_dashboard-main\\agentskillguide\\agents\\agi-schedule-updater.md",
+    "doc_id": null,
+    "size": 9405,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\agentskillguide\\DASHBOARD_OUTPUT_SCHEMA.md": {
+    "path": "tr_dashboard-main\\agentskillguide\\DASHBOARD_OUTPUT_SCHEMA.md",
+    "doc_id": null,
+    "size": 4166,
+    "refs_found": [
+      "LAYOUT.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": true
+  },
+  "tr_dashboard-main\\agentskillguide\\skills\\agi-schedule-daily-update\\SKILL.md": {
+    "path": "tr_dashboard-main\\agentskillguide\\skills\\agi-schedule-daily-update\\SKILL.md",
+    "doc_id": null,
+    "size": 6323,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\agentskillguide\\skills\\agi-schedule-pipeline-check\\SKILL.md": {
+    "path": "tr_dashboard-main\\agentskillguide\\skills\\agi-schedule-pipeline-check\\SKILL.md",
+    "doc_id": null,
+    "size": 8444,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\agentskillguide\\skills\\agi-schedule-shift\\SKILL.md": {
+    "path": "tr_dashboard-main\\agentskillguide\\skills\\agi-schedule-shift\\SKILL.md",
+    "doc_id": null,
+    "size": 3593,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\agentskillguide\\skills\\water-tide-voyage\\SKILL.md": {
+    "path": "tr_dashboard-main\\agentskillguide\\skills\\water-tide-voyage\\SKILL.md",
+    "doc_id": null,
+    "size": 2903,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\agentskillguide\\skills\\weather-go-nogo\\reference.md": {
+    "path": "tr_dashboard-main\\agentskillguide\\skills\\weather-go-nogo\\reference.md",
+    "doc_id": null,
+    "size": 5455,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\agentskillguide\\skills\\weather-go-nogo\\SKILL.md": {
+    "path": "tr_dashboard-main\\agentskillguide\\skills\\weather-go-nogo\\SKILL.md",
+    "doc_id": null,
+    "size": 2995,
+    "refs_found": [
+      "reference.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\docs\\AGENT_DASHBOARD_INTEGRATION.md": {
+    "path": "tr_dashboard-main\\docs\\AGENT_DASHBOARD_INTEGRATION.md",
+    "doc_id": null,
+    "size": 4943,
+    "refs_found": [
+      "../.cursor/agents/agi-schedule-updater.md",
+      "../agentskillguide/DASHBOARD_OUTPUT_SCHEMA.md",
+      "./IMPLEMENTATION_SUMMARY.md",
+      "./LAYOUT.md",
+      "./SYSTEM_ARCHITECTURE.md",
+      "LAYOUT.md",
+      "SYSTEM_ARCHITECTURE.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": true
+  },
+  "tr_dashboard-main\\docs\\CURSOR_UPDATE_GUIDE.md": {
+    "path": "tr_dashboard-main\\docs\\CURSOR_UPDATE_GUIDE.md",
+    "doc_id": null,
+    "size": 6380,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\docs\\guides\\agi-schedule-updater.md": {
+    "path": "tr_dashboard-main\\docs\\guides\\agi-schedule-updater.md",
+    "doc_id": null,
+    "size": 530,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\docs\\guides\\patch-guide.md": {
+    "path": "tr_dashboard-main\\docs\\guides\\patch-guide.md",
+    "doc_id": null,
+    "size": 26973,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\docs\\guides\\termux-ssh-cursor.md": {
+    "path": "tr_dashboard-main\\docs\\guides\\termux-ssh-cursor.md",
+    "doc_id": null,
+    "size": 2816,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\docs\\guides\\tr-subagents.md": {
+    "path": "tr_dashboard-main\\docs\\guides\\tr-subagents.md",
+    "doc_id": null,
+    "size": 1218,
+    "refs_found": [
+      "AGENTS.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\docs\\IMPLEMENTATION_SUMMARY.md": {
+    "path": "tr_dashboard-main\\docs\\IMPLEMENTATION_SUMMARY.md",
+    "doc_id": null,
+    "size": 10045,
+    "refs_found": [
+      "../README.md",
+      "./AGENT_DASHBOARD_INTEGRATION.md",
+      "./LAYOUT.md",
+      "./SYSTEM_ARCHITECTURE.md",
+      "./WORK_LOG_20260202.md",
+      "AGENTS.md",
+      "LAYOUT.md",
+      "SYSTEM_ARCHITECTURE.md",
+      "patch.md"
+    ],
+    "has_patch_ref": true,
+    "has_layout_ref": true
+  },
+  "tr_dashboard-main\\docs\\LAYOUT.md": {
+    "path": "tr_dashboard-main\\docs\\LAYOUT.md",
+    "doc_id": null,
+    "size": 20200,
+    "refs_found": [
+      "AGENTS.md",
+      "patch.md"
+    ],
+    "has_patch_ref": true,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\docs\\plan\\contract-v0.8.0-migration-plan.md": {
+    "path": "tr_dashboard-main\\docs\\plan\\contract-v0.8.0-migration-plan.md",
+    "doc_id": null,
+    "size": 9925,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\docs\\plan\\plan_patchm1.md": {
+    "path": "tr_dashboard-main\\docs\\plan\\plan_patchm1.md",
+    "doc_id": null,
+    "size": 6047,
+    "refs_found": [
+      "AGENTS.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\docs\\plan\\plan_patchm1_m2.md": {
+    "path": "tr_dashboard-main\\docs\\plan\\plan_patchm1_m2.md",
+    "doc_id": null,
+    "size": 7786,
+    "refs_found": [
+      "AGENTS.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\docs\\plan\\plan_patchm1_m5.md": {
+    "path": "tr_dashboard-main\\docs\\plan\\plan_patchm1_m5.md",
+    "doc_id": null,
+    "size": 7346,
+    "refs_found": [
+      "AGENTS.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\docs\\plan\\tr-dashboard-plan-patch4.md": {
+    "path": "tr_dashboard-main\\docs\\plan\\tr-dashboard-plan-patch4.md",
+    "doc_id": null,
+    "size": 50891,
+    "refs_found": [
+      "AGENTS.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\docs\\plan\\tr-dashboard-plan.md": {
+    "path": "tr_dashboard-main\\docs\\plan\\tr-dashboard-plan.md",
+    "doc_id": null,
+    "size": 8043,
+    "refs_found": [
+      "AGENTS.md",
+      "patch.md"
+    ],
+    "has_patch_ref": true,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\docs\\plan\\tr-dashboard-verification-report.md": {
+    "path": "tr_dashboard-main\\docs\\plan\\tr-dashboard-verification-report.md",
+    "doc_id": null,
+    "size": 8458,
+    "refs_found": [
+      "AGENTS.md",
+      "patch.md"
+    ],
+    "has_patch_ref": true,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\docs\\SYSTEM_ARCHITECTURE.md": {
+    "path": "tr_dashboard-main\\docs\\SYSTEM_ARCHITECTURE.md",
+    "doc_id": null,
+    "size": 12346,
+    "refs_found": [
+      "./README.md",
+      "./VERCEL.md",
+      "AGENTS.md",
+      "patch.md"
+    ],
+    "has_patch_ref": true,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\docs\\VERCEL.md": {
+    "path": "tr_dashboard-main\\docs\\VERCEL.md",
+    "doc_id": null,
+    "size": 932,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\docs\\WORK_LOG_20260202.md": {
+    "path": "tr_dashboard-main\\docs\\WORK_LOG_20260202.md",
+    "doc_id": null,
+    "size": 22055,
+    "refs_found": [
+      "AGENTS.md",
+      "LAYOUT.md",
+      "SYSTEM_ARCHITECTURE.md",
+      "patch.md"
+    ],
+    "has_patch_ref": true,
+    "has_layout_ref": true
+  },
+  "tr_dashboard-main\\files\\PHASE4_IMPLEMENTATION.md": {
+    "path": "tr_dashboard-main\\files\\PHASE4_IMPLEMENTATION.md",
+    "doc_id": null,
+    "size": 9875,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\files\\PHASE5_PLANNING.md": {
+    "path": "tr_dashboard-main\\files\\PHASE5_PLANNING.md",
+    "doc_id": null,
+    "size": 22802,
+    "refs_found": [
+      "AGENTS.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\files\\PHASE5_SUMMARY.md": {
+    "path": "tr_dashboard-main\\files\\PHASE5_SUMMARY.md",
+    "doc_id": null,
+    "size": 8557,
+    "refs_found": [
+      "AGENTS.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\files\\README_PHASE4.md": {
+    "path": "tr_dashboard-main\\files\\README_PHASE4.md",
+    "doc_id": null,
+    "size": 10403,
+    "refs_found": [
+      "AGENTS.md",
+      "LAYOUT.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": true
+  },
+  "tr_dashboard-main\\patch.md": {
+    "path": "tr_dashboard-main\\patch.md",
+    "doc_id": null,
+    "size": 92974,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\patch4.md": {
+    "path": "tr_dashboard-main\\patch4.md",
+    "doc_id": null,
+    "size": 82750,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\patchm1.md": {
+    "path": "tr_dashboard-main\\patchm1.md",
+    "doc_id": null,
+    "size": 16436,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\patchm2.md": {
+    "path": "tr_dashboard-main\\patchm2.md",
+    "doc_id": null,
+    "size": 7287,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\patchm3.md": {
+    "path": "tr_dashboard-main\\patchm3.md",
+    "doc_id": null,
+    "size": 16436,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\patchm4.md": {
+    "path": "tr_dashboard-main\\patchm4.md",
+    "doc_id": null,
+    "size": 8919,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\patchm5.md": {
+    "path": "tr_dashboard-main\\patchm5.md",
+    "doc_id": null,
+    "size": 4528,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "tr_dashboard-main\\README.md": {
+    "path": "tr_dashboard-main\\README.md",
+    "doc_id": null,
+    "size": 13324,
+    "refs_found": [
+      "./docs/SYSTEM_ARCHITECTURE.md",
+      "./docs/VERCEL.md",
+      "./docs/guides/termux-ssh-cursor.md",
+      "SYSTEM_ARCHITECTURE.md"
+    ],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  },
+  "TR_Dashboard_Bugfix_Prompt_v1.1.md": {
+    "path": "TR_Dashboard_Bugfix_Prompt_v1.1.md",
+    "doc_id": null,
+    "size": 6619,
+    "refs_found": [],
+    "has_patch_ref": false,
+    "has_layout_ref": false
+  }
+}

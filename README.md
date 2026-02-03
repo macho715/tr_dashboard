@@ -12,14 +12,20 @@
 
 HVDC TR Transport Dashboard는 **7개의 Transformer Unit**을 **LCT BUSHRA**로 운송하는 프로젝트의 실시간 물류 대시보드입니다.
 
+**운영 규모**: 1 Trip당 1 TR 운송, 총 7 Trip, SPMT 1기 운영
+
 ### 주요 기능
 
 - **실시간 KPI 모니터링**: 총 일수, 항차 수, SPMT 세트, TR Unit 추적
 - **Gantt 차트**: 7개 항차의 시각적 일정 관리 (Jan 26 - Mar 22, 2026)
 - **스케줄 재계산 엔진**: 의존성 기반 자동 일정 조정
 - **Preview 패널**: 변경 사항 미리보기 및 충돌 검사
+- **Compare Mode**: baseline vs compare delta overlay, Gantt ghost bars, **Compare Diff 패널**
 - **날짜 변경 UI**: Calendar + 직접 입력으로 시작일 변경
 - **항차 상세 정보**: Load-out, Sail-away, Load-in, Turning, Jack-down 일정
+- **History/Evidence (append-only)**: History 입력, Evidence 링크 추가, localStorage 저장
+- **Trip Report Export**: MD/JSON 보고서 다운로드
+- **Next Trip Readiness**: Ready/Not Ready 배지, 마일스톤/증빙/블로커 체크리스트
 
 ---
 
@@ -124,6 +130,12 @@ hvdc-tr-dashboard/
 ├── lib/
 │   ├── ssot/              # Single Source of Truth
 │   │   └── schedule.ts   # 스케줄 타입 정의 + UTC 날짜 유틸
+│   ├── store/
+│   │   └── trip-store.ts  # History/Evidence localStorage (append-only)
+│   ├── reports/
+│   │   └── trip-report.ts # Trip Report 생성 + MD/JSON Export
+│   ├── baseline/
+│   │   └── baseline-compare.ts  # computeActivityDiff (Compare Diff)
 │   ├── data/
 │   │   └── schedule-data.ts  # data/schedule/option_c.json 로더 + scheduleActivitiesToGanttRows() 변환 함수
 │   ├── utils/
@@ -134,15 +146,13 @@ hvdc-tr-dashboard/
 ├── data/schedule/
 │   └── option_c.json      # 마스터 스케줄 데이터 (139개 활동)
 ├── config/                # 설정 파일
-│   ├── eslintrc.json      # ESLint 설정
 │   ├── prettierignore     # Prettier 제외 목록
 │   └── env.example        # 환경변수 템플릿
 ├── docs/                  # 문서
 │   ├── guides/            # 가이드 (agi-schedule-updater, patch-guide, termux-ssh-cursor)
 │   └── ...
 ├── tools/                 # 개발 도구
-│   ├── detect_pm_and_scripts.mjs
-│   └── run_validate.mjs
+│   └── detect_pm_and_scripts.mjs  # 패키지 매니저·스크립트 탐지 (CI용)
 └── .cursor/               # Cursor IDE 규칙
     ├── rules/             # 코딩 규칙 (.mdc)
     ├── commands/          # 커스텀 명령어
@@ -268,7 +278,7 @@ pnpm run build
 
 프로젝트에는 다음 코드 품질 도구가 설정되어 있습니다:
 
-- **ESLint**: `config/eslintrc.json` - Next.js 및 TypeScript 규칙
+- **ESLint**: `eslint.config.mjs` - Next.js 16 flat config (core-web-vitals + TypeScript)
 - **Prettier**: `package.json` "prettier" - 코드 포맷팅 일관성
 - **TypeScript**: `tsconfig.json` - 타입 체크
 
@@ -360,81 +370,20 @@ Preview 패널 (변경 사항 표시)
 
 ---
 
-## 🔄 Cursor IDE 업데이트 및 롤백 방지
-
-프로젝트에 Cursor IDE를 최신 버전으로 업데이트하고 구버전으로 롤백되지 않도록 하는 자동화 스크립트가 포함되어 있습니다.
-
-### 빠른 시작
-
-PowerShell을 **관리자 권한**으로 실행한 후:
-
-```powershell
-# 전체 업데이트 프로세스 (권장)
-.\scripts\update-cursor-full.ps1
-```
-
-이 명령은 다음을 자동으로 수행합니다:
-1. 캐시 정리 (선택사항)
-2. Cursor 최신 버전 다운로드 및 설치
-3. 롤백 방지 설정 구성
-
-### 개별 스크립트 사용
-
-```powershell
-# 캐시 정리만
-.\scripts\cursor\clean-cursor-cache.ps1 -PreserveSettings -PreserveExtensions
-
-# 업데이트만
-.\scripts\cursor\update-cursor.ps1 -PreserveSettings
-
-# 롤백 방지 설정만
-.\scripts\cursor\prevent-rollback.ps1
-```
-
-### 주요 기능
-
-- **자동 업데이트**: 최신 버전 자동 다운로드 및 설치
-- **롤백 방지**: 시스템 복원 및 캐시 문제로 인한 롤백 방지
-- **설정 보존**: 업데이트 시 사용자 설정 및 확장 프로그램 보존 옵션
-- **안전한 캐시 정리**: 설정 파일을 보존하며 캐시만 안전하게 삭제
-
-### 상세 가이드
-
-자세한 사용법, 문제 해결, 고급 옵션은 다음 문서를 참고하세요:
-
-- **[docs/CURSOR_UPDATE_GUIDE.md](./docs/CURSOR_UPDATE_GUIDE.md)** - 완전한 업데이트 가이드
-
-### 스크립트 위치
-
-```
-scripts/
-├── cursor/
-│   ├── update-cursor.ps1          # 메인 업데이트 스크립트
-│   ├── prevent-rollback.ps1        # 롤백 방지 설정
-│   ├── clean-cursor-cache.ps1     # 캐시 정리 스크립트
-│   └── cursor-update-config.json  # 설정 파일
-└── update-cursor-full.ps1          # 통합 실행 스크립트
-```
-
----
-
 ## 📚 참고 문서
 
+- [BUGFIX_APPLIED_20260202.md](./docs/BUGFIX_APPLIED_20260202.md) - **Bugfix 적용 보고서** (2026-02-02)
 - [SYSTEM_ARCHITECTURE.md](./docs/SYSTEM_ARCHITECTURE.md) - **시스템 아키텍처 상세** (레이어 구조, 데이터 흐름, 핵심 컴포넌트)
 - [VERCEL.md](./docs/VERCEL.md) - Vercel 배포 설정 가이드
 - [.cursor/rules/](./.cursor/rules/) - Cursor IDE 규칙
-- [docs/CURSOR_UPDATE_GUIDE.md](./docs/CURSOR_UPDATE_GUIDE.md) - **Cursor 업데이트 및 롤백 방지 가이드** (최신)
 - [termux-ssh-cursor.md](./docs/guides/termux-ssh-cursor.md) - Termux SSH → Cursor 터미널 연결 가이드
 
 ---
 
 ## 🧪 테스트
 
-현재 테스트 프레임워크는 설정되지 않았습니다. 향후 추가 예정:
-
-- Unit 테스트: `lib/utils/*` 순수 함수
-- Integration 테스트: 재계산 엔진 통합
-- E2E 테스트: Gantt 차트 인터랙션
+- **Vitest**: 160 tests passed (state-machine, reflow, collision, baseline, evidence 등)
+- **실행**: `pnpm test -- --run`
 
 ---
 
@@ -461,7 +410,7 @@ Private project - Samsung C&T × Mammoet
 
 ---
 
-**Last Updated**: 2026-01-22
+**Last Updated**: 2026-02-02
 
 ---
 
@@ -471,7 +420,7 @@ Private project - Samsung C&T × Mammoet
 
 프로젝트에는 다음 설정 파일들이 포함되어 있습니다:
 
-- **`config/eslintrc.json`**: ESLint 설정 (Next.js + TypeScript 규칙)
+- **`eslint.config.mjs`**: ESLint flat config (Next.js 16 + TypeScript 규칙)
 - **`package.json` "prettier"**: Prettier 코드 포맷팅 설정
 - **`config/prettierignore`**: Prettier 제외 파일 목록
 - **`.nvmrc`**: Node.js 버전 고정 (20)
@@ -500,22 +449,89 @@ Private project - Samsung C&T × Mammoet
 
 ---
 
-## 📝 최근 업데이트 (2026-01-22)
+## 📝 최근 업데이트
 
-### 완료된 기능
+### Phase 6: Bugfix (TR_Dashboard_Bugfix_Prompt_v1.1, 2026-02-02)
 
-#### P0-P2 구현 (이전)
-- ✅ **`scheduleActivitiesToGanttRows()` 함수 구현**: ScheduleActivity[] → GanttRow[] 변환 완료
-- ✅ **`currentActivities` 상태 관리**: 동적 스케줄 데이터 관리 및 실시간 업데이트
-- ✅ **`handleApplyPreview()` 완전 구현**: Preview 적용 시 실제 데이터 반영 및 Gantt 차트 자동 리렌더링
-- ✅ **동적 Gantt 차트 렌더링**: `currentActivities` 상태 변경 시 자동으로 `ganttRows` 재계산 및 리렌더링
+#### 적용 완료
+- ✅ **Bug #4**: WHERE/WHEN/WHAT/EVIDENCE 가이드 문구 제거 (StoryHeader, tr-three-column-layout)
+- ✅ **Bug #2**: Trip/TR 필터 + 7 TRs visible (trips/trs fallback, selectedVoyage 동기화, schedule-table fallback)
+- ✅ **Bug #1**: Selected Date UTC 정렬 (dateToIsoUtc, toUtcNoon, gantt-chart, date-picker)
+- ✅ **Bug #3**: View 버튼 → Detailed Voyage Schedule 스크롤
+- ✅ **Bug #5**: Compare Diff Baseline/Compare as-of 표시
+- ⏸️ **Bug #6**: Note 영속 + 비밀번호 삭제 (별도 Phase 이관)
 
-#### 최근 추가 기능 (2026-01-22)
+#### 상세 문서
+- [docs/BUGFIX_APPLIED_20260202.md](./docs/BUGFIX_APPLIED_20260202.md)
+
+---
+
+### Phase 5: SSOT Upgrade v1.0 (patchm1~m5, 2026-02-02)
+
+#### PR#1: Upload 제거 + BulkAnchors 숨김
+- ✅ **BulkAnchors**: 기본 숨김 (`showBulkAnchors={false}`), Ops Tools에서만 노출
+- ✅ **Upload 제거**: EvidenceUploadModal 삭제, Evidence는 링크/URL 입력만
+
+#### PR#2: SSOT 타입 확장
+- ✅ **Trip**: closeout, baseline_id_at_start, milestones, status
+- ✅ **TripCloseout, TripReport, ProjectReport**: patchm1 §3.6, §3.7
+- ✅ **BlockerCode**: PTW_MISSING, CERT_MISSING, WX_NO_WINDOW 등
+
+#### PR#3: History/Evidence 입력 + 저장 (append-only)
+- ✅ **lib/store/trip-store.ts**: localStorage 기반 History/Evidence 저장
+- ✅ **HistoryTab**: Add event (note, delay, decision, risk, milestone, issue)
+- ✅ **EvidenceTab**: Add link (URL/경로) — 파일 업로드 대체
+
+#### PR#4: Compare Diff 패널
+- ✅ **CompareDiffPanel**: Baseline vs Current diff 테이블
+- ✅ **computeActivityDiff**: shift/add/remove/change 분류
+- ✅ **HistoryEvidencePanel**: Compare Diff 탭 추가
+
+#### PR#5: Trip Report Source + Export
+- ✅ **lib/reports/trip-report.ts**: generateTripReport, tripReportToMarkdown, tripReportToJson
+- ✅ **TripCloseoutForm**: Export MD/JSON 다운로드
+
+#### PR#6: Next Trip Readiness 패널
+- ✅ **ReadinessPanel**: Ready/Not Ready 배지, milestones, missing evidence, blockers
+
+---
+
+### Phase 4: UI Foundation (2026-02-02)
+
+#### 신규 컴포넌트 (28개 파일)
+- ✅ **Global Control Bar**: Trip/TR 선택, Date Cursor, View Mode(Live/History/Approval/Compare), Risk Overlay 토글
+- ✅ **DashboardLayout**: ViewModeProvider, 3-column layout orchestration
+- ✅ **MapPanel**: Leaflet 기반 지도 + TR 마커 + 상호 하이라이트
+- ✅ **TimelinePanel**: Gantt 차트 통합, Activity 선택
+- ✅ **DetailPanel**: Activity Inspector (Header, State, Plan vs Actual, Resources, Constraints, Collision Tray)
+- ✅ **WhyPanel**: 2-click Collision UX (Root cause + suggested_actions)
+- ✅ **ReflowPreviewPanel**: suggested_action → reflowSchedule → Preview UI
+- ✅ **HistoryEvidencePanel**: History | Evidence | Compare Diff | Trip Closeout 탭
+- ✅ **EvidenceTab/HistoryTab**: Evidence 링크 추가, History append-only 입력
+
+#### State Machine & Evidence (Phase 3)
+- ✅ **State Machine**: `src/lib/state-machine/` - Activity 상태 전이 (ALLOWED_TRANSITIONS, Evidence Gates)
+- ✅ **Evidence Gate**: before_start, after_end 증빙 검증
+- ✅ **테스트**: 124 tests passed (state-machine, evidence-gate, reflow, collision 등)
+
+#### 스케줄 엔진 고도화
+- ✅ **Forward Pass**: 의존성 기반 일정 재계산 + Constraint snapping + Resource 교집합
+- ✅ **Backward Pass**: Slack 계산 (ES/EF/LS/LF) + Critical path 식별
+- ✅ **Collision Detection**: 자원 충돌, 시간 충돌, 의존성 사이클 탐지
+- ✅ **Reflow Manager**: Preview → Apply 2단계 워크플로우
+
+#### API & 데이터 통합
+- ✅ **SSOT API**: `/api/ssot` route - option_c.json 제공
+- ✅ **Map Status Colors**: Activity 상태별 색상 매핑
+- ✅ **View Mode Store**: Zustand 기반 Live/History/Approval/Compare 상태 관리
+
+#### 문서 & 자동화
+- ✅ **WORK_LOG_20260202.md**: Phase 4-11 상세 작업 이력
+- ✅ **pipeline-git-autocommit 서브에이전트**: 파이프라인 통과 후 자동 Git commit/push
+- ✅ **StoryHeader 개선**: Empty state에 WHERE/WHEN/WHAT/EVIDENCE 가이드 추가
+
+### 이전 릴리즈 (2026-01-22)
 - ✅ **Activity 스크롤 기능**: Activity 클릭 시 Gantt 차트로 자동 스크롤
-- ✅ **페이지 구조 개선**: `SectionNav` (sticky 네비게이션), `BackToTop` 버튼, 접근성 개선
-- ✅ **Analytics 안전 처리**: `AnalyticsWrapper` 컴포넌트로 localStorage 접근 오류 해결
-- ✅ **Next.js 16 호환성**: `themeColor`를 `viewport` export로 이동하여 Next.js 16 권장사항 준수
-- ✅ **실제 데이터 로딩**: `data/schedule/option_c.json`에서 139개 활동 로드 및 동적 변환
-- ✅ **로컬 설정 시스템 완성**: ESLint, Prettier, .nvmrc, config/env.example 설정 파일 추가
-- ✅ **시스템 아키텍처 문서**: `docs/SYSTEM_ARCHITECTURE.md` 작성 (레이어 구조, 데이터 흐름, 핵심 컴포넌트)
+- ✅ **페이지 구조 개선**: `SectionNav` (sticky 네비게이션), `BackToTop` 버튼
+- ✅ **실제 데이터 로딩**: `data/schedule/option_c.json`에서 139개 활동 로드
 ```

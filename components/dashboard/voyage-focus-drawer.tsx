@@ -5,14 +5,13 @@ import { X, Anchor, AlertTriangle, CalendarCheck } from "lucide-react"
 import { voyages } from "@/lib/dashboard-data"
 import { useDate } from "@/lib/contexts/date-context"
 import { scheduleActivities } from "@/lib/data/schedule-data"
-import { diffUTCDays, parseUTCDate, type ScheduleConflict } from "@/lib/ssot/schedule"
+import { diffUTCDays, parseUTCDate } from "@/lib/ssot/schedule"
 
 type Voyage = (typeof voyages)[number]
 
 interface VoyageFocusDrawerProps {
   voyage: Voyage | null
   onClose: () => void
-  conflicts: ScheduleConflict[]
 }
 
 const DELAY_THRESHOLD_DAYS = 2
@@ -30,7 +29,7 @@ const pickRiskLevel = (score: number) => {
   return RISK_LEVELS[0]
 }
 
-export function VoyageFocusDrawer({ voyage, onClose, conflicts }: VoyageFocusDrawerProps) {
+export function VoyageFocusDrawer({ voyage, onClose }: VoyageFocusDrawerProps) {
   const { selectedDate } = useDate()
   const miniTimeline = useMemo(() => {
     if (!voyage) return []
@@ -46,9 +45,7 @@ export function VoyageFocusDrawer({ voyage, onClose, conflicts }: VoyageFocusDra
   const riskSnapshot = useMemo(() => {
     if (!voyage) {
       return {
-        conflictCount: 0,
         delayDays: 0,
-        lockViolation: false,
         risk: RISK_LEVELS[0],
       }
     }
@@ -58,14 +55,6 @@ export function VoyageFocusDrawer({ voyage, onClose, conflicts }: VoyageFocusDra
     const voyageActivities = scheduleActivities.filter(
       (activity) => activity.tr_unit_id === trUnitId || activity.voyage_id === voyageId
     )
-    const activityIds = new Set(
-      voyageActivities.map((activity) => activity.activity_id).filter(Boolean)
-    )
-    const voyageConflicts = conflicts.filter((conflict) => {
-      if (activityIds.has(conflict.activity_id)) return true
-      if (!conflict.related_activity_ids) return false
-      return conflict.related_activity_ids.some((id) => activityIds.has(id))
-    })
 
     const latestFinish = voyageActivities.reduce<string | null>((latest, activity) => {
       if (!activity.activity_id || !activity.planned_finish) return latest
@@ -79,20 +68,15 @@ export function VoyageFocusDrawer({ voyage, onClose, conflicts }: VoyageFocusDra
     const delayDays = latestFinish
       ? Math.max(0, diffUTCDays(latestFinish, selectedDateStr))
       : 0
-    const lockViolation = voyageConflicts.some((conflict) => conflict.type === "LOCK_VIOLATION")
 
     const delayScore = delayDays > DELAY_THRESHOLD_DAYS ? 3 : delayDays > 0 ? 1 : 0
-    const conflictScore = voyageConflicts.length * 2
-    const lockScore = lockViolation ? 4 : 0
-    const riskScore = delayScore + conflictScore + lockScore
+    const riskScore = delayScore
 
     return {
-      conflictCount: voyageConflicts.length,
       delayDays,
-      lockViolation,
       risk: pickRiskLevel(riskScore),
     }
-  }, [voyage, conflicts, selectedDate])
+  }, [voyage, selectedDate])
 
   if (!voyage) return null
 
@@ -139,21 +123,12 @@ export function VoyageFocusDrawer({ voyage, onClose, conflicts }: VoyageFocusDra
               <AlertTriangle className="h-4 w-4 text-amber-300" />
               Weather window tightening after {voyage.sailDate}
             </div>
-            <div className="mt-3 space-y-1 text-[11px] text-slate-400">
+            <div className="mt-3 space-y-1 text-xs text-slate-400">
               <div>
-                충돌 {formatMetric(riskSnapshot.conflictCount)}건 / 지연{" "}
-                {formatMetric(riskSnapshot.delayDays)}일
+                Delay days: {formatMetric(riskSnapshot.delayDays)}
               </div>
-              <div>
-                락 위반{" "}
-                <span
-                  className={riskSnapshot.lockViolation ? "text-rose-300" : "text-emerald-300"}
-                >
-                  {riskSnapshot.lockViolation ? "있음" : "없음"}
-                </span>
-              </div>
-              <div className="text-[10px] text-slate-500">
-                지연 임계치 {formatMetric(DELAY_THRESHOLD_DAYS)}일 기준
+              <div className="text-xs text-slate-500">
+                Threshold: {formatMetric(DELAY_THRESHOLD_DAYS)} days
               </div>
             </div>
           </div>
@@ -163,7 +138,7 @@ export function VoyageFocusDrawer({ voyage, onClose, conflicts }: VoyageFocusDra
               <Anchor className="h-4 w-4 text-cyan-300" />
               Activity Summary
             </div>
-            <div className="grid gap-2 text-[11px] text-slate-400">
+            <div className="grid gap-2 text-xs text-slate-400">
               <div>Arrival MZP: {voyage.arrivalMZP}</div>
               <div>SPMT Load-out: {voyage.loadOut}</div>
               <div>Sail-away: {voyage.sailAway}</div>
@@ -180,8 +155,8 @@ export function VoyageFocusDrawer({ voyage, onClose, conflicts }: VoyageFocusDra
             <div className="space-y-2">
               {miniTimeline.map((item) => (
                 <div key={item.label} className="flex items-center justify-between">
-                  <span className="text-[11px] text-slate-300">{item.label}</span>
-                  <span className="text-[11px] text-slate-500">{item.date}</span>
+                  <span className="text-xs text-slate-300">{item.label}</span>
+                  <span className="text-xs text-slate-500">{item.date}</span>
                 </div>
               ))}
             </div>

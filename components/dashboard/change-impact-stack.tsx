@@ -40,13 +40,13 @@ export function ChangeImpactStack({ changes, onUndo }: Props) {
       <div className="mb-4 flex items-center justify-between">
         <div>
           <div className="text-sm font-semibold text-foreground">Change Impact</div>
-          <p className="text-[11px] text-slate-500">
+          <p className="text-xs text-slate-500">
             Recent schedule changes from previews
           </p>
         </div>
         <button
           type="button"
-          className="flex items-center gap-1 rounded-lg border border-slate-700/60 px-2 py-1 text-[11px] text-slate-400 disabled:cursor-not-allowed disabled:opacity-40"
+          className="flex items-center gap-1 rounded-lg border border-slate-700/60 px-2 py-1 text-xs text-slate-400 disabled:cursor-not-allowed disabled:opacity-40"
           onClick={onUndo}
           disabled={!hasChanges}
         >
@@ -71,21 +71,21 @@ export function ChangeImpactStack({ changes, onUndo }: Props) {
                   <div className="text-xs font-semibold text-foreground">
                     {change.activity_id} date shift
                   </div>
-                  <span className="text-[10px] text-slate-400">
+                  <span className="text-xs text-slate-400">
                     {formatTimestamp(change.appliedAt)}
                   </span>
                 </div>
-                <p className="mt-1 text-[11px] text-slate-300">
+                <p className="mt-1 text-xs text-slate-300">
                   Start {change.old_start} → {change.new_start} ({deltaLabel}d)
                 </p>
-                <p className="mt-1 text-[11px] text-slate-300">
+                <p className="mt-1 text-xs text-slate-300">
                   Finish {change.old_finish} → {change.new_finish}
                 </p>
               </div>
             )
           })
         ) : (
-          <div className="rounded-xl border border-dashed border-slate-700/60 p-4 text-[11px] text-slate-500">
+          <div className="rounded-xl border border-dashed border-slate-700/60 p-4 text-xs text-slate-500">
             No applied preview changes yet.
           </div>
         )}

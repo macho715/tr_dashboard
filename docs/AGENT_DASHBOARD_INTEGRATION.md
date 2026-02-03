@@ -1,6 +1,9 @@
 # 에이전트 스킬 ↔ 대시보드 레이아웃 통합 가이드
 
+**최종 업데이트**: 2026-02-02  
 **목적**: `agi-schedule-updater` 에이전트와 4개 스킬의 출력이 `docs/LAYOUT.md`에 정의된 대시보드 레이아웃에 일관되게 반영되도록 통합 방법을 정의한다.
+
+**운영 규모**: 1 Trip당 1 TR 운송, 총 7 Trip, SPMT 1기 운영
 
 ---
 
@@ -23,12 +26,15 @@
 
 | DASHBOARD_OUTPUT_SCHEMA | LAYOUT 컴포넌트 | 위치 | 상태 |
 |-------------------------|-----------------|------|------|
-| Schedule JSON (activities, planned_start/finish) | GanttChart, ScheduleTable | GanttSection, ScheduleSection | ✅ option_c.json 연동 |
-| Voyage Cards (data-start/end, Load-out/Sail/Load-in/Jack-down) | VoyageCards | VoyagesSection | ⚠️ dashboard-data.ts 하드코딩 |
-| KPI Grid (Total Days, SPMT Set=1, Voyages, TR Units, Start/End) | KPICards | KPISection | ⚠️ dashboard-data.ts 하드코딩 |
-| Tide Table (3행 HH:00 / X.XXm) | **TideTable** | VoyagesSection 또는 별도 | ❌ 미구현 |
-| Weather (4일치 D~D+3, Last Updated, 히트맵) | **WeatherBlock** | OverviewSection 또는 AlertsSection | ❌ 미구현 |
-| Go/No-Go (Decision, ReasonCodes) | **GoNoGoBadge** | AlertsSection 또는 OverviewSection | ❌ 미구현 |
+| Schedule JSON (activities) | GanttChart, ScheduleTable, TimelinePanel | GanttSection, ScheduleSection | ✅ option_c.json 연동 |
+| Voyage Cards (data-start/end) | VoyageCards | VoyagesSection | ✅ 구현 완료 |
+| KPI Grid (Total Days, SPMT Set) | KPICards | KPISection | ✅ 구현 완료 |
+| Tide Table (3행 HH:00 / X.XXm) | TideTable | VoyagesSection (각 카드 하단) | ✅ 구현 완료 |
+| Weather (4일치 D~D+3) | WeatherBlock | AlertsSection | ✅ 구현 완료 |
+| Go/No-Go (Decision, Reason) | GoNoGoBadge | AlertsSection | ✅ 구현 완료 |
+| Map Visualization | MapPanel (Leaflet) | Map column (3-column layout) | ✅ Phase 4 구현 |
+| Activity Detail | DetailPanel | Detail column (3-column layout) | ✅ Phase 4 구현 |
+| History & Evidence | HistoryEvidencePanel | Detail column tabs | ✅ Phase 4 구현 |
 
 ---
 
@@ -83,31 +89,46 @@ files/agi tr final schedule.json  →  data/schedule/option_c.json
 
 ---
 
-## 4. 권장 실행 순서 (구현 완료)
+## 5. 구현 완료 상태 (2026-02-02)
 
-1. **동기화 스크립트** (구현됨)
-   - `scripts/sync_schedule_to_dashboard.py` — Schedule 복사
-   - `scripts/sync_tide_to_dashboard.py` — Tide 복사
-   - `scripts/sync_agent_to_dashboard.py` — 통합 (Schedule + Tide + Weather/GoNoGo)
-   - `npm run sync:schedule`, `npm run sync:tide`, `npm run sync:agent`
+### ✅ 완료된 컴포넌트
+1. **TideTable** - `components/dashboard/tide-table.tsx` (VoyageCards 각 카드 하단)
+   - 데이터: `data/schedule/tide.json`
+   - 형식: 3행 HH:00 / X.XXm
 
-2. **LAYOUT.md** — TideTable, WeatherBlock, GoNoGoBadge 섹션 추가됨
+2. **WeatherBlock** - `components/dashboard/weather-block.tsx` (AlertsSection)
+   - 데이터: `data/schedule/weather.json`
+   - 4일치 D~D+3 표시
 
-3. **대시보드 컴포넌트** (구현됨)
-   - `components/dashboard/tide-table.tsx` — VoyageCards 내 각 카드 하단
-   - `components/dashboard/weather-block.tsx` — AlertsSection
-   - `components/dashboard/go-nogo-badge.tsx` — AlertsSection
+3. **GoNoGoBadge** - `components/dashboard/go-nogo-badge.tsx` (AlertsSection)
+   - 데이터: `data/schedule/go_nogo.json`
+   - Decision: GO|NO-GO|CONDITIONAL
 
-4. **데이터 파이프라인**
-   - `files/tide_to_voyage_overview.py --output-json` — tide_voyage.json 생성
-   - `data/schedule/tide.json`, `weather.json`, `go_nogo.json` — 대시보드 소비
+4. **MapPanel** - `components/map/MapPanel.tsx` (Phase 4)
+   - Leaflet 기반 지도
+   - TR 마커 + 상호 하이라이트
+
+5. **DetailPanel** - `components/detail/DetailPanel.tsx` (Phase 4)
+   - Activity inspector
+   - State, Plan vs Actual, Resources, Constraints
+
+6. **HistoryEvidencePanel** - `components/history/HistoryEvidencePanel.tsx` (Phase 4)
+   - History/Evidence 탭 통합
+
+### 🔄 동기화 스크립트 (구현 완료)
+- `scripts/sync_schedule_to_dashboard.py` - Schedule 복사 (`npm run sync:schedule`)
+- `scripts/sync_tide_to_dashboard.py` - Tide 복사 (`npm run sync:tide`)
+- `scripts/sync_agent_to_dashboard.py` - 통합 (`npm run sync:agent`)
 
 ---
 
-## 5. 참조 문서
+## 6. 참조 문서
 
-- `agentskillguide/DASHBOARD_OUTPUT_SCHEMA.md` — 출력 형식 SSOT
-- `docs/LAYOUT.md` — 대시보드 레이아웃 SSOT
-- `docs/SYSTEM_ARCHITECTURE.md` — 데이터 흐름 및 레이어 구조
-- `.cursor/rules/agi-schedule-updater.mdc` — 에이전트 규칙
-- `.cursor/agents/agi-schedule-updater.md` — 에이전트 정의
+- [DASHBOARD_OUTPUT_SCHEMA.md](../agentskillguide/DASHBOARD_OUTPUT_SCHEMA.md) - 출력 형식 SSOT
+- [LAYOUT.md](./LAYOUT.md) - 대시보드 레이아웃 SSOT
+- [SYSTEM_ARCHITECTURE.md](./SYSTEM_ARCHITECTURE.md) - 데이터 흐름 및 레이어 구조
+- [IMPLEMENTATION_SUMMARY.md](./IMPLEMENTATION_SUMMARY.md) - Phase 1-11 구현 요약
+- [.cursor/rules/agi-schedule-updater.mdc](../.cursor/rules/agi-schedule-updater.mdc) - 에이전트 규칙
+- [.cursor/agents/agi-schedule-updater.md](../.cursor/agents/agi-schedule-updater.md) - 에이전트 정의
+
+**Last Updated**: 2026-02-02
